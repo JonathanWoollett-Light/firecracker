@@ -1,27 +1,102 @@
 # Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+# Firecracker devtool
+#
+# Use this script to build and test Firecracker.
+# TODO: Port over other comments.
+
+# Imports
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 import sys
 import os
 import argparse
 import subprocess
+import platform
+# Constants
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# TODO Add reason for every dependency.
+x86_dependencies = [
+    "binutils-dev"
+    # Needed in order to be able to compile `userfaultfd-sys`.
+    "clang"
+    "cmake"
+    "curl"
+    "file"
+    "g++"
+    "gcc"
+    "gcc-aarch64-linux-gnu"
+    "git"
+    "iperf3"
+    "iproute2"
+    "jq"
+    "libdw-dev"
+    "libiberty-dev"
+    "libssl-dev"
+    "libcurl4-openssl-dev"
+    "lsof"
+    "make"
+    "musl-tools"
+    "net-tools"
+    "openssh-client"
+    "pkgconf"
+    "python"
+    "python3"
+    "python3-dev"
+    "python3-pip"
+    "python3-venv"
+    "ruby-dev"
+    "zlib1g-dev"
+    "screen"
+    "tzdata"
+    "xz-utils"
+    "bc"
+    "flex"
+    "bison"
+]
+# TODO Add reason for every dependency.
+aarch64_dependencies = [
+    "binutils-dev"
+    # Needed in order to be able to compile `userfaultfd-sys`.
+    "clang"
+    "cmake"
+    "curl"
+    "file"
+    "g++"
+    "gcc"
+    "git"
+    "iperf3"
+    "iproute2"
+    "jq"
+    "libbfd-dev"
+    "libcurl4-openssl-dev"
+    "libdw-dev"
+    "libfdt-dev"
+    "libiberty-dev"
+    "libssl-dev"
+    "lsof"
+    "make"
+    "musl-tools"
+    "net-tools"
+    "openssh-client"
+    "pkgconf"
+    "python"
+    "python3"
+    "python3-dev"
+    "python3-pip"
+    "python3-venv"
+    "zlib1g-dev"
+    "screen"
+    "tzdata"
+    "xz-utils"
+    "bc"
+    "flex"
+    "bison"
+]
 
-# Firecracker devtool
-#
-# Use this script to build and test Firecracker.
-
-# TODO: Port over other comments.
-
-# Development container image (without tag)
-DEVCTR_IMAGE_NO_TAG = "public.ecr.aws/firecracker/fcuvm"
-# Development container tag
-DEVCTR_IMAGE_TAG = "v35"
-# Development container image (name:tag)
-# This should be updated whenever we upgrade the development container.
-# (Yet another step on our way to reproducible builds.)
-DEVCTR_IMAGE = DEVCTR_IMAGE_NO_TAG + ":" + DEVCTR_IMAGE_TAG
-
-# Parser
+# Main
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 parser = argparse.ArgumentParser()
@@ -86,30 +161,88 @@ build_parser.add_argument(
 # shell
 # ------------------------------------------------------------------------------
 shell_parser = subparsers.add_parser("shell")
-# ------------------------------------------------------------------------------
+# Parse
 # ------------------------------------------------------------------------------
 args = parser.parse_args()
 print("args:", args)
 
-# Install docker
-subprocess.run(["sudo", "apt-get", "install", "docker", "-y"])
-# Run docker
-subprocess.run(["sudo", "systemctl", "start", "docker"])
-# Pull docker image
-subprocess.run(["sudo", "docker", "pull", DEVCTR_IMAGE])
-
 # Handle command
 if args.command == "build":
     print("building")
+    # Sets build environment variables
+    os.environ["profile"] = "release" if args.release else "debug"
+    libc = "gnu" if args.gnu else "musl"
+    os.environ["libc"] = libc
+    # Sets ssh
+    [public_key, private_key] = args.ssh
+    os.environ["host_pub_key_path"] = public_key
+    os.environ["host_priv_key_path"] = private_key
+    # Sets toolchain
+    machine = platform.machine()
+    cpu_architecture = "x86_64" if machine == "AMD64" else machine
+    assert (
+        cpu_architecture == "x86_64"
+        or cpu_architecture == "i686"
+        or cpu_architecture == "aarch64"
+    )
+    toolchain = "{}-unknown-linux-{}".format(cpu_architecture, libc)
+    print("toolchain:", toolchain)
+    os.environ["target"] = toolchain
+    # os.environ["cargo_args"] = args.cargo
+
+    # Gets package manager
+    package_manager = None
+    try:
+        subprocess.run(["apt-get", "--version"])
+        package_manager = "apt-get"
+    except:
+        try:
+            subprocess.run(["yum", "--version"])
+            package_manager = "yum"
+        except:
+            raise BaseException(
+                "Could not find known package manager (apt-get or yum)."
+            )
+    print("package_manager:", package_manager)
+
+    # Updates package manager and installs required packages
+    subprocess.run([package_manager, "update"])
+    if cpu_architecture == "aarch64":
+        # Installs all aarch64 dependencies we can from the package manager.
+        subprocess.run([package_manager, "-y", "install"] + aarch64_dependencies)
+        # TODO Add reasons for "setuptools", "setuptools_rust" and "wheel".
+        subprocess.run(
+            ["python3", "-m", "pip", "install"]
+            + ["setuptools", "setuptools_rust", "wheel"]
+        )
+        # TODO What does this do? Why do we need it?
+        subprocess.run(["rm", "-rf", "/var/lib/apt/lists/*"])
+    else:
+        # Installs all x86_64 dependencies we can from the package manager.
+        subprocess.run([package_manager, "-y", "install"] + x86_dependencies)
+        # TODO Add reasons for "setuptools" and "wheel".
+        subprocess.run(["python3", "-m", "pip", "install"] + ["setuptools", "wheel"])
+        # TODO What does this do? Why do we need it?
+        subprocess.run(["gem", "install", "chef-utils:16.6.14", "mdl"])
+    # Upgrade pip to newest stable version.
+    subprocess.run(["python3", "-m", "pip", "install", "--upgrade pip"])
+    # TODO What does this do? Why do we need it?
+    subprocess.run(["python3", "-m", "pip", "install", "poetry"])
+
+    # Install Rust
+    subprocess.run(["curl", "--proto", "'=https'", "--tlsv1.2", "-sSf", "https://sh.rustup.rs", "|", "sh","-y"])
+
     # # Runs build within docker container
     # subprocess.run([
-    #     "sudo", "docker", "run", 
+    #     "sudo", "docker", "run",
     #     "--rm",
     #     "--volume","/dev:/dev",
     #     "--volume",""
     # ])
-    
+
 elif args.command == "test":
     print("testing")
+    assert False, "Unimplemented"
 elif args.command == "shell":
     print("shell")
+    assert False, "Unimplemented"
