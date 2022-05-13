@@ -140,13 +140,12 @@ build_parser = subparsers.add_parser("build")
 build_parser.add_argument(
     "--release", help="Build the release binaries.", action="store_true"
 )
-build_group = build_parser.add_mutually_exclusive_group()
-build_group.add_argument(
+build_parser.add_argument(
     "--gnu",
     help="Build with gnu libc instead of musl libc.",
     action="store_true",
 )
-build_group.add_argument(
+build_parser.add_argument(
     "--ssh",
     nargs=2,
     metavar=("public-key", "private-key"),
