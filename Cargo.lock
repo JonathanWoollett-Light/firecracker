@@ -52,6 +52,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "utils",
+ "vm_guest_config",
  "vmm",
 ]
 
@@ -1274,18 +1275,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.32"
+version = "1.0.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5f6586b7f764adc0231f4c79be7b920e766bb2f3e51b3661cdb263828f19994"
+checksum = "8c1b05ca9d106ba7d2e31a9dab4a64e7be2cce415321966ea3132c49a656e252"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.32"
+version = "1.0.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12bafc5b54507e0149cdf1b145a5d80ab80a90bcd9275df43d4fff68460f6c21"
+checksum = "e8f2591983642de85c921015f3f070c665a197ed69e417af436115e3a1407487"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1456,6 +1457,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4b5231d334edbc03b22704caa1a022e4c07491d6df736593f26094df8b04a51"
 
 [[package]]
+name = "vm_guest_config"
+version = "0.1.0"
+dependencies = [
+ "arch",
+ "bincode",
+ "cpuid",
+ "derive_more",
+ "itertools",
+ "kvm-bindings",
+ "kvm-ioctls",
+ "logger",
+ "phf",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "vmm"
 version = "0.1.0"
 dependencies = [
@@ -1486,6 +1505,7 @@ dependencies = [
  "vm-allocator",
  "vm-memory 0.3.0",
  "vm-superio",
+ "vm_guest_config",
 ]
 
 [[package]]

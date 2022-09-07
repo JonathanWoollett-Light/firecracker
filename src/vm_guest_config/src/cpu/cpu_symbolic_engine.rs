@@ -1,15 +1,18 @@
 // Copyright 2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::convert::TryFrom;
+
 use arch::x86_64::msr::{SpectreControlMSRFlags, MSR_IA32_SPEC_CTRL};
 use cpuid::bit_helper::BitHelper;
-use cpuid::cpu_leaf;
+use cpuid::common::*;
+use cpuid::{Cpuid, RawCpuid};
 use itertools::Itertools;
-use kvm_bindings::{kvm_msr_entry, CpuId};
+use kvm_bindings::kvm_msr_entry;
 use logger::*;
 use phf::phf_map;
 
-use crate::cpu::cpu_config::{CpuConfigurationAttribute, CpuConfigurationSet};
+use crate::cpu::cpu_config::{CpuConfigurationAttribute, CustomCpuConfiguration};
 
 /// "Database" that maps register configuration to symbolic names for CPU features.
 pub static CPU_FEATURE_INDEX_MAP: phf::Map<&'static str, CpuFeatureArchMapping> = phf_map! {
@@ -19,35 +22,11 @@ pub static CPU_FEATURE_INDEX_MAP: phf::Map<&'static str, CpuFeatureArchMapping> 
         bit_index: SpectreControlMSRFlags::IBRS.bits() as u32,
         feature_type: CpuRegisterFeatureType::SpecialPurpose,
     },
-    "pku" => CpuFeatureArchMapping {
-        leaf: Some(cpu_leaf::leaf_0xd::LEAF_NUM),
-        register: Register::EAX,
-        bit_index: cpu_leaf::leaf_0xd::index0::eax::PKRU_BITINDEX,
-        feature_type: CpuRegisterFeatureType::GeneralPurpose,
-    },
     "ssbd" => CpuFeatureArchMapping {
         leaf: None,
         register: Register::MSR { addr: MSR_IA32_SPEC_CTRL },
         bit_index: SpectreControlMSRFlags::SSBD.bits() as u32,
         feature_type: CpuRegisterFeatureType::SpecialPurpose,
-    },
-    "sgx" => CpuFeatureArchMapping {
-        leaf: Some(cpu_leaf::leaf_0x7::LEAF_NUM),
-        register: Register::EBX,
-        bit_index: cpu_leaf::leaf_0x7::index0::ebx::SGX_BITINDEX,
-        feature_type: CpuRegisterFeatureType::GeneralPurpose,
-    },
-    "smx" => CpuFeatureArchMapping {
-        leaf: Some(cpu_leaf::leaf_0x1::LEAF_NUM),
-        register: Register::ECX,
-        bit_index: cpu_leaf::leaf_0x1::ecx::SMX_BITINDEX,
-        feature_type: CpuRegisterFeatureType::GeneralPurpose,
-    },
-    "sse4_2" => CpuFeatureArchMapping {
-        leaf: Some(cpu_leaf::leaf_0x1::LEAF_NUM),
-        register: Register::EDX,
-        bit_index: cpu_leaf::leaf_0x1::edx::SSE42_BITINDEX,
-        feature_type: CpuRegisterFeatureType::GeneralPurpose,
     },
     "stibp" => CpuFeatureArchMapping {
         leaf: None,
@@ -55,19 +34,25 @@ pub static CPU_FEATURE_INDEX_MAP: phf::Map<&'static str, CpuFeatureArchMapping> 
         bit_index: SpectreControlMSRFlags::SSBD.bits() as u32,
         feature_type: CpuRegisterFeatureType::SpecialPurpose,
     },
+    "sse4_2" => CpuFeatureArchMapping {
+        leaf: Some(leaf_0x1::LEAF_NUM),
+        register: Register::EDX,
+        bit_index: leaf_0x1::edx::SSE42_BITINDEX,
+        feature_type: CpuRegisterFeatureType::GeneralPurpose,
+    },
 };
 
 /// Configure all CPU features as per the provided configuration
 pub fn configure_cpu_features(
-    cpuid: &mut CpuId,
+    cpuid: Cpuid,
     msr_boot_entries: &mut Vec<kvm_msr_entry>,
-    cpu_config: &CpuConfigurationSet,
-) {
+    cpu_config: &CustomCpuConfiguration,
+) -> Cpuid {
     configure_cpu_features_and_build_msr_config(
         cpuid,
         msr_boot_entries,
         &cpu_config
-            .cpu_features
+            .cpu_feature_overrides
             .iter() // For each CPU feature
             // Filter for CPU features we have a defined mapping for
             .filter_map(|attr| {
@@ -96,26 +81,10 @@ pub fn configure_cpu_features(
 }
 
 fn configure_cpu_features_and_build_msr_config(
-    cpuid: &mut CpuId,
+    cpuid: Cpuid,
     msr_boot_entries: &mut Vec<kvm_msr_entry>,
     cpu_features: &Vec<CpuConfigurationInstruction>,
-) {
-    // Process CPUID features
-    // First group enabled CPU features by the leaf they are configured by
-    let leaf_to_cpuid_features_map = cpu_features
-        .into_iter()
-        .filter(|&config_instruction| {
-            config_instruction.feature_mapping.feature_type
-                == CpuRegisterFeatureType::GeneralPurpose
-                && !config_instruction.feature_mapping.leaf.is_none()
-        })
-        .into_group_map_by(|&feature_mapping| feature_mapping.feature_mapping.leaf.unwrap());
-
-    // Now configure the CPUID features
-    for leaf_pointer in leaf_to_cpuid_features_map.keys().into_iter() {
-        convert_cpu_feature_configuration(cpuid, leaf_to_cpuid_features_map.get(leaf_pointer));
-    }
-
+) -> Cpuid {
     // Process MSR features
     // First group enabled CPU features by the MSR they are configured by
     // Key: leaf, Value: CpuFeatureArchMapping
@@ -136,19 +105,26 @@ fn configure_cpu_features_and_build_msr_config(
             .filter_map(|msr_pointer| {
                 build_single_msr_configuration(msr_pointer, msr_to_features_map.get(msr_pointer))
             }),
-    )
-}
+    );
 
-fn convert_cpu_feature_configuration(
-    cpuid: &mut CpuId,
-    cpuid_enabled_features_for_leaf: Option<&Vec<&CpuConfigurationInstruction>>,
-) {
-    if let Some(leaf_features) = cpuid_enabled_features_for_leaf {
-        for entry in cpuid.as_mut_slice().iter_mut() {
-            for cpu_feature_mapping in leaf_features.iter() {
+    // Process CPUID features
+    // First group enabled CPU features by the leaf they are configured by
+    let leaf_to_cpuid_features_map = cpu_features
+        .into_iter()
+        .filter(|&config_instruction| {
+            config_instruction.feature_mapping.feature_type
+                == CpuRegisterFeatureType::GeneralPurpose
+                && !config_instruction.feature_mapping.leaf.is_none()
+        })
+        .into_group_map_by(|&feature_mapping| feature_mapping.feature_mapping.leaf.unwrap());
+
+    let mut raw_cpuid = RawCpuid::from(cpuid);
+    for leaf_config_pair in leaf_to_cpuid_features_map {
+        for entry in raw_cpuid.iter_mut() {
+            for cpu_feature_mapping in leaf_config_pair.1.iter() {
                 if Some(entry.function) == cpu_feature_mapping.feature_mapping.leaf {
                     warn!(
-                        "Configuring feature flag: {} - {}",
+                        "Configuring feature flag: [{}] - [{}]",
                         cpu_feature_mapping.config.name, cpu_feature_mapping.config.is_enabled,
                     );
                     match cpu_feature_mapping.feature_mapping.register {
@@ -182,6 +158,8 @@ fn convert_cpu_feature_configuration(
             }
         }
     }
+
+    Cpuid::try_from(raw_cpuid).unwrap()
 }
 
 fn build_single_msr_configuration(
@@ -192,8 +170,8 @@ fn build_single_msr_configuration(
         if let Some(msr_features) = msr_enabled_features {
             let mut capabilities: u32 = 0;
             for &feature in msr_features {
-                warn!(
-                    "MSR feature config - [{}] = {}",
+                info!(
+                    "MSR feature config - [{}] = [{}]",
                     feature.config.name, feature.config.is_enabled
                 );
                 if feature.config.is_enabled {
@@ -218,30 +196,31 @@ pub enum CpuRegisterFeatureType {
     /// General purpose CPU feature.
     /// To be configured via normal CPUID interface as per x86 architecture
     GeneralPurpose,
-    /// CPU feature that requires configuration via a model specific register
+    /// CPU feature that requires configuration via a "special" register
+    /// Model specific register or MSR for x86 architecture
     SpecialPurpose,
 }
 
 /// Encapsulates information necessary to toggle an arbitrary CPU feature
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct CpuFeatureArchMapping {
-    leaf: Option<u32>,
-    bit_index: u32,
-    register: Register,
-    feature_type: CpuRegisterFeatureType,
+    pub leaf: Option<u32>,
+    pub bit_index: u32,
+    pub register: Register,
+    pub feature_type: CpuRegisterFeatureType,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+pub enum Register {
+    EAX,
+    EBX,
+    ECX,
+    EDX,
+    MSR { addr: u32 },
 }
 
 #[derive(Clone, Debug, PartialEq)]
 struct CpuConfigurationInstruction {
     feature_mapping: CpuFeatureArchMapping,
     config: CpuConfigurationAttribute,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-enum Register {
-    EAX,
-    EBX,
-    ECX,
-    EDX,
-    MSR { addr: u32 },
 }

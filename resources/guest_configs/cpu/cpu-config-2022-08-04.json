@@ -1,14 +1,7 @@
 {
-  "baseline": {
-    "arch-general": {
-
-    },
-    "model-specific": {
-
-    }
-  },
-
-  "cpu_features": [
+  "base_arch_features_template_path": "resources/guest_configs/cpu/x86_64_template_t2s_sandbox.json",
+  "base_special_features_template_path": "/tmp/x86_64_msr_template_path.json.ignored",
+  "cpu_feature_overrides": [
     {
       "name": "ssbd",
       "is_enabled": false

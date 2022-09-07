@@ -18,9 +18,10 @@ use kvm_bindings::{
     kvm_xsave, CpuId, MsrList, Msrs,
 };
 use kvm_ioctls::{VcpuExit, VcpuFd};
-use logger::{error, warn, IncMetric, METRICS};
+use logger::{error, log_dev_preview_warning, warn, IncMetric, METRICS};
 use versionize::{VersionMap, Versionize, VersionizeResult};
 use versionize_derive::Versionize;
+use vm_guest_config::cpu::cpu_config::load_template_file;
 use vm_memory::{Address, GuestAddress, GuestMemoryMmap};
 
 use crate::vmm_config::machine_config::CpuFeaturesTemplate;
@@ -258,14 +259,60 @@ impl KvmVcpu {
         vcpu_config: &VcpuConfig,
         mut cpuid: CpuId,
     ) -> std::result::Result<(), KvmVcpuConfigureError> {
+        // Set boot MSRs
+        let mut msr_boot_entries = arch::x86_64::msr::create_boot_msr_entries();
+
         // If a template is specified, get the CPUID template, else use `cpuid`.
-        let mut config_cpuid = match vcpu_config.cpu_template {
+        let mut config_cpuid = match &vcpu_config.cpu_template {
             #[cfg(feature = "t2")]
             CpuFeaturesTemplate::T2 => cpuid::Cpuid::T2,
             #[cfg(feature = "t2s")]
             CpuFeaturesTemplate::T2S => cpuid::Cpuid::T2S,
             #[cfg(feature = "c3")]
             CpuFeaturesTemplate::C3 => cpuid::Cpuid::C3,
+            CpuFeaturesTemplate::CUSTOM(cpu_config) => {
+                log_dev_preview_warning(
+                    "Custom CPU template configuration",
+                    Some(format!(
+                        "Using file - [{}]",
+                        cpu_config.base_arch_features_template_path.as_str()
+                    )),
+                );
+
+                let load_cpuid_result =
+                    load_template_file(cpu_config.base_arch_features_template_path.as_str());
+
+                let base_cpuid_config = match load_cpuid_result {
+                    Ok(cpuid) => {
+                        log_dev_preview_warning(
+                            "Custom CPU template configuration",
+                            Some(format!(
+                                "Loaded CPU template file - [{}]",
+                                cpu_config.base_arch_features_template_path.as_str()
+                            )),
+                        );
+                        cpuid
+                    }
+                    Err(_) => {
+                        error!(
+                            "Custom CPU configuration - Failed to load CPU template file [{}]",
+                            cpu_config.base_arch_features_template_path.as_str()
+                        );
+                        return Err(KvmVcpuConfigureError::KvmUnsupportedCpuid);
+                    }
+                };
+
+                // Build holistic configuration
+                // Currently includes:
+                // * Base CPUID configuration
+                // * CPUID overrides
+                // * MSR overrides
+                vm_guest_config::cpu::cpu_symbolic_engine::configure_cpu_features(
+                    base_cpuid_config,
+                    &mut msr_boot_entries,
+                    cpu_config,
+                )
+            }
             // If a template is not supplied we use the given `cpuid` as the base.
             CpuFeaturesTemplate::None => {
                 cpuid::Cpuid::try_from(cpuid::RawCpuid::from(cpuid.clone()))?
@@ -308,8 +355,6 @@ impl KvmVcpu {
             .set_cpuid2(&cpuid)
             .map_err(KvmVcpuConfigureError::SetCpuid)?;
 
-        // Set MSRs
-        let mut msr_boot_entries = arch::x86_64::msr::create_boot_msr_entries();
         #[cfg(feature = "t2s")]
         if vcpu_config.cpu_template == CpuFeaturesTemplate::T2S {
             for msr in cpuid::t2s::msr_entries_to_save() {

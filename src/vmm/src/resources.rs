@@ -9,7 +9,7 @@ use mmds::data_store::{Mmds, MmdsVersion};
 use mmds::ns::MmdsNetworkStack;
 use serde::{Deserialize, Serialize};
 use utils::net::ipv4addr::is_link_local_valid;
-use vm_guest_config::cpu::cpu_config::{CpuConfigError, CpuConfigurationSet};
+use vm_guest_config::cpu::cpu_config::{CpuConfigError, CustomCpuConfiguration};
 use vm_guest_config::cpu::cpu_symbolic_engine::CPU_FEATURE_INDEX_MAP;
 
 use crate::device_manager::persist::SharedDeviceType;
@@ -246,9 +246,9 @@ impl VmResources {
 
     fn validate_cpu_configuration(
         &mut self,
-        cpu_config: &CpuConfigurationSet,
+        cpu_config: &CustomCpuConfiguration,
     ) -> Result<CpuConfigError> {
-        for cpu_config_entry in &cpu_config.cpu_features {
+        for cpu_config_entry in &cpu_config.cpu_feature_overrides {
             if !CPU_FEATURE_INDEX_MAP.contains_key(cpu_config_entry.name.as_str()) {
                 return Err(CpuConfigError::UndefinedCpuFeatureName);
             }
@@ -258,7 +258,7 @@ impl VmResources {
     }
 
     /// Configure vCPU features.
-    pub fn configure_cpu(&mut self, cpu_config: CpuConfigurationSet) -> Result<CpuConfigError> {
+    pub fn configure_cpu(&mut self, cpu_config: CustomCpuConfiguration) -> Result<CpuConfigError> {
         // Validate the CPU configuration first
         let validation_result = self.validate_cpu_configuration(&cpu_config);
         if validation_result.is_ok() {

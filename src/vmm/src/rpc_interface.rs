@@ -14,7 +14,7 @@ use tests::{
     build_microvm_for_boot, create_snapshot, restore_from_snapshot, MockVmRes as VmResources,
     MockVmm as Vmm,
 };
-use vm_guest_config::cpu::cpu_config::{CpuConfigError, CpuConfigurationSet};
+use vm_guest_config::cpu::cpu_config::{CpuConfigError, CustomCpuConfiguration};
 
 use super::Error as VmmError;
 #[cfg(not(test))]
@@ -97,7 +97,7 @@ pub enum VmmAction {
     /// Repopulate the MMDS contents.
     PutMMDS(Value),
     /// Configure the guest vCPU features.
-    PutCpuConfiguration(CpuConfigurationSet),
+    PutCpuConfiguration(CustomCpuConfiguration),
     /// Resume the guest, by resuming the microVM VCPUs.
     Resume,
     /// Set the balloon device or update the one that already exists using the
@@ -516,7 +516,7 @@ impl<'a> PrebootApiController<'a> {
             .map_err(VmmActionError::MachineConfig)
     }
 
-    fn put_cpu_configuration(&mut self, cpu_config: CpuConfigurationSet) -> ActionResult {
+    fn put_cpu_configuration(&mut self, cpu_config: CustomCpuConfiguration) -> ActionResult {
         self.vm_resources
             .configure_cpu(cpu_config)
             .map(|()| VmmData::Empty)

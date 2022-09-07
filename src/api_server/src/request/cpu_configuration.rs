@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use logger::{IncMetric, METRICS};
-use vm_guest_config::cpu::cpu_config::CpuConfigurationSet;
+use vm_guest_config::cpu::cpu_config::CustomCpuConfiguration;
 
 use super::super::VmmAction;
 use crate::parsed_request::{Error, ParsedRequest};
@@ -11,12 +11,12 @@ use crate::request::Body;
 pub(crate) fn parse_put_cpu_config(body: &Body) -> Result<ParsedRequest, Error> {
     METRICS.put_api_requests.cpu_cfg_count.inc();
     let cpu_config_json =
-        serde_json::from_slice::<CpuConfigurationSet>(body.raw()).map_err(|err| {
+        serde_json::from_slice::<CustomCpuConfiguration>(body.raw()).map_err(|err| {
             METRICS.put_api_requests.cpu_cfg_fails.inc();
             err
         })?;
 
-    let cpu_config = CpuConfigurationSet::from(cpu_config_json);
+    let cpu_config = CustomCpuConfiguration::from(cpu_config_json);
 
     Ok(ParsedRequest::new_sync(VmmAction::PutCpuConfiguration(
         cpu_config,
@@ -30,7 +30,7 @@ pub(crate) fn parse_get_cpu_config() -> Result<ParsedRequest, Error> {
 
 #[cfg(test)]
 mod tests {
-    use cpuid::cpu_config::{CpuConfigurationAttribute, CpuConfigurationSet};
+    use vm_guest_config::cpu::cpu_config::CpuConfigurationAttribute;
 
     use super::*;
     use crate::parsed_request::tests::vmm_action_from_request;
@@ -59,7 +59,9 @@ mod tests {
 
         // Test basic request is successful
         let body = r#"{
-              "cpu_features": [
+              "base_arch_features_template_path": "/tmp/x86_64_template_path.json",
+              "base_special_features_template_path": "/tmp/msr_template_path.json",
+              "cpu_feature_overrides": [
                   {
                     "name": "ssbd",
                     "is_enabled": true
@@ -70,8 +72,10 @@ mod tests {
                   }
                 ]
             }"#;
-        let expected_config = CpuConfigurationSet {
-            cpu_features: vec![
+        let expected_config = CustomCpuConfiguration {
+            base_arch_features_template_path: String::from("/tmp/x86_test_template.json"),
+            base_special_features_template_path: String::from("/tmp/msr_test_template.json"),
+            cpu_feature_overrides: vec![
                 CpuConfigurationAttribute {
                     name: String::from("ssbd"),
                     is_enabled: true,
