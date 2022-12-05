@@ -7,3 +7,8 @@ line-length=72
 [ignore-body-lines]
 # Ignore HTTP reference links
 regex=^\[.+\]: http.+
+
+[general]
+# Conventional Commits, see 
+# https://jorisroovers.com/gitlint/contrib_rules/#available-contrib-rules
+contrib=CT1
