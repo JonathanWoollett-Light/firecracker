@@ -93,6 +93,68 @@ pub trait BitIndexMut<T, const P: u8> {
     fn bit_mut(&mut self) -> BitMut<'_, T, P>;
 }
 
+pub trait Equal {
+    /// Returns if all defined bits are equal, ignoring undefined bits.
+    fn equal(&self, other: &Self) -> bool;
+}
+impl<T: Equal> Equal for &T {
+    #[inline]
+    fn equal(&self, other: &Self) -> bool {
+        (**self).equal(other)
+    }
+}
+impl<T: Equal> Equal for &mut T {
+    #[inline]
+    fn equal(&self, other: &Self) -> bool {
+        (**self).equal(other)
+    }
+}
+macro_rules! impl_equal {
+    ($t:ty) => {
+        impl Equal for $t {
+            #[inline]
+            fn equal(&self, other: &Self) -> bool {
+                self == other
+            }
+        }
+    };
+}
+impl_equal!(usize);
+impl_equal!(u128);
+impl_equal!(u64);
+impl_equal!(u32);
+impl_equal!(u16);
+impl_equal!(u8);
+impl_equal!(isize);
+impl_equal!(i128);
+impl_equal!(i64);
+impl_equal!(i32);
+impl_equal!(i16);
+impl_equal!(i8);
+
+impl<T: Equal, const N: usize> Equal for [T; N] {
+    #[inline]
+    fn equal(&self, other: &Self) -> bool {
+        self.iter().zip(other.iter()).all(|(a, b)| a.equal(b))
+    }
+}
+impl<T: Equal> Equal for [T] {
+    #[inline]
+    fn equal(&self, other: &Self) -> bool {
+        self.len() == other.len() && self.iter().zip(other.iter()).all(|(a, b)| a.equal(b))
+    }
+}
+impl<T: Equal> Equal for Option<T> {
+    #[inline]
+    fn equal(&self, other: &Self) -> bool {
+        match (self.as_ref(), other.as_ref()) {
+            (Some(_), None) | (None, Some(_)) => false,
+            (None, None) => true,
+            (Some(a), Some(b)) => a.equal(b),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(
@@ -109,6 +171,33 @@ mod tests {
 
     use super::*;
     use crate as bit_fields;
+
+    bitfield!(BitFieldIndexedu16, u16, {
+        #[skip]
+        one: 0..1,
+        one0: one[0..1],
+        #[skip]
+        one00: one0[0],
+        #[skip]
+        two: 1..3,
+        two0: two[0..1],
+        #[skip]
+        two00: two0[0],
+        two1: two[1],
+        #[skip]
+        three: 3..6,
+        #[skip]
+        three0: three[0..1],
+        three00: three0[0],
+        three1: three[1..3],
+        #[skip]
+        three10: three1[0..1],
+        #[skip]
+        three11: three1[1],
+        four: 6..10,
+        five: 10..15,
+        six: 15
+    });
 
     bitfield!(BitFieldu128, u128, {
         one: 0..1,
@@ -296,6 +385,31 @@ mod tests {
         assert_eq!(bitfield.SSE3(), false);
         assert_eq!(bitfield.RANGE3(), r3);
         assert_eq!(bitfield.SSE4(), false);
+    }
+
+    #[test]
+    fn indexed() {
+        let bit_field = BitFieldIndexedu16(0b1010_1110_0101_0111);
+
+        assert_eq!(bit_field.one().read(), 1);
+        assert_eq!(bit_field.one0().read(), 1);
+        assert!(bit_field.one00().is_on());
+
+        assert_eq!(bit_field.two().read(), 3);
+        assert_eq!(bit_field.two0().read(), 1);
+        assert!(bit_field.two00().is_on());
+        assert!(bit_field.two1().is_on());
+
+        assert_eq!(bit_field.three().read(), 2);
+        assert_eq!(bit_field.three0().read(), 0);
+        assert!(bit_field.three00().is_off());
+        assert_eq!(bit_field.three1().read(), 1);
+        assert_eq!(bit_field.three10().read(), 1);
+        assert!(bit_field.three11().is_off());
+
+        assert_eq!(bit_field.four().read(), 9);
+        assert_eq!(bit_field.five().read(), 11);
+        assert!(bit_field.six().is_on());
     }
 
     #[test]

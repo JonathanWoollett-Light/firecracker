@@ -5,7 +5,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 
 use crate::utils::{DataTypeToken, MultiLineString};
-use crate::{Field, Flag, Member};
+use crate::{BitFlag, BitRange, Member};
 
 /// Builder for bit fields.
 #[allow(clippy::module_name_repetitions)]
@@ -27,14 +27,16 @@ pub struct BitFieldBuilder {
     /// 1. Top border
     /// 2. Bit numbers
     /// 3. Border
-    /// 4. Field idents
+    /// 4. Member idents
     /// 5. Border
-    /// 6. Field values
+    /// 6. Member values
     /// 7. Bottom border
     /// Fmt values (since write doesn't work with in place ones)
     display_string: MultiLineString,
     /// String used to pass arguments for `std::fmt::Display` implementation.
     display_fmt_string: TokenStream,
+    /// Rustdoc to attach to generated bit field.
+    rustdoc: String,
     /// Struct data type (e.g. `u8`)
     data_type: DataTypeToken,
     /// Struct identifier
@@ -49,7 +51,7 @@ pub struct BitFieldBuilder {
 
 impl BitFieldBuilder {
     /// Constructs new `BitFieldBuilder`.
-    pub fn new(struct_name: Ident, data_type: DataTypeToken) -> Self {
+    pub fn new(rustdoc: String, struct_name: Ident, data_type: DataTypeToken) -> Self {
         Self {
             flag_matching_from_hashset: TokenStream::new(),
             flag_setting_hashset: TokenStream::new(),
@@ -70,6 +72,7 @@ impl BitFieldBuilder {
                 └───────",
             ),
             display_fmt_string: TokenStream::new(),
+            rustdoc,
             data_type,
             struct_name,
             flag_constants: TokenStream::new(),
@@ -81,23 +84,24 @@ impl BitFieldBuilder {
     /// Adds a bit member to the structure.
     pub(crate) fn add(self, member: Member) -> Self {
         match member {
-            Member::Field(field) => self.add_bit_range(field),
-            Member::Flag(flag) => self.add_bit_flag(flag),
+            Member::BitRange(field) => self.add_bit_range(field),
+            Member::BitFlag(flag) => self.add_bit_flag(flag),
         }
     }
 
     /// Adds a bit range to the structure.
     pub(crate) fn add_bit_range(
         mut self,
-        Field {
-            start,
+        BitRange {
+            range,
             rustdoc,
             identifier,
-            stop,
-        }: Field,
+            skip,
+        }: BitRange,
     ) -> Self {
         let identifier_str = identifier.to_string();
         let data_type = &self.data_type;
+        let (start, stop) = (range.start, range.end);
 
         // Display
         // ------------------------
@@ -144,7 +148,7 @@ impl BitFieldBuilder {
 
         // try_from_field_map
         // ------------------------
-        {
+        if !skip {
             self.field_matching_from_hashmap.extend(quote! {
                 #identifier_str => {
                     match bit_fields::BitRangeMut::<#base,#start,#stop>(&mut acc).checked_assign(#base::from(v)) {
@@ -180,11 +184,12 @@ impl BitFieldBuilder {
     #[allow(clippy::too_many_lines)]
     pub(crate) fn add_bit_flag(
         mut self,
-        Flag {
+        BitFlag {
             index,
             rustdoc,
             identifier,
-        }: Flag,
+            skip,
+        }: BitFlag,
     ) -> Self {
         let identifier_str = identifier.to_string();
         let data_type = &self.data_type;
@@ -259,7 +264,7 @@ impl BitFieldBuilder {
 
         // try_from_flag_set
         // ------------------------
-        {
+        if !skip {
             self.flag_matching_from_hashset.extend(quote! {
                 #identifier_str => Ok(acc | bit_fields::Bit::<#base,#index>::MASK),
             });
@@ -303,6 +308,7 @@ impl BitFieldBuilder {
             struct_accessors,
             display_string,
             display_fmt_string,
+            rustdoc,
             data_type,
             struct_name,
             flag_constants,
@@ -311,56 +317,7 @@ impl BitFieldBuilder {
         } = self;
 
         let serde = if cfg!(feature = "serde") {
-            let visitor = quote::format_ident!("{}Visitor", struct_name);
-            let error_msg = format!("Failed to deserialize {}", struct_name);
-            quote! {
-                impl serde::Serialize for #struct_name {
-                    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-                    where
-                        S: serde::Serializer,
-                    {
-                        use serde::ser::{Serialize, SerializeMap, SerializeSeq, SerializeTuple, Serializer};
-                        let (set, map): (std::collections::HashSet<&'static str>, std::collections::HashMap<&'static str, #data_type>) = self.into();
-                        let mut tup = serializer.serialize_tuple(2)?;
-                        tup.serialize_element(&set)?;
-                        tup.serialize_element(&map)?;
-                        tup.end()
-                    }
-                }
-                struct #visitor;
-                impl<'de> serde::de::Visitor<'de> for #visitor {
-                    type Value = #struct_name;
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(
-                            formatter,
-                            "a set of bit flags followed by a map of fields"
-                        )
-                    }
-                    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-                    where
-                        A: serde::de::SeqAccess<'de>,
-                    {
-                        use std::convert::TryFrom;
-                        if let Some(set) = seq.next_element::<std::collections::HashSet<String>>()? {
-                            if let Some(map) = seq.next_element::<std::collections::HashMap<String, #data_type>>()? {
-                                Ok(#struct_name::try_from((set, map)).expect(#error_msg))
-                            } else {
-                                Err(serde::de::Error::custom("no 2nd value in seq"))
-                            }
-                        } else {
-                            Err(serde::de::Error::custom("no 1st value in seq"))
-                        }
-                    }
-                }
-                impl<'de> serde::Deserialize<'de> for #struct_name {
-                    fn deserialize<D>(deserializer: D) -> Result<#struct_name, D::Error>
-                    where
-                        D: serde::Deserializer<'de>,
-                    {
-                        deserializer.deserialize_tuple(2,#visitor)
-                    }
-                }
-            }
+            quote! { , serde::Serialize, serde::Deserialize }
         } else {
             TokenStream::new()
         };
@@ -610,6 +567,17 @@ impl BitFieldBuilder {
             self.data_type.size()
         );
 
+        let empty = if data_type.is_nonzero() {
+            TokenStream::new()
+        } else {
+            quote! {
+                /// Alias for `Self(0)`.
+                pub const fn empty() -> Self {
+                    Self(0)
+                }
+            }
+        };
+
         let (flag_mask, range_mask) = if data_type.is_nonzero() {
             (
                 quote! { unsafe { #data_type::new_unchecked(#bit_flag_mask) } },
@@ -619,7 +587,17 @@ impl BitFieldBuilder {
             (bit_flag_mask, bit_range_mask)
         };
 
+        let construct = if cfg!(feature = "construct") {
+            quote! { , construct::Inline }
+        } else {
+            TokenStream::new()
+        };
+
         quote! {
+            #[doc=#rustdoc]
+            ///
+            /// ---
+            ///
             #[doc=#header]
             ///
             /// Implemented operations such as [`std::cmp::Eq`], [`std::ops::BitOr`] and
@@ -630,7 +608,7 @@ impl BitFieldBuilder {
             /// <table>
             #(#struct_doc_table_layout)*
             /// </table>
-            #[derive(Debug, Clone, Copy, Eq, PartialEq)]
+            #[derive(Debug, Clone, Copy, Eq, PartialEq #construct #serde)]
             #[repr(C)]
             pub struct #struct_name(pub #data_type);
 
@@ -672,6 +650,13 @@ impl BitFieldBuilder {
                     Self(self.0 | rhs.0)
                 }
             }
+            impl bit_fields::Equal for #struct_name {
+                /// Compares whether `self` is equal to `other` ignoring undefined bits.
+                fn equal(&self, other: &Self) -> bool {
+                    let mask = Self::BIT_FLAG_MASK | Self::BIT_RANGE_MASK;
+                    #equal_cmp
+                }
+            }
             impl #struct_name {
                 /// Mask for all bit flags.
                 ///
@@ -683,19 +668,13 @@ impl BitFieldBuilder {
                 /// If no bit ranges are defined this can be a zero value `NonZero` type, this is
                 /// private to disallow unsafe usage.
                 const BIT_RANGE_MASK: Self = Self(#range_mask);
-
-                /// Compares whether `self` is equal to `other` ignoring undefined bits.
-                pub fn equal(&self, other: &Self) -> bool {
-                    let mask = Self::BIT_FLAG_MASK | Self::BIT_RANGE_MASK;
-                    #equal_cmp
-                }
                 /// Returns [`std::cmp::Ordering`] based on bit flags.
                 /// - `Some(Ordering::Equal)` - Bit flags match between `self` and `other`.
                 /// - `Some(Ordering::Greater)` - Bit flags of `self` are a strict superset of bit flags of `other`.
                 /// - `Some(Ordering::Less)` - Bit flags of `self` are a strict subset of bit flags of `other`.
                 /// - `None` - None of the above conditions are met.
                 pub fn cmp_flags(&self,other: &Self) -> Option<std::cmp::Ordering> {
-                    if self.equal(other) {
+                    if <Self as bit_fields::Equal>::equal(self,other) {
                         Some(std::cmp::Ordering::Equal)
                     }
                     else if self.superset(other) {
@@ -708,6 +687,7 @@ impl BitFieldBuilder {
                         None
                     }
                 }
+                #empty
                 #struct_accessors
                 #set_theory
                 #index_fn
@@ -741,7 +721,6 @@ impl BitFieldBuilder {
             }
             #binary_ops
             #bit_index
-            #serde
         }
     }
 }
@@ -751,9 +730,10 @@ mod tests {
     #![allow(clippy::arithmetic, clippy::integer_arithmetic)]
     use proc_macro2::{Ident, Span};
     use rand::Rng;
+    use std::ops::Range;
 
     use super::*;
-    use crate::{Field, Flag};
+    use crate::{BitFlag, BitRange};
 
     const COMPOSE_FUZZ_LIMIT: usize = 10;
     const ADD_FUZZ_LIMIT: usize = 100;
@@ -781,19 +761,20 @@ mod tests {
     fn rand_builder<R: Rng>(rng: &mut R, len: usize) -> BitFieldBuilder {
         let iter = (0..len).map(|_| (rng.gen(), rand_string(rng), rand_ident(rng), rng.gen()));
         iter.fold(BitFieldBuilder::default(), |builder, item| {
-            let (start, rustdoc, identifier, stop_opt) = item;
-            if let Some(stop) = stop_opt {
-                builder.add_bit_range(Field {
-                    start,
+            let (start, rustdoc, identifier, end_opt) = item;
+            if let Some(end) = end_opt {
+                builder.add_bit_range(BitRange {
+                    range: Range { start, end },
                     rustdoc,
                     identifier,
-                    stop,
+                    skip: false,
                 })
             } else {
-                builder.add_bit_flag(Flag {
+                builder.add_bit_flag(BitFlag {
                     index: start,
                     rustdoc,
                     identifier,
+                    skip: false,
                 })
             }
         })
@@ -802,7 +783,11 @@ mod tests {
     // Construct a default `BitFieldBuilder`
     impl std::default::Default for BitFieldBuilder {
         fn default() -> Self {
-            Self::new(ident("DefaultBuilder"), DataTypeToken::default())
+            Self::new(
+                String::from("Some basic rustdoc"),
+                ident("DefaultBuilder"),
+                DataTypeToken::default(),
+            )
         }
     }
 
@@ -813,20 +798,21 @@ mod tests {
     #[test]
     fn builder_add_bit_range() {
         let builder = BitFieldBuilder::default();
-        builder.add_bit_range(Field {
-            start: 0,
+        builder.add_bit_range(BitRange {
+            range: Range { start: 0, end: 1 },
             rustdoc: String::from("one rustdoc"),
             identifier: ident("one"),
-            stop: 1,
+            skip: false,
         });
     }
     #[test]
     fn builder_add_bit_flag() {
         let builder = BitFieldBuilder::default();
-        builder.add_bit_flag(Flag {
+        builder.add_bit_flag(BitFlag {
             index: 0,
             rustdoc: String::from("one rustdoc"),
             identifier: ident("one"),
+            skip: false,
         });
     }
     #[test]

@@ -266,7 +266,7 @@ macro_rules! bit_mut {
                 assert_eq!(x,7);
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic)]
             #[inline]
             pub fn on(&mut self) {
                 *self.0 |= Self::MASK;
@@ -304,7 +304,7 @@ macro_rules! bit_mut {
                 assert_eq!(x,0);
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic)]
             #[inline]
             pub fn off(&mut self) {
                 *self.0 &= !Self::MASK;
@@ -342,7 +342,7 @@ macro_rules! bit_mut {
                 assert_eq!(x,2);
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic)]
             #[inline]
             pub fn flip(&mut self) {
                 *self.0 ^= Self::MASK;
@@ -426,7 +426,7 @@ macro_rules! bit_mut {
                 assert_eq!(x,", stringify!($y), "::new(7).unwrap());
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic)]
             #[inline]
             pub fn on(&mut self) {
                 *self.0 |= Self::MASK;
@@ -465,7 +465,7 @@ macro_rules! bit_mut {
                 assert_eq!(x,", stringify!($y), "::new(4).unwrap());
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic)]
             #[inline]
             pub fn off(&mut self) -> Option<()> {
                 *self.0 = <$y>::new(self.0.get() & !BitMut::<$x, P>::MASK)?;
@@ -505,7 +505,7 @@ macro_rules! bit_mut {
                 assert_eq!(x,", stringify!($y), "::new(2).unwrap());
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic)]
             #[inline]
             pub fn flip(&mut self) -> Option<()> {
                 *self.0 = <$y>::new(self.0.get() ^ BitMut::<$x, P>::MASK)?;
@@ -550,7 +550,7 @@ macro_rules! bit_from {
     ($x:ty,$y:ty) => {
         // These values are only evaluated at compile-time, thus a failure can only occur at
         // compile-time and would be immediately obvious. Thus it is safe to use arithmetic here.
-        #[allow(clippy::integer_arithmetic, clippy::as_conversions, clippy::arithmetic)]
+        #[allow(clippy::integer_arithmetic, clippy::as_conversions)]
         impl<const P: u8> From<&Bit<'_, $x, P>> for bool {
             #[doc = concat!("
                 ```
@@ -571,7 +571,7 @@ macro_rules! bit_from {
         }
         // These values are only evaluated at compile-time, thus a failure can only occur at
         // compile-time and would be immediately obvious. Thus it is safe to use arithmetic here.
-        #[allow(clippy::integer_arithmetic, clippy::as_conversions, clippy::arithmetic)]
+        #[allow(clippy::integer_arithmetic, clippy::as_conversions)]
         impl<const P: u8> From<&Bit<'_, $y, P>> for bool {
             #[doc = concat!("
                 ```
@@ -602,7 +602,7 @@ macro_rules! bit_mut_from {
     ($x:ty,$y:ty) => {
         // These values are only evaluated at compile-time, thus a failure can only occur at
         // compile-time and would be immediately obvious. Thus it is safe to use arithmetic here.
-        #[allow(clippy::integer_arithmetic, clippy::as_conversions, clippy::arithmetic)]
+        #[allow(clippy::integer_arithmetic, clippy::as_conversions)]
         impl<const P: u8> From<&BitMut<'_, $x, P>> for bool {
             #[doc = concat!("
                 ```
@@ -623,7 +623,7 @@ macro_rules! bit_mut_from {
         }
         // These values are only evaluated at compile-time, thus a failure can only occur at
         // compile-time and would be immediately obvious. Thus it is safe to use arithmetic here.
-        #[allow(clippy::integer_arithmetic, clippy::as_conversions, clippy::arithmetic)]
+        #[allow(clippy::integer_arithmetic, clippy::as_conversions)]
         impl<const P: u8> From<&BitMut<'_, $y, P>> for bool {
             #[doc = concat!("
                 ```

@@ -15,12 +15,18 @@ exclude = ["/src/example.rs"]
 bit-fields-macros = { path = "../bit-fields-macros" }
 serde = { version = "1.0.139", features=["derive"], optional = true }
 thiserror = "1.0.32"
+construct = { path="../construct", optional = true }
+
+# Temp for binary
+quote = "1.0.21"
 
 [dev-dependencies]
 serde_json = "1.0.83"
 rand = "0.8.5"
 
 [features]
-default = ["serde"]
+default = ["serde", "construct"]
 # Serde serialize and deserialize implementations
 serde = ["dep:serde", "bit-fields-macros/serde"]
+# Construct
+construct = ["dep:construct", "bit-fields-macros/construct"]

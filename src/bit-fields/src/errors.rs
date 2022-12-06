@@ -14,8 +14,8 @@ pub struct TryFromFlagSetError;
 /// std::convert::TryFrom<std::collections::HashMap<T,YourBitField>> for YourBitField`.
 #[derive(Debug, thiserror::Error)]
 pub enum TryFromFieldMapError {
-    /// Field given in map which is not defined in bit field.
-    #[error("Field given in map which is not defined in bit field.")]
+    /// Bit range given in map which is not defined in bit field.
+    #[error("Bit range given in map which is not defined in bit field.")]
     UnknownField,
     /// Failed to assign value from field map.
     #[error("Failed to assign value from field map: {0}")]
@@ -110,7 +110,7 @@ mod tests {
     fn try_from_field_map_error_display() {
         assert_eq!(
             TryFromFieldMapError::UnknownField.to_string(),
-            "Field given in map which is not defined in bit field."
+            "Bit range given in map which is not defined in bit field."
         );
         assert_eq!(
             TryFromFieldMapError::CheckedAssign(CheckedAssignError).to_string(),
@@ -156,7 +156,7 @@ mod tests {
         assert_eq!(
             TryFromFlagSetAndFieldMapError::FieldMap(TryFromFieldMapError::UnknownField)
                 .to_string(),
-            "Failed to parse field map: Field given in map which is not defined in bit field."
+            "Failed to parse field map: Bit range given in map which is not defined in bit field."
         );
         assert_eq!(
             TryFromFlagSetAndFieldMapError::FieldMap(TryFromFieldMapError::CheckedAssign(

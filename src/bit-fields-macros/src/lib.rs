@@ -67,31 +67,33 @@ macro_rules! unwrap_or_emit {
 #[derive(Debug)]
 pub(crate) enum Member {
     /// Bit field
-    Field(Field),
+    BitRange(BitRange),
     /// Bit flag
-    Flag(Flag),
+    BitFlag(BitFlag),
 }
 /// Bit field.
 #[derive(Debug)]
-pub(crate) struct Field {
+pub(crate) struct BitRange {
     /// Inclusive start of bit field.
-    start: u8,
+    range: std::ops::Range<u8>,
     /// Rustdoc comment.
     rustdoc: String,
     /// Member identifier.
     identifier: Ident,
-    /// Exclusive end of bit field.
-    stop: u8,
+    /// Skip serialization/deserialization and `From<HashMap>` attribute.
+    skip: bool,
 }
 /// Bit flag.
 #[derive(Debug)]
-pub(crate) struct Flag {
+pub(crate) struct BitFlag {
     /// Index of bit flag.
     index: u8,
     /// Rustdoc comment.
     rustdoc: String,
     /// Member identifier.
     identifier: Ident,
+    /// Skip serialization/deserialization and `From<HashSet>` attribute.
+    skip: bool,
 }
 
 /// Procedural macro error type.
@@ -135,32 +137,84 @@ type ProcError<T> = (Span, T);
 #[allow(clippy::too_many_lines)]
 #[proc_macro]
 pub fn bitfield(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    /// Errors returned on malformed or missing rustdoc comment.
+    const RUSTDOC_ERR: &str = "Expected rustdoc comment";
     /// Description of correct bit field ident.
-    const IDENT_ERR: &str = "1st token must be struct identifier";
+    const IDENT_ERR: &str = "Expected struct identifier or rustdoc comment";
 
     /// Separator between struct identifiers and struct data type.
-    const IDENT_TYPE_SEPARATOR_ERR: &str = "2nd token must be a punctuation comma (',')";
+    const IDENT_TYPE_SEPARATOR_ERR: &str = "Expected punctuation comma (',')";
 
     /// Description of correct bit field type.
-    const TYPE_ERR: &str = "3rd token must be type identifier, options: [u8, u16, u32, u64, u128]";
+    const TYPE_ERR: &str = "Expected type identifier, options: [u8, u16, u32, u64, u128]";
 
     /// Separator between struct data type and struct members.
-    const TYPE_FIELDS_SEPARATOR_ERR: &str = "4th token must be a punctuation comma (',')";
+    const TYPE_FIELDS_SEPARATOR_ERR: &str = "Expected punctuation comma (',')";
 
     /// Description of correct bit field array.
-    const FIELDS_ERR: &str = "5th token must be a brace delimited group (`{ ... }`) of \
+    const FIELDS_ERR: &str = "Expected a brace delimited group (`{ ... }`) of \
                               identifiers and bit indexes. The bit indexes must be within the \
                               bounds of the given data type. The identifiers must be unique.";
 
     let item = proc_macro2::TokenStream::from(input);
     let mut token_stream_iter = item.into_iter();
 
-    // Get struct identifier e.g. `MyBitField`.
-    let struct_name = match token_stream_iter.next() {
-        Some(TokenTree::Ident(ident)) => ident,
-        Some(token) => token_error!(token, IDENT_ERR),
-        None => callsite_error!(IDENT_ERR),
+    // Get struct identifier (e.g. `MyBitField`) and any preceding rustdoc comments.
+    let (rustdoc, struct_name) = {
+        let mut rustdoc = String::new();
+        let struct_name = loop {
+            match token_stream_iter.next() {
+                // Rustdoc case
+                Some(TokenTree::Punct(punct)) if punct.as_char() == '#' => {
+                    match token_stream_iter.next() {
+                        Some(TokenTree::Group(group))
+                            if group.delimiter() == Delimiter::Bracket =>
+                        {
+                            let group_vec = group.stream().into_iter().collect::<Vec<_>>();
+                            #[allow(clippy::pattern_type_mismatch, clippy::cmp_owned)]
+                            match group_vec.as_slice() {
+                                [TokenTree::Ident(group_ident), TokenTree::Punct(group_punct), TokenTree::Literal(group_lit)]
+                                    if group_ident.to_string() == "doc"
+                                        && group_punct.as_char() == '=' =>
+                                {
+                                    // Check for then remove " from start and end of string.
+                                    let comment_unenclosed = {
+                                        let group_string = group_lit.to_string();
+                                        let mut chars = group_string.chars();
+                                        if let (Some('"'), Some('"')) =
+                                            (chars.next(), chars.next_back())
+                                        {
+                                            String::from(chars.as_str())
+                                        } else {
+                                            token_error!(
+                                                group_lit,
+                                                "Rustdoc comment missing enclosing \" characters."
+                                            );
+                                        }
+                                    };
+                                    // Trim space leading spaces.
+                                    // E.g. A coment like `/// abcde` will become `" abcde"` and we want `abcde`.
+                                    let comment_trimmed = comment_unenclosed.trim_start();
+                                    // We append to the rustdoc string.
+                                    rustdoc.push_str(comment_trimmed);
+                                    rustdoc.push(' ');
+                                }
+                                _ => token_error!(group, RUSTDOC_ERR),
+                            }
+                        }
+                        Some(token) => token_error!(token, RUSTDOC_ERR),
+                        None => callsite_error!(RUSTDOC_ERR),
+                    }
+                }
+                // Ident case
+                Some(TokenTree::Ident(ident)) => break ident,
+                Some(token) => token_error!(token, IDENT_ERR),
+                None => callsite_error!(IDENT_ERR),
+            }
+        };
+        (rustdoc, struct_name)
     };
+
     // Check struct identifier and data type identifier are separated by ','.
     match token_stream_iter.next() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => (),
@@ -205,7 +259,7 @@ pub fn bitfield(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     // Builds field struct.
     let builder = unwrap_or_emit!(member_iter.into_iter().try_fold(
-        BitFieldBuilder::new(struct_name, data_type),
+        BitFieldBuilder::new(rustdoc, struct_name, data_type),
         |builder, member_res| {
             let member = member_res?;
             Ok(builder.add(member))

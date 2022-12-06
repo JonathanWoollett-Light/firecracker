@@ -309,7 +309,7 @@ macro_rules! bit_mut_range {
                 assert_eq!(x,52);
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
             #[inline]
             pub fn checked_add_assign(
                 &mut self,
@@ -360,7 +360,7 @@ macro_rules! bit_mut_range {
                 assert_eq!(x,1);
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
             #[inline]
             pub fn checked_sub_assign(
                 &mut self,
@@ -403,7 +403,7 @@ macro_rules! bit_mut_range {
                 assert_eq!(x,255);
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
             #[inline]
             pub fn checked_assign(&mut self, x: $x) -> Result<(), $crate::CheckedAssignError> {
                 if x <= Self::MAX {
@@ -534,7 +534,7 @@ macro_rules! bit_mut_range {
                 assert_eq!(x,", stringify!($y), "::new(52).unwrap());
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
             #[inline]
             pub fn checked_add_assign(
                 &mut self,
@@ -595,7 +595,7 @@ macro_rules! bit_mut_range {
                 assert_eq!(x,", stringify!($y), "::new(1).unwrap());
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
             #[inline]
             pub unsafe fn checked_sub_assign(
                 &mut self,
@@ -639,7 +639,7 @@ macro_rules! bit_mut_range {
                 assert_eq!(x,", stringify!($y), "::new(255).unwrap());
                 ```
             ")]
-            #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+            #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
             #[inline]
             pub fn checked_assign(&mut self, x: $y) -> Result<(), $crate::CheckedAssignError> {
                 if x <= Self::MAX {
@@ -707,7 +707,7 @@ bit_mut_range!(u8, NonZeroU8, mask_u8, max_u8);
 macro_rules! bit_range_from {
     ($x:ty, $y:ty) => {
         // `START < 8 * size_of::<$x>()` is always true so the right shift will not panic.
-        #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+        #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
         impl<const START: u8, const END: u8> From<&BitRange<'_, $x, START, END>> for $x {
             #[inline]
             fn from(this: &BitRange<'_, $x, START, END>) -> Self {
@@ -716,7 +716,7 @@ macro_rules! bit_range_from {
             }
         }
         // `START < 8 * size_of::<$x>()` is always true so the right shift will not panic.
-        #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+        #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
         impl<const START: u8, const END: u8> From<&BitRange<'_, $y, START, END>> for $y {
             #[inline]
             fn from(this: &BitRange<'_, $y, START, END>) -> Self {
@@ -738,7 +738,7 @@ macro_rules! bit_range_mut_from {
     ($x:ty, $y:ty) => {
         // These values are only evaluated at compile-time, thus a failure can only occur at
         // compile-time and would be immediately obvious. Thus it is safe to use arithmetic here.
-        #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+        #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
         impl<const START: u8, const END: u8> From<&BitRangeMut<'_, $x, START, END>> for $x {
             #[inline]
             fn from(this: &BitRangeMut<'_, $x, START, END>) -> Self {
@@ -748,7 +748,7 @@ macro_rules! bit_range_mut_from {
         }
         // These values are only evaluated at compile-time, thus a failure can only occur at
         // compile-time and would be immediately obvious. Thus it is safe to use arithmetic here.
-        #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+        #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
         impl<const START: u8, const END: u8> From<&BitRangeMut<'_, $y, START, END>> for $y {
             #[inline]
             fn from(this: &BitRangeMut<'_, $y, START, END>) -> Self {
@@ -966,7 +966,7 @@ macro_rules! shift {
     ($x:ident, $max:expr,$ty:path) => {{
         // These values are only evaluated at compile-time, thus a failure can only occur at
         // compile-time and would be immediately obvious. Thus it is safe to use arithmetic here.
-        #[allow(clippy::integer_arithmetic, clippy::arithmetic)]
+        #[allow(clippy::integer_arithmetic)]
         if $x == 0 {
             0
         } else if $x < $max {
@@ -985,7 +985,7 @@ macro_rules! mask_fn {
     ($f:ident,$x:ty,$y:path) => {
         // These values are only evaluated at compile-time, thus a failure can only occur at
         // compile-time. This makes most fallible operations safe.
-        #[allow(clippy::as_conversions)]
+        #[allow(clippy::as_conversions, clippy::arithmetic_side_effects)]
         #[must_use]
         #[inline]
         pub const fn $f<const START: u8, const END: u8>() -> $x {
@@ -1010,7 +1010,11 @@ macro_rules! max_fn {
         /// evaluation.
         // These values are only evaluated at compile-time, thus a failure can only occur at
         // compile-time. This makes most fallible operations safe.
-        #[allow(clippy::integer_arithmetic, clippy::as_conversions, clippy::arithmetic)]
+        #[allow(
+            clippy::integer_arithmetic,
+            clippy::as_conversions,
+            clippy::arithmetic_side_effects
+        )]
         #[must_use]
         #[inline]
         pub const fn $f<const START: u8, const END: u8>() -> $x {

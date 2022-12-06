@@ -41,3 +41,30 @@ bit_fields::bitfield!(ExampleBitFieldNonZeroU32,NonZeroU32,{
     /// SSE4 bit flag
     SSE4: 18,
 });
+
+bit_fields::bitfield!(BitFieldIndexedu16, u16, {
+    #[skip]
+    one: 0..1,
+    one0: one[0..1],
+    #[skip]
+    one00: one0[0],
+    #[skip]
+    two: 1..3,
+    two0: two[0..1],
+    #[skip]
+    two00: two0[0],
+    two1: two[1],
+    #[skip]
+    three: 3..6,
+    #[skip]
+    three0: three[0..1],
+    three00: three0[0],
+    three1: three[1..3],
+    #[skip]
+    three10: three1[0..1],
+    #[skip]
+    three11: three1[1],
+    four: 6..10,
+    five: 10..15,
+    six: 15
+});
