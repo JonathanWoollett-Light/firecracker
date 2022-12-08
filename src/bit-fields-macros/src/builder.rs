@@ -587,6 +587,12 @@ impl BitFieldBuilder {
             (bit_flag_mask, bit_range_mask)
         };
 
+        let construct = if cfg!(feature = "construct") {
+            quote! { , construct::Inline }
+        } else {
+            TokenStream::new()
+        };
+
         quote! {
             #[doc=#rustdoc]
             ///
@@ -602,7 +608,7 @@ impl BitFieldBuilder {
             /// <table>
             #(#struct_doc_table_layout)*
             /// </table>
-            #[derive(Debug, Clone, Copy, Eq, PartialEq #serde)]
+            #[derive(Debug, Clone, Copy, Eq, PartialEq #construct #serde)]
             #[repr(C)]
             pub struct #struct_name(pub #data_type);
 
