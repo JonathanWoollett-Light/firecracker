@@ -4,8 +4,6 @@
 use std::arch::x86_64::__cpuid as host_cpuid;
 use std::slice;
 
-use crate::common::{VENDOR_ID_AMD, VENDOR_ID_INTEL};
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Error {
     NotSupported,
@@ -80,11 +78,11 @@ impl BrandString {
     ///
     /// For other CPUs, we'll just expose an empty string.
     ///
-    /// This is safe because we know BRAND_STRING_INTEL and BRAND_STRING_AMD to hold valid data
+    /// This is safe because we know `BRAND_STRING_INTEL` and `BRAND_STRING_AMD` to hold valid data
     /// (allowed length and holding only valid ASCII chars).
     pub fn from_vendor_id(vendor_id: &[u8; 12]) -> BrandString {
         match vendor_id {
-            VENDOR_ID_INTEL => {
+            crate::common::VENDOR_ID_INTEL => {
                 let mut this = BrandString::from_bytes_unchecked(BRAND_STRING_INTEL);
                 if let Ok(host_bstr) = BrandString::from_host_cpuid() {
                     if let Some(freq) = host_bstr.find_freq() {
@@ -95,7 +93,7 @@ impl BrandString {
                 }
                 this
             }
-            VENDOR_ID_AMD => BrandString::from_bytes_unchecked(BRAND_STRING_AMD),
+            crate::common::VENDOR_ID_AMD => BrandString::from_bytes_unchecked(BRAND_STRING_AMD),
             _ => BrandString::from_bytes_unchecked(b""),
         }
     }
@@ -143,17 +141,6 @@ impl BrandString {
         this.len = src.len();
         this.as_bytes_mut()[..src.len()].copy_from_slice(src);
         this
-    }
-
-    /// Returns the given register value for the given CPUID leaf.
-    ///
-    /// `leaf` must be between 0x80000002 and 0x80000004.
-    #[inline]
-    pub fn get_reg_for_leaf(&self, leaf: u32, reg: Reg) -> u32 {
-        // It's ok not to validate parameters here, leaf and reg should
-        // both be compile-time constants. If there's something wrong with them,
-        // that's a programming error and we should panic anyway.
-        self.reg_buf[(leaf - 0x8000_0002) as usize * 4 + reg as usize]
     }
 
     /// Sets the value for the given leaf/register pair.
@@ -322,11 +309,23 @@ fn null_terminator_index(slice: &[u8]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::undocumented_unsafe_blocks)]
+    use std::convert::TryFrom;
     use std::iter::repeat;
 
     use super::*;
 
+    /// Returns the given register value for the given CPUID leaf.
+    ///
+    /// `leaf` must be between 0x80000002 and 0x80000004.
+    #[inline]
+    pub fn get_reg_for_leaf(brand_string: &BrandString, leaf: u32, reg: Reg) -> u32 {
+        // It's ok not to validate parameters here, leaf and reg should
+        // both be compile-time constants. If there's something wrong with them,
+        // that's a programming error and we should panic anyway.
+        brand_string.reg_buf[(leaf - 0x8000_0002) as usize * 4 + reg as usize]
+    }
+
+    #[allow(clippy::similar_names)]
     #[test]
     fn test_brand_string() {
         #[inline]
@@ -350,19 +349,19 @@ mod tests {
                 let ecx_offs = (4 * 4) * i + 8;
                 let edx_offs = (4 * 4) * i + 12;
                 assert_eq!(
-                    bstr.get_reg_for_leaf(0x8000_0002 + i as u32, Reg::Eax),
+                    get_reg_for_leaf(&bstr, 0x8000_0002 + u32::try_from(i).unwrap(), Reg::Eax),
                     pack_u32(&TEST_STR[eax_offs..(eax_offs + 4)])
                 );
                 assert_eq!(
-                    bstr.get_reg_for_leaf(0x8000_0002 + i as u32, Reg::Ebx),
+                    get_reg_for_leaf(&bstr, 0x8000_0002 + u32::try_from(i).unwrap(), Reg::Ebx),
                     pack_u32(&TEST_STR[ebx_offs..(ebx_offs + 4)])
                 );
                 assert_eq!(
-                    bstr.get_reg_for_leaf(0x8000_0002 + i as u32, Reg::Ecx),
+                    get_reg_for_leaf(&bstr, 0x8000_0002 + u32::try_from(i).unwrap(), Reg::Ecx),
                     pack_u32(&TEST_STR[ecx_offs..(ecx_offs + 4)])
                 );
                 assert_eq!(
-                    bstr.get_reg_for_leaf(0x8000_0002 + i as u32, Reg::Edx),
+                    get_reg_for_leaf(&bstr, 0x8000_0002 + u32::try_from(i).unwrap(), Reg::Edx),
                     pack_u32(&TEST_STR[edx_offs..(edx_offs + 4)])
                 );
             }
@@ -378,7 +377,7 @@ mod tests {
         bstr.set_reg_for_leaf(0x8000_0003, Reg::Ecx, pack_u32(b"GHz "));
         assert_eq!(bstr.find_freq().unwrap(), b"5.20GHz");
 
-        let _overflow: [u8; 50] = [b'a'; 50];
+        let overflow: [u8; 50] = [b'a'; 50];
 
         // Test BrandString::check_push()
         //
@@ -388,7 +387,7 @@ mod tests {
         assert!(bstr.check_push(b", world!"));
         bstr.push_bytes(b", world!").unwrap();
 
-        assert!(!bstr.check_push(&_overflow));
+        assert!(!bstr.check_push(&overflow));
 
         // Test BrandString::push_bytes()
         //
@@ -396,7 +395,7 @@ mod tests {
         let mut old_bytes: Vec<u8> = repeat(0).take(actual_len).collect();
         old_bytes.copy_from_slice(bstr.as_bytes());
         assert_eq!(
-            bstr.push_bytes(&_overflow),
+            bstr.push_bytes(&overflow),
             Err(Error::Overflow(
                 "Appending to the brand string failed.".to_string()
             ))
@@ -404,19 +403,19 @@ mod tests {
         assert!(bstr.as_bytes().to_vec() == old_bytes);
 
         // Test BrandString::from_host_cpuid() and get_reg_for_leaf()
-        //
+        #[allow(clippy::match_wildcard_for_single_variants)]
         match BrandString::from_host_cpuid() {
             Ok(bstr) => {
                 for leaf in 0x8000_0002..=0x8000_0004_u32 {
                     let host_regs = unsafe { host_cpuid(leaf) };
-                    assert_eq!(bstr.get_reg_for_leaf(leaf, Reg::Eax), host_regs.eax);
-                    assert_eq!(bstr.get_reg_for_leaf(leaf, Reg::Ebx), host_regs.ebx);
-                    assert_eq!(bstr.get_reg_for_leaf(leaf, Reg::Ecx), host_regs.ecx);
-                    assert_eq!(bstr.get_reg_for_leaf(leaf, Reg::Edx), host_regs.edx);
+                    assert_eq!(get_reg_for_leaf(&bstr, leaf, Reg::Eax), host_regs.eax);
+                    assert_eq!(get_reg_for_leaf(&bstr, leaf, Reg::Ebx), host_regs.ebx);
+                    assert_eq!(get_reg_for_leaf(&bstr, leaf, Reg::Ecx), host_regs.ecx);
+                    assert_eq!(get_reg_for_leaf(&bstr, leaf, Reg::Edx), host_regs.edx);
                 }
             }
             Err(Error::NotSupported) => {
-                // from_host_cpuid() should only fail if the host CPU doesn't support
+                // SAFETY: `from_host_cpuid()` should only fail if the host CPU doesn't support
                 // CPUID leaves up to 0x80000004, so let's make sure that's what happened.
                 let host_regs = unsafe { host_cpuid(0x8000_0000) };
                 assert!(host_regs.eax < 0x8000_0004);
@@ -425,16 +424,16 @@ mod tests {
         }
 
         // Test BrandString::from_vendor_id()
-        let bstr = BrandString::from_vendor_id(VENDOR_ID_INTEL);
+        let bstr = BrandString::from_vendor_id(crate::common::VENDOR_ID_INTEL);
         assert!(bstr.as_bytes().starts_with(BRAND_STRING_INTEL));
-        let bstr = BrandString::from_vendor_id(VENDOR_ID_AMD);
+        let bstr = BrandString::from_vendor_id(crate::common::VENDOR_ID_AMD);
         assert!(bstr.as_bytes().starts_with(BRAND_STRING_AMD));
         let bstr = BrandString::from_vendor_id(b"............");
         assert!(bstr.as_bytes() == vec![b'\0'; 48].as_slice());
     }
 
+    /// Prevent against <https://github.com/firecracker-microvm/firecracker/issues/2914>
     #[test]
-    /// Prevent against https://github.com/firecracker-microvm/firecracker/issues/2914
     fn test_null_terminator_index() {
         let bytes = vec![b'\0'; 48];
         assert_eq!(null_terminator_index(bytes.as_slice()), 0);
