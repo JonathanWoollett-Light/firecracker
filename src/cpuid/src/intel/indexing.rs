@@ -19,59 +19,13 @@ unsafe fn transmute_vec<T, U>(from: Vec<T>) -> Vec<U> {
 
 #[allow(clippy::wildcard_imports)]
 use super::*;
-// -------------------------------------------------------------------------------------------------
-// Indexing traits
-// -------------------------------------------------------------------------------------------------
-/// Indexs leaf.
-pub trait IndexLeaf<const INDEX: usize> {
-    /// Leaf type.
-    type Output<'a>
-    where
-        Self: 'a;
-    /// Gets immutable reference to leaf.
-    fn index_leaf<'a>(&'a self) -> Self::Output<'a>;
-}
-/// Indexs leaf.
-pub trait IndexLeafMut<const INDEX: usize> {
-    /// Leaf type.
-    type Output<'a>
-    where
-        Self: 'a;
-    /// Gets mutable reference to leaf.
-    fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a>;
-}
-macro_rules! index_leaf {
-    ($index: literal, $leaf: ident) => {
-        impl IndexLeaf<$index> for IntelCpuid {
-            type Output<'a> = Option<&'a $leaf>;
+use crate::index_leaf;
 
-            fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
-                self.0
-                    .get(&CpuidKey::leaf($index))
-                    // SAFETY: Transmuting reference to same sized types is safe.
-                    .map(|entry| unsafe { transmute::<_, &$leaf>(&entry.result) })
-            }
-        }
-        impl IndexLeafMut<$index> for IntelCpuid {
-            type Output<'a> = Option<&'a mut $leaf>;
+index_leaf!(0x1, Leaf1, IntelCpuid);
 
-            fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
-                self.0
-                    .get_mut(&CpuidKey::leaf($index))
-                    // SAFETY: Transmuting reference to same sized types is safe.
-                    .map(|entry| unsafe { transmute::<_, &mut $leaf>(&mut entry.result) })
-            }
-        }
-    };
-}
+index_leaf!(0x2, Leaf2, IntelCpuid);
 
-index_leaf!(0x0, Leaf0);
-
-index_leaf!(0x1, Leaf1);
-
-index_leaf!(0x2, Leaf2);
-
-index_leaf!(0x3, Leaf3);
+index_leaf!(0x3, Leaf3, IntelCpuid);
 
 impl IndexLeaf<0x4> for IntelCpuid {
     type Output<'a> = Leaf4<'a>;
@@ -101,9 +55,9 @@ impl IndexLeafMut<0x4> for IntelCpuid {
         }
     }
 }
-index_leaf!(0x5, Leaf5);
+index_leaf!(0x5, Leaf5, IntelCpuid);
 
-index_leaf!(0x6, Leaf6);
+index_leaf!(0x6, Leaf6, IntelCpuid);
 
 impl IndexLeaf<0x7> for IntelCpuid {
     type Output<'a> = Leaf7<'a>;
@@ -136,9 +90,9 @@ impl IndexLeafMut<0x7> for IntelCpuid {
     }
 }
 
-index_leaf!(0x9, Leaf9);
+index_leaf!(0x9, Leaf9, IntelCpuid);
 
-index_leaf!(0xA, LeafA);
+index_leaf!(0xA, LeafA, IntelCpuid);
 
 impl IndexLeaf<0xB> for IntelCpuid {
     type Output<'a> = LeafB<'a>;
@@ -327,9 +281,9 @@ impl IndexLeafMut<0x14> for IntelCpuid {
     }
 }
 
-index_leaf!(0x15, Leaf15);
+index_leaf!(0x15, Leaf15, IntelCpuid);
 
-index_leaf!(0x16, Leaf16);
+index_leaf!(0x16, Leaf16, IntelCpuid);
 
 impl IndexLeaf<0x17> for IntelCpuid {
     type Output<'a> = Leaf17<'a>;
@@ -419,13 +373,13 @@ impl IndexLeafMut<0x18> for IntelCpuid {
     }
 }
 
-index_leaf!(0x19, Leaf19);
+index_leaf!(0x19, Leaf19, IntelCpuid);
 
-index_leaf!(0x1A, Leaf1A);
+index_leaf!(0x1A, Leaf1A, IntelCpuid);
 
-index_leaf!(0x1B, Leaf1B);
+index_leaf!(0x1B, Leaf1B, IntelCpuid);
 
-index_leaf!(0x1C, Leaf1C);
+index_leaf!(0x1C, Leaf1C, IntelCpuid);
 
 impl IndexLeaf<0x1F> for IntelCpuid {
     type Output<'a> = Leaf1F<'a>;
@@ -456,13 +410,16 @@ impl IndexLeafMut<0x1F> for IntelCpuid {
     }
 }
 
-index_leaf!(0x20, Leaf20);
-index_leaf!(0x80000000, Leaf80000000);
-index_leaf!(0x80000001, Leaf80000001);
-index_leaf!(0x80000002, Leaf80000002);
-index_leaf!(0x80000003, Leaf80000003);
-index_leaf!(0x80000004, Leaf80000004);
-index_leaf!(0x80000005, Leaf80000005);
-index_leaf!(0x80000006, Leaf80000006);
-index_leaf!(0x80000007, Leaf80000007);
-index_leaf!(0x80000008, Leaf80000008);
+index_leaf!(0x20, Leaf20, IntelCpuid);
+
+index_leaf!(0x80000000, Leaf80000000, IntelCpuid);
+
+index_leaf!(0x80000001, Leaf80000001, IntelCpuid);
+
+index_leaf!(0x80000005, Leaf80000005, IntelCpuid);
+
+index_leaf!(0x80000006, Leaf80000006, IntelCpuid);
+
+index_leaf!(0x80000007, Leaf80000007, IntelCpuid);
+
+index_leaf!(0x80000008, Leaf80000008, IntelCpuid);

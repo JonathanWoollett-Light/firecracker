@@ -21,19 +21,26 @@ use std::convert::TryFrom;
 
 pub use amd::AmdCpuid;
 use bit_fields::Equal;
-// This is unused (emits a `dead_code` warning) when cpuid is not supported.
-#[cfg(cpuid)]
-use common::GetCpuidError;
 pub use cpuid_ffi::*;
 pub use intel::IntelCpuid;
 
 /// cpuid utility functions.
 pub mod common;
 
+/// Indexing implementations (shared between AMD and Intel).
+mod indexing;
+pub use indexing::*;
+
+/// Register bit fields (shared between AMD and Intel).
+mod registers;
+pub use registers::*;
+
+/// Leaf structs (shared between AMD and Intel).
+mod leaves;
+pub use leaves::*;
+
 /// Contains helper methods for bit operations.
 pub mod bit_helper;
-#[cfg(cpuid)]
-mod brand_string;
 /// T2S Intel template
 #[cfg(cpuid)]
 pub mod t2s;
@@ -70,54 +77,6 @@ impl From<common::Error> for Error {
     }
 }
 
-/// Structure containing the specifications of the VM
-#[cfg(cpuid)]
-pub struct VmSpec {
-    /// The vendor id of the CPU
-    cpu_vendor_id: [u8; 12],
-    /// The desired brand string for the guest.
-    #[allow(dead_code)]
-    brand_string: brand_string::BrandString,
-    /// The index of the current logical CPU in the range [0..cpu_count].
-    cpu_index: u8,
-    /// The total number of logical CPUs.
-    cpu_count: u8,
-    /// The number of bits needed to enumerate logical CPUs per core.
-    cpu_bits: u8,
-}
-
-#[cfg(cpuid)]
-impl VmSpec {
-    /// Creates a new instance of [`VmSpec`] with the specified parameters
-    /// The brand string is deduced from the `vendor_id`.
-    ///
-    /// # Errors
-    ///
-    /// When CPUID leaf 0 is not supported.
-    pub fn new(cpu_index: u8, cpu_count: u8, smt: bool) -> Result<VmSpec, GetCpuidError> {
-        let cpu_vendor_id = common::get_vendor_id_from_host()?;
-        Ok(VmSpec {
-            cpu_vendor_id,
-            cpu_index,
-            cpu_count,
-            cpu_bits: u8::from(cpu_count > 1 && smt),
-            brand_string: brand_string::BrandString::from_vendor_id(&cpu_vendor_id),
-        })
-    }
-
-    /// Returns an immutable reference to `cpu_vendor_id`.
-    #[must_use]
-    pub fn cpu_vendor_id(&self) -> &[u8; 12] {
-        &self.cpu_vendor_id
-    }
-
-    /// Returns the number of cpus per core
-    #[must_use]
-    pub fn cpus_per_core(&self) -> u8 {
-        1 << self.cpu_bits
-    }
-}
-
 /// CPUID information
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, PartialEq, Eq, construct::Inline)]
@@ -141,19 +100,24 @@ pub enum KvmGetSupportedCpuidError {
     CpuidFromRaw(CpuidTryFromRawCpuid),
 }
 
-/// Error type for [`Cpuid::apply_vm_spec`].
+/// Error type for [`Cpuid::normalize`].
 #[cfg(cpuid)]
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
-pub enum ApplyVmSpecError {
-    /// Failed to apply VmSpec to Intel CPUID.
-    #[error("Failed to apply VmSpec to Intel CPUID: {0}")]
-    Intel(#[from] intel::ApplyVmSpecError),
-    /// Failed to apply VmSpec to AMD CPUID.
-    #[error("Failed to apply VmSpec to AMD CPUID: {0}")]
-    Amd(#[from] amd::ApplyVmSpecError),
+pub enum NormalizeCpuid {
+    /// Failed to apply modifications to Intel CPUID.
+    #[error("Failed to apply modifications to Intel CPUID: {0}")]
+    Intel(#[from] intel::NormalizeCpuid),
+    /// Failed to apply modifications to AMD CPUID.
+    #[error("Failed to apply modifications to AMD CPUID: {0}")]
+    Amd(#[from] amd::NormalizeCpuid),
 }
 
 impl Cpuid {
+    /// When a microVM is started without a template, we use this brand string.
+    pub const DEFUALT_INTEL_BRAND_STRING: &[u8] = b"Intel(R) Xeon(R) Processor";
+    /// When a microVM is started without a template, we use this brand string.
+    pub const DEFAULT_AMD_BRAND_STRING: &[u8] = b"AMD EPYC";
+
     /// Returns the CPUID manufacturers ID  (e.g. `GenuineIntel` or `AuthenticAMD`).
     #[cfg(cpuid)]
     #[must_use]
@@ -211,20 +175,30 @@ impl Cpuid {
             Self::Amd(amd) => amd.manufacturer_id(),
         }
     }
-    /// Applies `vm_spec` to `self`.
+    /// Applies required modifications to CPUID respective of a vCPU.
     ///
     /// # Errors
     ///
     /// When failing:
-    /// - [`Cpuid::IntelCpuid::apply_vm_spec`].
-    /// - [`Cpuid::AmdCpuid::apply_vm_spec`].
+    /// - [`Cpuid::IntelCpuid::normalize`].
+    /// - [`Cpuid::AmdCpuid::normalize`].
     #[cfg(cpuid)]
-    pub fn apply_vm_spec(&mut self, vm_spec: &VmSpec) -> Result<(), ApplyVmSpecError> {
+    pub fn normalize(
+        &mut self,
+        // The index of the current logical CPU in the range [0..cpu_count].
+        cpu_index: u8,
+        // The total number of logical CPUs.
+        cpu_count: u8,
+        // The number of bits needed to enumerate logical CPUs per core.
+        cpu_bits: u8,
+    ) -> Result<(), NormalizeCpuid> {
         match self {
             Self::Intel(intel) => intel
-                .apply_vm_spec(vm_spec)
-                .map_err(ApplyVmSpecError::Intel),
-            Self::Amd(amd) => amd.apply_vm_spec(vm_spec).map_err(ApplyVmSpecError::Amd),
+                .normalize(cpu_index, cpu_count, cpu_bits)
+                .map_err(NormalizeCpuid::Intel),
+            Self::Amd(amd) => amd
+                .normalize(cpu_index, cpu_count, cpu_bits)
+                .map_err(NormalizeCpuid::Amd),
         }
     }
     /// Compares `self` to `other` ignoring undefined bits.
@@ -234,6 +208,40 @@ impl Cpuid {
             (Cpuid::Intel(a), Cpuid::Intel(b)) => a.equal(b),
             (Cpuid::Amd(a), Cpuid::Amd(b)) => a == b,
             _ => false,
+        }
+    }
+
+    /// Get immutable reference to leaf.
+    #[must_use]
+    pub fn leaf<'a, const N: usize>(&'a self) -> <Self as IndexLeaf<N>>::Output<'a>
+    where
+        Self: IndexLeaf<N>,
+    {
+        <Self as IndexLeaf<N>>::index_leaf(self)
+    }
+
+    /// Get mutable reference to leaf.
+    #[must_use]
+    pub fn leaf_mut<'a, const N: usize>(&'a mut self) -> <Self as IndexLeafMut<N>>::Output<'a>
+    where
+        Self: IndexLeafMut<N>,
+    {
+        <Self as IndexLeafMut<N>>::index_leaf_mut(self)
+    }
+
+    /// Gets a given sub-leaf.
+    pub fn get(&mut self, key: &CpuidKey) -> Option<&CpuidEntry> {
+        match self {
+            Self::Intel(intel_cpuid) => intel_cpuid.get(key),
+            Self::Amd(amd_cpuid) => amd_cpuid.get(key),
+        }
+    }
+
+    /// Gets a given sub-leaf.
+    pub fn get_mut(&mut self, key: &CpuidKey) -> Option<&mut CpuidEntry> {
+        match self {
+            Self::Intel(intel_cpuid) => intel_cpuid.get_mut(key),
+            Self::Amd(amd_cpuid) => amd_cpuid.get_mut(key),
         }
     }
 }
@@ -346,5 +354,165 @@ impl From<Cpuid> for kvm_bindings::CpuId {
     fn from(cpuid: Cpuid) -> Self {
         let raw_cpuid = RawCpuid::from(cpuid);
         Self::from(raw_cpuid)
+    }
+}
+
+/// CPUID index values `leaf` and `subleaf`.
+#[derive(Debug, Clone, Default, PartialEq, Eq, construct::Inline)]
+pub struct CpuidKey {
+    /// CPUID leaf.
+    pub leaf: u32,
+    /// CPUID subleaf.
+    pub subleaf: u32,
+}
+
+impl CpuidKey {
+    /// `CpuidKey { leaf, subleaf: 0 }`
+    #[must_use]
+    pub fn leaf(leaf: u32) -> Self {
+        Self { leaf, subleaf: 0 }
+    }
+    /// `CpuidKey { leaf, subleaf }`
+    #[must_use]
+    pub fn subleaf(leaf: u32, subleaf: u32) -> Self {
+        Self { leaf, subleaf }
+    }
+}
+
+impl std::cmp::PartialOrd for CpuidKey {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(
+            self.leaf
+                .cmp(&other.leaf)
+                .then(self.subleaf.cmp(&other.subleaf)),
+        )
+    }
+}
+
+impl std::cmp::Ord for CpuidKey {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+
+/// CPUID entry information stored for each leaf of [`IntelCpuid`].
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, construct::Inline)]
+pub struct CpuidEntry {
+    /// The KVM requires a `flags` parameter which indicates if a given CPUID leaf has sub-leaves.
+    /// This does not change at runtime so we can save memory by not storing this under every
+    /// sub-leaf and instead fetching from a map when converting back to the KVM CPUID
+    /// structure. But for robustness we currently do store we do not use this approach.
+    ///
+    /// A map on flags would look like:
+    /// ```ignore
+    /// use cpuid::KvmCpuidFlags;
+    /// #[allow(clippy::non_ascii_literal)]
+    /// pub static KVM_CPUID_LEAF_FLAGS: phf::Map<u32, KvmCpuidFlags> = phf::phf_map! {
+    ///     0x00u32 => KvmCpuidFlags::empty(),
+    ///     0x01u32 => KvmCpuidFlags::empty(),
+    ///     0x02u32 => KvmCpuidFlags::empty(),
+    ///     0x03u32 => KvmCpuidFlags::empty(),
+    ///     0x04u32 => KvmCpuidFlags::SignificantIndex,
+    ///     0x05u32 => KvmCpuidFlags::empty(),
+    ///     0x06u32 => KvmCpuidFlags::empty(),
+    ///     0x07u32 => KvmCpuidFlags::SignificantIndex,
+    ///     0x09u32 => KvmCpuidFlags::empty(),
+    ///     0x0Au32 => KvmCpuidFlags::empty(),
+    ///     0x0Bu32 => KvmCpuidFlags::SignificantIndex,
+    ///     0x0Fu32 => KvmCpuidFlags::SignificantIndex,
+    ///     0x10u32 => KvmCpuidFlags::SignificantIndex,
+    ///     0x12u32 => KvmCpuidFlags::SignificantIndex,
+    ///     0x14u32 => KvmCpuidFlags::SignificantIndex,
+    ///     0x15u32 => KvmCpuidFlags::empty(),
+    ///     0x16u32 => KvmCpuidFlags::empty(),
+    ///     0x17u32 => KvmCpuidFlags::SignificantIndex,
+    ///     0x18u32 => KvmCpuidFlags::SignificantIndex,
+    ///     0x19u32 => KvmCpuidFlags::empty(),
+    ///     0x1Au32 => KvmCpuidFlags::empty(),
+    ///     0x1Bu32 => KvmCpuidFlags::empty(),
+    ///     0x1Cu32 => KvmCpuidFlags::empty(),
+    ///     0x1Fu32 => KvmCpuidFlags::SignificantIndex,
+    ///     0x20u32 => KvmCpuidFlags::empty(),
+    ///     0x80000000u32 => KvmCpuidFlags::empty(),
+    ///     0x80000001u32 => KvmCpuidFlags::empty(),
+    ///     0x80000002u32 => KvmCpuidFlags::empty(),
+    ///     0x80000003u32 => KvmCpuidFlags::empty(),
+    ///     0x80000004u32 => KvmCpuidFlags::empty(),
+    ///     0x80000005u32 => KvmCpuidFlags::empty(),
+    ///     0x80000006u32 => KvmCpuidFlags::empty(),
+    ///     0x80000007u32 => KvmCpuidFlags::empty(),
+    ///     0x80000008u32 => KvmCpuidFlags::empty(),
+    /// };
+    /// ```
+    pub flags: crate::cpuid_ffi::KvmCpuidFlags,
+    /// Register values.
+    pub result: CCpuidResult,
+}
+
+/// To transmute this into leaves such that we can return mutable reference to it with leaf specific
+/// accessors, requires this to have a consistent member ordering. [`core::arch::x86::CpuidResult`]
+/// is not `repr(C)`.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, construct::Inline)]
+#[repr(C)]
+pub struct CCpuidResult {
+    /// EDX
+    pub eax: u32,
+    /// EBX
+    pub ebx: u32,
+    /// ECX
+    pub ecx: u32,
+    /// EDX
+    pub edx: u32,
+}
+
+#[cfg(cpuid)]
+impl From<core::arch::x86_64::CpuidResult> for CCpuidResult {
+    fn from(
+        core::arch::x86_64::CpuidResult { eax, ebx, ecx, edx }: core::arch::x86_64::CpuidResult,
+    ) -> Self {
+        Self { eax, ebx, ecx, edx }
+    }
+}
+impl From<(CpuidKey, CpuidEntry)> for RawKvmCpuidEntry {
+    fn from(
+        (CpuidKey { leaf, subleaf }, CpuidEntry { flags, result }): (CpuidKey, CpuidEntry),
+    ) -> Self {
+        let CCpuidResult { eax, ebx, ecx, edx } = result;
+        Self {
+            function: leaf,
+            index: subleaf,
+            flags,
+            eax,
+            ebx,
+            ecx,
+            edx,
+            padding: Padding::default(),
+        }
+    }
+}
+
+impl From<RawKvmCpuidEntry> for (CpuidKey, CpuidEntry) {
+    fn from(
+        RawKvmCpuidEntry {
+            function,
+            index,
+            flags,
+            eax,
+            ebx,
+            ecx,
+            edx,
+            ..
+        }: RawKvmCpuidEntry,
+    ) -> Self {
+        (
+            CpuidKey {
+                leaf: function,
+                subleaf: index,
+            },
+            CpuidEntry {
+                flags,
+                result: CCpuidResult { eax, ebx, ecx, edx },
+            },
+        )
     }
 }

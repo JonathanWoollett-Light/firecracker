@@ -7,10 +7,7 @@
     clippy::unsafe_derive_deserialize,
     clippy::needless_lifetimes
 )]
-#[cfg(cpuid)]
-use core::arch::x86_64::CpuidResult;
-use std::cmp::{Ord, PartialOrd};
-use std::collections::BTreeMap;
+
 #[cfg(cpuid)]
 use std::convert::TryFrom;
 
@@ -30,7 +27,7 @@ pub use leaves::*;
 mod indexing;
 pub use indexing::*;
 
-use crate::{Padding, RawCpuid, RawKvmCpuidEntry, Supports};
+use super::{CpuidEntry, CpuidKey, IndexLeaf, IndexLeafMut, RawCpuid, RawKvmCpuidEntry, Supports};
 
 /// Macro to log warnings on unchecked leaves when validating support.
 macro_rules! warn_support {
@@ -49,8 +46,8 @@ macro_rules! warn_support {
 /// A structure matching supporting the  Intel CPUID specification as described in
 /// [Intel® 64 and IA-32 Architectures Software Developer's Manual Combined Volumes 2A, 2B, 2C, and 2D: Instruction Set Reference, A-Z](https://cdrdv2.intel.com/v1/dl/getContent/671110)
 /// .
-#[derive(Debug, Clone, PartialEq, Eq, construct::Inline)]
-pub struct IntelCpuid(pub BTreeMap<CpuidKey, CpuidEntry>);
+#[derive(Debug, Clone, Eq, PartialEq, construct::Inline)]
+pub struct IntelCpuid(pub std::collections::BTreeMap<CpuidKey, CpuidEntry>);
 
 impl IntelCpuid {
     /// Get immutable reference to leaf.
@@ -97,7 +94,7 @@ impl IntelCpuid {
 
         Some(arr)
     }
-    /// Applies `vm_spec` to `self`.
+    /// Applies required modifications to CPUID respective of a vCPU.
     ///
     /// # Errors
     ///
@@ -107,7 +104,17 @@ impl IntelCpuid {
     /// - Extended topology leaf
     #[cfg(cpuid)]
     #[allow(clippy::too_many_lines)]
-    pub fn apply_vm_spec(&mut self, vm_spec: &crate::VmSpec) -> Result<(), ApplyVmSpecError> {
+    pub fn normalize(
+        &mut self,
+        // The index of the current logical CPU in the range [0..cpu_count].
+        cpu_index: u8,
+        // The total number of logical CPUs.
+        cpu_count: u8,
+        // The number of bits needed to enumerate logical CPUs per core.
+        cpu_bits: u8,
+    ) -> Result<(), NormalizeCpuid> {
+        let cpus_per_core = 1 << cpu_bits;
+
         // Update feature information entry
         {
             /// Flush a cache line size.
@@ -146,7 +153,7 @@ impl IntelCpuid {
             leaf_1
                 .ebx
                 .initial_apic_id_mut()
-                .checked_assign(u32::from(vm_spec.cpu_index))
+                .checked_assign(u32::from(cpu_index))
                 .map_err(FeatureInformationError::InitialApicId)?;
             leaf_1
                 .ebx
@@ -154,7 +161,7 @@ impl IntelCpuid {
                 .checked_assign(EBX_CLFLUSH_CACHELINE)
                 .map_err(FeatureInformationError::Clflush)?;
             let max_cpus_per_package = u32::from(
-                get_max_cpus_per_package(vm_spec.cpu_count)
+                get_max_cpus_per_package(cpu_count)
                     .map_err(FeatureInformationError::GetMaxCpusPerPackage)?,
             );
             leaf_1
@@ -166,7 +173,7 @@ impl IntelCpuid {
             // A value of 1 for HTT indicates the value in CPUID.1.EBX[23:16]
             // (the Maximum number of addressable IDs for logical processors in this package)
             // is valid for the package
-            leaf_1.edx.htt_mut().set(vm_spec.cpu_count > 1);
+            leaf_1.edx.htt_mut().set(cpu_count > 1);
         }
 
         // Update deterministic cache entry
@@ -179,14 +186,14 @@ impl IntelCpuid {
                     1 | 2 => subleaf
                         .eax
                         .max_num_addressable_ids_for_logical_processors_sharing_this_cache_mut()
-                        .checked_assign(u32::from(vm_spec.cpus_per_core() - 1))
+                        .checked_assign(u32::from(cpus_per_core - 1))
                         .map_err(DeterministicCacheError::MaxCpusPerCore)?,
                     // L3 Cache
                     // The L3 cache is shared among all the logical threads
                     3 => subleaf
                         .eax
                         .max_num_addressable_ids_for_logical_processors_sharing_this_cache_mut()
-                        .checked_assign(u32::from(vm_spec.cpu_count - 1))
+                        .checked_assign(u32::from(cpu_count - 1))
                         .map_err(DeterministicCacheError::MaxCpusPerCore)?,
                     _ => (),
                 }
@@ -194,16 +201,14 @@ impl IntelCpuid {
                 subleaf
                     .eax
                     .max_num_addressable_ids_for_processor_cores_in_physical_package_mut()
-                    .checked_assign(u32::from(vm_spec.cpu_count / vm_spec.cpus_per_core()) - 1)
+                    .checked_assign(u32::from(cpu_count / cpus_per_core) - 1)
                     .map_err(DeterministicCacheError::MaxCorePerPackage)?;
             }
         }
 
         // Update power management entry
         {
-            let leaf_6: &mut Leaf6 = self
-                .leaf_mut::<0x6>()
-                .ok_or(ApplyVmSpecError::MissingLeaf6)?;
+            let leaf_6: &mut Leaf6 = self.leaf_mut::<0x6>().ok_or(NormalizeCpuid::MissingLeaf6)?;
             leaf_6.eax.intel_turbo_boost_technology_mut().off();
             // Clear X86 EPB feature. No frequency selection in the hypervisor.
             leaf_6.ecx.performance_energy_bias_mut().off();
@@ -211,9 +216,7 @@ impl IntelCpuid {
 
         // Update performance monitoring entry
         {
-            let leaf_a: &mut LeafA = self
-                .leaf_mut::<0xA>()
-                .ok_or(ApplyVmSpecError::MissingLeafA)?;
+            let leaf_a: &mut LeafA = self.leaf_mut::<0xA>().ok_or(NormalizeCpuid::MissingLeafA)?;
             *leaf_a = LeafA::from((
                 LeafAEax::from(0),
                 LeafAEbx::from(0),
@@ -242,7 +245,7 @@ impl IntelCpuid {
                 subleaf.ecx.0 = 0;
                 // EDX bits 31..0 contain x2APIC ID of current logical processor
                 // x2APIC increases the size of the APIC ID from 8 bits to 32 bits
-                subleaf.edx.0 = u32::from(vm_spec.cpu_index);
+                subleaf.edx.0 = u32::from(cpu_index);
 
                 // "If SMT is not present in a processor implementation but CPUID leaf 0BH is
                 // supported, CPUID.EAX=0BH, ECX=0 will return EAX = 0, EBX = 1 and
@@ -257,14 +260,14 @@ impl IntelCpuid {
                         subleaf
                             .eax
                             .bit_shifts_right_2x_apic_id_unique_topology_id_mut()
-                            .checked_assign(u32::from(vm_spec.cpu_bits))
+                            .checked_assign(u32::from(cpu_bits))
                             .map_err(ExtendedTopologyError::ApicId)?;
                         // When cpu_count == 1 or HT is disabled, there is 1 logical core at this
                         // level Otherwise there are 2
                         subleaf
                             .ebx
                             .logical_processors_mut()
-                            .checked_assign(u32::from(vm_spec.cpus_per_core()))
+                            .checked_assign(u32::from(cpus_per_core))
                             .map_err(ExtendedTopologyError::LogicalProcessors)?;
 
                         subleaf
@@ -283,7 +286,7 @@ impl IntelCpuid {
                         subleaf
                             .ebx
                             .logical_processors_mut()
-                            .checked_assign(u32::from(vm_spec.cpu_count))
+                            .checked_assign(u32::from(cpu_count))
                             .map_err(ExtendedTopologyError::LogicalProcessors)?;
                         // We expect here as this is an extremely rare case that is unlikely to ever
                         // occur. It would require manual editing of the CPUID structure to push
@@ -369,7 +372,7 @@ pub enum IntelCpuidNotSupported {
     MissingLeaf0,
     /// Leaf0.
     #[error("Leaf0: {0}")]
-    Leaf0(Leaf0NotSupported),
+    Leaf0(super::Leaf0NotSupported),
     /// MissingLeaf1.
     #[error("MissingLeaf1.")]
     MissingLeaf1,
@@ -461,23 +464,23 @@ impl Supports for IntelCpuid {
     /// environment with the CPUID `self`.
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         match (self.leaf::<0x00>(), other.leaf::<0x00>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf0),
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf0),
             (Some(a), Some(b)) => a.supports(b).map_err(IntelCpuidNotSupported::Leaf0)?,
         }
         match (self.leaf::<0x01>(), other.leaf::<0x01>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf1),
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf1),
             (Some(a), Some(b)) => a.supports(b).map_err(IntelCpuidNotSupported::Leaf1)?,
         }
         match (self.leaf::<0x05>(), other.leaf::<0x05>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf5),
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf5),
             (Some(a), Some(b)) => a.supports(b).map_err(IntelCpuidNotSupported::Leaf5)?,
         }
         match (self.leaf::<0x06>(), other.leaf::<0x06>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf6),
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf6),
             (Some(a), Some(b)) => a.supports(b).map_err(IntelCpuidNotSupported::Leaf6)?,
         }
         self.leaf::<0x7>()
@@ -485,8 +488,8 @@ impl Supports for IntelCpuid {
             .map_err(IntelCpuidNotSupported::Leaf7)?;
 
         match (self.leaf::<0x0A>(), other.leaf::<0x0A>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeafA),
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeafA),
             (Some(a), Some(b)) => a.supports(b).map_err(IntelCpuidNotSupported::LeafA)?,
         }
 
@@ -507,52 +510,44 @@ impl Supports for IntelCpuid {
             .map_err(IntelCpuidNotSupported::Leaf18)?;
 
         match (self.leaf::<0x19>(), other.leaf::<0x19>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf19),
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf19),
             (Some(a), Some(b)) => a.supports(b).map_err(IntelCpuidNotSupported::Leaf19)?,
         }
         match (self.leaf::<0x1C>(), other.leaf::<0x1C>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf1C),
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf1C),
             (Some(a), Some(b)) => a.supports(b).map_err(IntelCpuidNotSupported::Leaf1C)?,
         }
         match (self.leaf::<0x20>(), other.leaf::<0x20>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf20),
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf20),
             (Some(a), Some(b)) => a.supports(b).map_err(IntelCpuidNotSupported::Leaf20)?,
         }
         match (self.leaf::<0x80000000>(), other.leaf::<0x80000000>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => {
-                return Err(IntelCpuidNotSupported::MissingLeaf80000000)
-            }
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf80000000),
             (Some(a), Some(b)) => a
                 .supports(b)
                 .map_err(IntelCpuidNotSupported::Leaf80000000)?,
         }
         match (self.leaf::<0x80000001>(), other.leaf::<0x80000001>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => {
-                return Err(IntelCpuidNotSupported::MissingLeaf80000001)
-            }
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf80000001),
             (Some(a), Some(b)) => a
                 .supports(b)
                 .map_err(IntelCpuidNotSupported::Leaf80000001)?,
         }
         match (self.leaf::<0x80000007>(), other.leaf::<0x80000007>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => {
-                return Err(IntelCpuidNotSupported::MissingLeaf80000007)
-            }
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf80000007),
             (Some(a), Some(b)) => a
                 .supports(b)
                 .map_err(IntelCpuidNotSupported::Leaf80000007)?,
         }
         match (self.leaf::<0x80000008>(), other.leaf::<0x80000008>()) {
-            (None, None) => (),
-            (Some(_), None) | (None, Some(_)) => {
-                return Err(IntelCpuidNotSupported::MissingLeaf80000008)
-            }
+            (_, None) => (),
+            (None, Some(_)) => return Err(IntelCpuidNotSupported::MissingLeaf80000008),
             (Some(a), Some(b)) => a
                 .supports(b)
                 .map_err(IntelCpuidNotSupported::Leaf80000008)?,
@@ -587,168 +582,5 @@ impl From<IntelCpuid> for RawCpuid {
             .map(RawKvmCpuidEntry::from)
             .collect::<Vec<_>>();
         Self::from(entries)
-    }
-}
-
-// -------------------------------------------------------------------------------------------------
-// Intel cpuid leaves
-// -------------------------------------------------------------------------------------------------
-
-/// CPUID index values `leaf` and `subleaf`.
-#[derive(Debug, Clone, Default, PartialEq, Eq, construct::Inline)]
-pub struct CpuidKey {
-    /// CPUID leaf.
-    pub leaf: u32,
-    /// CPUID subleaf.
-    pub subleaf: u32,
-}
-
-impl CpuidKey {
-    /// `CpuidKey { leaf, subleaf: 0 }`
-    #[must_use]
-    pub fn leaf(leaf: u32) -> Self {
-        Self { leaf, subleaf: 0 }
-    }
-    /// `CpuidKey { leaf, subleaf }`
-    #[must_use]
-    pub fn subleaf(leaf: u32, subleaf: u32) -> Self {
-        Self { leaf, subleaf }
-    }
-}
-
-impl std::cmp::PartialOrd for CpuidKey {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(
-            self.leaf
-                .cmp(&other.leaf)
-                .then(self.subleaf.cmp(&other.subleaf)),
-        )
-    }
-}
-
-impl std::cmp::Ord for CpuidKey {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(other).unwrap()
-    }
-}
-
-/// CPUID entry information stored for each leaf of [`IntelCpuid`].
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, construct::Inline)]
-pub struct CpuidEntry {
-    /// The KVM requires a `flags` parameter which indicates if a given CPUID leaf has sub-leaves.
-    /// This does not change at runtime so we can save memory by not storing this under every
-    /// sub-leaf and instead fetching from a map when converting back to the KVM CPUID
-    /// structure. But for robustness we currently do store we do not use this approach.
-    ///
-    /// A map on flags would look like:
-    /// ```ignore
-    /// use cpuid::KvmCpuidFlags;
-    /// #[allow(clippy::non_ascii_literal)]
-    /// pub static KVM_CPUID_LEAF_FLAGS: phf::Map<u32, KvmCpuidFlags> = phf::phf_map! {
-    ///     0x00u32 => KvmCpuidFlags::empty(),
-    ///     0x01u32 => KvmCpuidFlags::empty(),
-    ///     0x02u32 => KvmCpuidFlags::empty(),
-    ///     0x03u32 => KvmCpuidFlags::empty(),
-    ///     0x04u32 => KvmCpuidFlags::SignificantIndex,
-    ///     0x05u32 => KvmCpuidFlags::empty(),
-    ///     0x06u32 => KvmCpuidFlags::empty(),
-    ///     0x07u32 => KvmCpuidFlags::SignificantIndex,
-    ///     0x09u32 => KvmCpuidFlags::empty(),
-    ///     0x0Au32 => KvmCpuidFlags::empty(),
-    ///     0x0Bu32 => KvmCpuidFlags::SignificantIndex,
-    ///     0x0Fu32 => KvmCpuidFlags::SignificantIndex,
-    ///     0x10u32 => KvmCpuidFlags::SignificantIndex,
-    ///     0x12u32 => KvmCpuidFlags::SignificantIndex,
-    ///     0x14u32 => KvmCpuidFlags::SignificantIndex,
-    ///     0x15u32 => KvmCpuidFlags::empty(),
-    ///     0x16u32 => KvmCpuidFlags::empty(),
-    ///     0x17u32 => KvmCpuidFlags::SignificantIndex,
-    ///     0x18u32 => KvmCpuidFlags::SignificantIndex,
-    ///     0x19u32 => KvmCpuidFlags::empty(),
-    ///     0x1Au32 => KvmCpuidFlags::empty(),
-    ///     0x1Bu32 => KvmCpuidFlags::empty(),
-    ///     0x1Cu32 => KvmCpuidFlags::empty(),
-    ///     0x1Fu32 => KvmCpuidFlags::SignificantIndex,
-    ///     0x20u32 => KvmCpuidFlags::empty(),
-    ///     0x80000000u32 => KvmCpuidFlags::empty(),
-    ///     0x80000001u32 => KvmCpuidFlags::empty(),
-    ///     0x80000002u32 => KvmCpuidFlags::empty(),
-    ///     0x80000003u32 => KvmCpuidFlags::empty(),
-    ///     0x80000004u32 => KvmCpuidFlags::empty(),
-    ///     0x80000005u32 => KvmCpuidFlags::empty(),
-    ///     0x80000006u32 => KvmCpuidFlags::empty(),
-    ///     0x80000007u32 => KvmCpuidFlags::empty(),
-    ///     0x80000008u32 => KvmCpuidFlags::empty(),
-    /// };
-    /// ```
-    pub flags: crate::cpuid_ffi::KvmCpuidFlags,
-    /// Register values.
-    pub result: CCpuidResult,
-}
-
-/// To transmute this into leaves such that we can return mutable reference to it with leaf specific
-/// accessors, requires this to have a consistent member ordering. [`core::arch::x86::CpuidResult`]
-/// is not `repr(C)`.
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, construct::Inline)]
-#[repr(C)]
-pub struct CCpuidResult {
-    /// EDX
-    pub eax: u32,
-    /// EBX
-    pub ebx: u32,
-    /// ECX
-    pub ecx: u32,
-    /// EDX
-    pub edx: u32,
-}
-
-#[cfg(cpuid)]
-impl From<CpuidResult> for CCpuidResult {
-    fn from(CpuidResult { eax, ebx, ecx, edx }: CpuidResult) -> Self {
-        Self { eax, ebx, ecx, edx }
-    }
-}
-
-impl From<(CpuidKey, CpuidEntry)> for RawKvmCpuidEntry {
-    fn from(
-        (CpuidKey { leaf, subleaf }, CpuidEntry { flags, result }): (CpuidKey, CpuidEntry),
-    ) -> Self {
-        let CCpuidResult { eax, ebx, ecx, edx } = result;
-        Self {
-            function: leaf,
-            index: subleaf,
-            flags,
-            eax,
-            ebx,
-            ecx,
-            edx,
-            padding: Padding::default(),
-        }
-    }
-}
-
-impl From<RawKvmCpuidEntry> for (CpuidKey, CpuidEntry) {
-    fn from(
-        RawKvmCpuidEntry {
-            function,
-            index,
-            flags,
-            eax,
-            ebx,
-            ecx,
-            edx,
-            ..
-        }: RawKvmCpuidEntry,
-    ) -> Self {
-        (
-            CpuidKey {
-                leaf: function,
-                subleaf: index,
-            },
-            CpuidEntry {
-                flags,
-                result: CCpuidResult { eax, ebx, ecx, edx },
-            },
-        )
     }
 }

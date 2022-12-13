@@ -66,7 +66,7 @@ def _check_cpu_features_arm(test_microvm):
     "htt",
     [True, False],
 )
-def test_cpuid(test_microvm_with_api, network_config, num_vcpus, htt):
+def miss_test_cpuid(test_microvm_with_api, network_config, num_vcpus, htt):
     """
     Check the CPUID for a microvm with the specified config.
 
@@ -84,7 +84,7 @@ def test_cpuid(test_microvm_with_api, network_config, num_vcpus, htt):
     PLATFORM != "aarch64",
     reason="The CPU features on x86 are tested as part of the CPU templates.",
 )
-def test_cpu_features(test_microvm_with_api, network_config):
+def miss_test_cpu_features(test_microvm_with_api, network_config):
     """
     Check the CPU features for a microvm with the specified config.
 
@@ -137,11 +137,16 @@ def test_brand_string(test_microvm_with_api, network_config):
 
     ssh_connection = net_tools.SSHConnection(test_microvm.ssh_config)
 
-    guest_cmd = "cat /proc/cpuinfo | grep 'model name' | head -1"
+    guest_cmd = "cat /proc/cpuinfo"
+    # guest_cmd = "cat /proc/cpuinfo | grep 'model name' | head -1"
     _, stdout, stderr = ssh_connection.execute_command(guest_cmd)
     assert stderr.read() == ""
 
-    line = stdout.readline().rstrip()
+    # line = stdout.readline().rstrip()
+    read_stdout = stdout.read()
+    print(f"stdout: {read_stdout}")
+    assert False
+    
     mo = re.search("^model name\\s+:\\s+(.+)$", line)
     assert mo
     guest_brand_string = mo.group(1)
@@ -204,7 +209,7 @@ MSR_EXCEPTION_LIST = [
 @pytest.mark.parametrize("cpu_template", ["T2S"])
 @pytest.mark.timeout(900)
 @pytest.mark.nonci
-def test_cpu_rdmsr(bin_cloner_path, network_config, cpu_template):
+def miss_test_cpu_rdmsr(bin_cloner_path, network_config, cpu_template):
     """
     Test MSRs that are available to the Guest.
 
@@ -450,7 +455,7 @@ def _test_cpu_wrmsr_snapshot(context):
 @pytest.mark.parametrize("cpu_template", SNAPSHOT_RESTORE_SHARED_NAMES["cpu_templates"])
 @pytest.mark.timeout(900)
 @pytest.mark.nonci
-def test_cpu_wrmsr_snapshot(bin_cloner_path, cpu_template):
+def miss_test_cpu_wrmsr_snapshot(bin_cloner_path, cpu_template):
     """
     This is the first part of the test verifying
     that MSRs retain their values after restoring from a snapshot.
@@ -642,7 +647,7 @@ def _test_cpu_wrmsr_restore(context):
 @pytest.mark.parametrize("cpu_template", SNAPSHOT_RESTORE_SHARED_NAMES["cpu_templates"])
 @pytest.mark.timeout(900)
 @pytest.mark.nonci
-def test_cpu_wrmsr_restore(microvm_factory, cpu_template):
+def miss_test_cpu_wrmsr_restore(microvm_factory, cpu_template):
     """
     This is the second part of the test verifying
     that MSRs retain their values after restoring from a snapshot.
@@ -762,7 +767,7 @@ def _test_cpu_cpuid_snapshot(context):
 @pytest.mark.parametrize("cpu_template", SNAPSHOT_RESTORE_SHARED_NAMES["cpu_templates"])
 @pytest.mark.timeout(900)
 @pytest.mark.nonci
-def test_cpu_cpuid_snapshot(bin_cloner_path, cpu_template):
+def miss_test_cpu_cpuid_snapshot(bin_cloner_path, cpu_template):
     """
     This is the first part of the test verifying
     that CPUID remains the same after restoring from a snapshot.
@@ -906,7 +911,7 @@ def _test_cpu_cpuid_restore(context):
 @pytest.mark.parametrize("cpu_template", SNAPSHOT_RESTORE_SHARED_NAMES["cpu_templates"])
 @pytest.mark.timeout(900)
 @pytest.mark.nonci
-def test_cpu_cpuid_restore(microvm_factory, cpu_template):
+def miss_test_cpu_cpuid_restore(microvm_factory, cpu_template):
     """
     This is the second part of the test verifying
     that CPUID remains the same after restoring from a snapshot.
@@ -945,7 +950,7 @@ def test_cpu_cpuid_restore(microvm_factory, cpu_template):
     PLATFORM != "x86_64", reason="CPU features are masked only on x86_64."
 )
 @pytest.mark.parametrize("cpu_template", ["T2", "T2S", "C3"])
-def test_cpu_template(test_microvm_with_api, network_config, cpu_template):
+def miss_test_cpu_template(test_microvm_with_api, network_config, cpu_template):
     """
     Test masked and enabled cpu features against the expected template.
 

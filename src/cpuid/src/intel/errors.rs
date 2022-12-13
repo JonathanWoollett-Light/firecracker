@@ -14,10 +14,10 @@ pub enum GetMaxCpusPerPackageError {
     Overflow,
 }
 
-/// Error type for [`IntelCpuid::apply_vm_spec`].
+/// Error type for [`IntelCpuid::normalize`].
 #[cfg(cpuid)]
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
-pub enum ApplyVmSpecError {
+pub enum NormalizeCpuid {
     /// Failed to set feature information leaf.
     #[error("Failed to set feature information leaf: {0}")]
     FeatureInfomation(#[from] FeatureInformationError),

@@ -181,10 +181,7 @@ pub enum KvmVcpuConfigureError {
     SnapshotCpuid(cpuid::CpuidTryFromRawCpuid),
     /// Failed to apply `VmSpec`.
     #[error("Failed to apply `VmSpec`: {0}")]
-    ApplyVmSpec(cpuid::ApplyVmSpecError),
-    /// Failed to create `VmSpec`.
-    #[error("Failed to create `VmSpec`: {0}")]
-    VmSpec(#[from] cpuid::common::GetCpuidError),
+    NormalizeCpuid(cpuid::NormalizeCpuid),
     /// Failed get KVM supported CPUID structure.
     #[error("Failed to get KVM supported CPUID structure: {0}")]
     KvmGetSupportedCpuid(cpuid::KvmGetSupportedCpuidError),
@@ -256,6 +253,11 @@ impl KvmVcpu {
         vcpu_config: &VcpuConfig,
         mut cpuid: CpuId,
     ) -> std::result::Result<(), KvmVcpuConfigureError> {
+        // if let cpuid::Cpuid::Intel(intel_cpuid) = config_cpuid {
+        //     return Err(KvmVcpuConfigureError::Custom(format!("here 1
+        // {:?}",intel_cpuid.leaf::<0x80000002>()))); }
+
+        #![allow(warnings)]
         // If a template is specified, get the CPUID template, else use `cpuid`.
         let mut config_cpuid = match vcpu_config.cpu_template {
             #[cfg(feature = "t2")]
@@ -266,18 +268,34 @@ impl KvmVcpu {
             CpuFeaturesTemplate::C3 => cpuid_templates::c3(),
             // If a template is not supplied we use the given `cpuid` as the base.
             CpuFeaturesTemplate::None => {
-                cpuid::Cpuid::try_from(cpuid::RawCpuid::from(cpuid.clone()))
-                    .map_err(KvmVcpuConfigureError::SnapshotCpuid)?
+                let mut cpuid = cpuid::Cpuid::try_from(cpuid::RawCpuid::from(cpuid.clone()))
+                    .map_err(KvmVcpuConfigureError::SnapshotCpuid)?;
+                // When a template is not given and CPUID is supported, we passthrough the host
+                // CPUID brand string.
+                #[cfg(cpuid)]
+                {}
             }
         };
 
+        // if let cpuid::Cpuid::Intel(intel_cpuid) = &mut config_cpuid {
+        // intel_cpuid.0.remove(&cpuid::intel::CpuidKey::leaf(0x80000002));
+        // intel_cpuid.0.remove(&cpuid::intel::CpuidKey::leaf(0x80000003));
+        // intel_cpuid.0.remove(&cpuid::intel::CpuidKey::leaf(0x80000004));
+        // return Err(KvmVcpuConfigureError::Custom(format!("here 1
+        // {:?}",intel_cpuid.leaf::<0x80000002>()))); }
+
         // Apply adjustments based on `vm_spec`.
         {
-            let cpuid_vm_spec =
-                cpuid::VmSpec::new(self.index, vcpu_config.vcpu_count, vcpu_config.smt)?;
             config_cpuid
-                .apply_vm_spec(&cpuid_vm_spec)
-                .map_err(KvmVcpuConfigureError::ApplyVmSpec)?;
+                .normalize(
+                    // The index of the current logical CPU in the range [0..cpu_count].
+                    self.index,
+                    // The total number of logical CPUs.
+                    vcpu_config.vcpu_count,
+                    // The number of bits needed to enumerate logical CPUs per core.
+                    u8::from(vcpu_config.vcpu_count > 1 && vcpu_config.smt),
+                )
+                .map_err(KvmVcpuConfigureError::NormalizeCpuid)?;
         }
 
         // Check support and set our CPUID.
@@ -295,6 +313,9 @@ impl KvmVcpu {
             // Set CPUID.
             cpuid = kvm_cpuid;
         }
+
+        // let vec = cpuid.as_slice().iter().cloned().collect::<Vec<_>>();
+        // return Err(KvmVcpuConfigureError::Custom(format!("here 2 {:?}",vec)));
 
         // Set CPUID in the KVM
         self.fd

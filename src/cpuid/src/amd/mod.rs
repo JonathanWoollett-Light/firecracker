@@ -1,17 +1,15 @@
 // Copyright 2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 #![warn(clippy::pedantic)]
-#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::similar_names, clippy::module_name_repetitions)]
 
-use serde::{Deserialize, Serialize};
+use super::{CpuidEntry, CpuidKey, IndexLeaf, IndexLeafMut, RawCpuid, RawKvmCpuidEntry};
 
-use crate::RawCpuid;
-
-/// Error type for [`AmdCpuid::apply_vm_spec`].
+/// Error type for [`AmdCpuid::normalize`].
 #[cfg(cpuid)]
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 #[error("Failed to apply `VmSpec`.")]
-pub struct ApplyVmSpecError;
+pub struct NormalizeCpuid;
 
 /// A structure containing the information as described in the AMD CPUID specification as described
 /// in
@@ -21,29 +19,43 @@ pub struct ApplyVmSpecError;
 /// # Notes
 ///
 /// We not do not currently check AMD features on snapshot restore.
-#[allow(clippy::unsafe_derive_deserialize, clippy::module_name_repetitions)]
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, construct::Inline)]
+#[derive(Debug, Clone, Eq, PartialEq, construct::Inline)]
 #[repr(C)]
-pub struct AmdCpuid(pub RawCpuid);
+pub struct AmdCpuid(pub std::collections::BTreeMap<CpuidKey, CpuidEntry>);
 
-// TODO: Replace checking of CPUID avaiblity with `x86` and `x86_64` check and
-// [`std::arch_x86_64::has_cpuid()`] when this is stabilized. CPUID is supported when:
-// - We are on an x86 archtecture with `sse` enabled and `sgx disabled`.
-// - We are on an x86_64 architecture with `sgx` disabled
 impl AmdCpuid {
-    /// Alias for [`AmdCpuid::default`]
+    /// Get immutable reference to leaf.
     #[must_use]
-    pub fn new() -> Self {
-        Self(RawCpuid::new())
+    pub fn leaf<'a, const N: usize>(&'a self) -> <Self as IndexLeaf<N>>::Output<'a>
+    where
+        Self: IndexLeaf<N>,
+    {
+        <Self as IndexLeaf<N>>::index_leaf(self)
     }
-}
-impl AmdCpuid {
-    /// Returns the CPUID manufacturers ID (e.g. `GenuineIntel` or `AuthenticAMD`) or `None` if it
-    /// cannot be found in CPUID (e.g. leaf 0x0 is missing).
-    #[allow(clippy::similar_names)]
+
+    /// Get mutable reference to leaf.
+    #[must_use]
+    pub fn leaf_mut<'a, const N: usize>(&'a mut self) -> <Self as IndexLeafMut<N>>::Output<'a>
+    where
+        Self: IndexLeafMut<N>,
+    {
+        <Self as IndexLeafMut<N>>::index_leaf_mut(self)
+    }
+
+    /// Gets a given sub-leaf.
+    pub fn get(&mut self, key: &CpuidKey) -> Option<&CpuidEntry> {
+        self.0.get(key)
+    }
+
+    /// Gets a given sub-leaf.
+    pub fn get_mut(&mut self, key: &CpuidKey) -> Option<&mut CpuidEntry> {
+        self.0.get_mut(key)
+    }
+
+    /// Returns the CPUID manufacturers ID. E.g. `GenuineIntel` or `AuthenticAMD`.
     #[must_use]
     pub fn manufacturer_id(&self) -> Option<[u8; 12]> {
-        let leaf_0 = self.0.get(0, 0)?;
+        let leaf_0 = self.leaf::<0x0>()?;
 
         // The ordering of the manufacturer string is ebx,edx,ecx this is not a mistake.
         let (ebx, edx, ecx) = (
@@ -58,6 +70,7 @@ impl AmdCpuid {
 
         Some(arr)
     }
+
     /// Applies `vm_spec` to `self`.
     ///
     /// # Errors
@@ -65,7 +78,15 @@ impl AmdCpuid {
     /// Never.
     #[cfg(cpuid)]
     #[allow(clippy::unused_self)]
-    pub fn apply_vm_spec(&mut self, _vm_spec: &crate::VmSpec) -> Result<(), ApplyVmSpecError> {
+    pub fn normalize(
+        &mut self,
+        // The index of the current logical CPU in the range [0..cpu_count].
+        _cpu_index: u8,
+        // The total number of logical CPUs.
+        _cpu_count: u8,
+        // The number of bits needed to enumerate logical CPUs per core.
+        _cpu_bits: u8,
+    ) -> Result<(), NormalizeCpuid> {
         // unimplemented
         Ok(())
     }
@@ -86,24 +107,25 @@ impl crate::Supports for AmdCpuid {
         Ok(())
     }
 }
-impl Default for AmdCpuid {
-    /// Constructs new `Cpuid` via [`std::arch::x86_64::__cpuid_count`].
-    ///
-    /// # Note
-    ///
-    /// As we do not currently support the AMD CPUID specification this constructs an empty
-    /// [`RawCpuid`].
-    fn default() -> Self {
-        Self(RawCpuid::new())
-    }
-}
+
 impl From<RawCpuid> for AmdCpuid {
     fn from(raw_cpuid: RawCpuid) -> Self {
-        Self(raw_cpuid)
+        let map = raw_cpuid
+            .iter()
+            .cloned()
+            .map(<(CpuidKey, CpuidEntry)>::from)
+            .collect();
+        Self(map)
     }
 }
+
 impl From<AmdCpuid> for RawCpuid {
     fn from(amd_cpuid: AmdCpuid) -> Self {
-        amd_cpuid.0
+        let entries = amd_cpuid
+            .0
+            .into_iter()
+            .map(RawKvmCpuidEntry::from)
+            .collect::<Vec<_>>();
+        Self::from(entries)
     }
 }

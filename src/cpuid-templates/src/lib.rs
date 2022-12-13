@@ -37,7 +37,7 @@ mod tests {
         };
         dbg!(&allocate_elapsed);
         assert!(allocate_elapsed < deserialize_elapsed.mul_f32(0.3f32));
-        assert!(allocate_elapsed < Duration::from_micros(100u64));
+        assert!(allocate_elapsed < Duration::from_micros(150u64));
     }
     #[test]
     fn t2_test() {
@@ -56,7 +56,7 @@ mod tests {
         };
         dbg!(&allocate_elapsed);
         assert!(allocate_elapsed < deserialize_elapsed.mul_f32(0.3f32));
-        assert!(allocate_elapsed < Duration::from_micros(100u64));
+        assert!(allocate_elapsed < Duration::from_micros(150u64));
     }
     #[test]
     fn t2s_test() {
@@ -75,6 +75,6 @@ mod tests {
         };
         dbg!(&allocate_elapsed);
         assert!(allocate_elapsed < deserialize_elapsed.mul_f32(0.3f32));
-        assert!(allocate_elapsed < Duration::from_micros(100u64));
+        assert!(allocate_elapsed < Duration::from_micros(150u64));
     }
 }

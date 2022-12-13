@@ -560,10 +560,6 @@ pub fn build_microvm_from_snapshot(
                 existing.insert((entry.function,entry.index)))
                 .collect::<cpuid::RawCpuid>();
 
-            // // Returns correct manufacturer id here.
-            // return Err(BuildMicrovmFromSnapshotError::Custom(format!("raw_snapshot_cpuid:
-            // {:?}",raw_snapshot_cpuid.get(0,0))));
-
             cpuid::Cpuid::try_from(trimmed_raw_snapshot_cpuid)
                 .map_err(BuildMicrovmFromSnapshotError::CpuidNewError)?
         };
