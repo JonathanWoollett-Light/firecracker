@@ -17,6 +17,7 @@ rand = "0.8.5"
 
 [features]
 serde = []
+construct = []
 
 [lib]
 proc-macro = true
