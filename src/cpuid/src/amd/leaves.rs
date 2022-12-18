@@ -21,8 +21,10 @@ pub type Leaf80000008 = Leaf<Leaf80000008Eax, Leaf80000008Ebx, Leaf80000008Ecx, 
 /// Leaf 8000001DH
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf8000001d<'a>(pub Vec<&'a Leaf8000001dSubleaf>);
+/// Leaf 8000001DH
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf8000001dMut<'a>(pub Vec<&'a mut Leaf8000001dSubleaf>);
+/// Leaf 8000001DH sub-leaf
 pub type Leaf8000001dSubleaf =
     Leaf<Leaf8000001dEax, Leaf8000001dEbx, Leaf8000001dEcx, Leaf8000001dEdx>;
 

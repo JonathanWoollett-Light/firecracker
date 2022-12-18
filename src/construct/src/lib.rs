@@ -1,21 +1,45 @@
 // Copyright 2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::num::*;
+#![warn(clippy::pedantic, clippy::restriction)]
+#![allow(
+    clippy::blanket_clippy_restriction_lints,
+    clippy::implicit_return,
+    clippy::pattern_type_mismatch,
+    clippy::std_instead_of_alloc,
+    clippy::std_instead_of_core,
+    clippy::pub_use,
+    clippy::non_ascii_literal,
+    clippy::single_char_lifetime_names,
+    clippy::exhaustive_enums,
+    clippy::exhaustive_structs,
+    clippy::unseparated_literal_suffix,
+    clippy::mod_module_files
+)]
+
+//! Defines the [`Inline`] trait and associated implementations.
+//!
+//! This trait defines a function which produces a [`proc_macro2::TokenStream`] of code which would
+//! allocate `self`.
 
 pub use construct_macros::Inline;
 pub use proc_macro2::TokenStream;
 pub use quote::quote;
 
+/// Trait defining `inline` a function which produces a [`proc_macro2::TokenStream`] of code which
+/// would allocate `self`.
 pub trait Inline {
+    /// Produces a [`proc_macro2::TokenStream`] of code which would allocate `self`.
     fn inline(&self) -> TokenStream;
 }
 
 // Primitive implementations
 // -----------------------------------------------------------------------------
+/// Convenience macro for defining `construct::Inline` implementations on primitive types.
 macro_rules! inline_primitive {
     ($x:ty) => {
         impl Inline for $x {
+            #[inline]
             fn inline(&self) -> TokenStream {
                 quote! { #self }
             }
@@ -24,8 +48,10 @@ macro_rules! inline_primitive {
 }
 
 impl<T: Inline, const N: usize> Inline for [T; N] {
+    #[allow(clippy::shadow_reuse)]
+    #[inline]
     fn inline(&self) -> TokenStream {
-        let values = self.iter().map(|x| x.inline());
+        let values = self.iter().map(Inline::inline);
         quote! {
             [ #(#values,)* ]
         }
@@ -48,6 +74,7 @@ inline_primitive!(u32);
 inline_primitive!(u64);
 inline_primitive!(u128);
 impl Inline for () {
+    #[inline]
     fn inline(&self) -> TokenStream {
         quote! {
             ()
@@ -58,9 +85,11 @@ inline_primitive!(usize);
 
 // Non-zero implementations
 // -----------------------------------------------------------------------------
+/// Convenience macro for defining `construct::Inline` implementations on `NonZero` types.
 macro_rules! inline_nonzero {
     ($x:ty) => {
         impl Inline for $x {
+            #[inline]
             fn inline(&self) -> TokenStream {
                 let y = self.get();
                 quote! { unsafe { $x::new_unchecked(#y) } }
@@ -68,36 +97,40 @@ macro_rules! inline_nonzero {
         }
     };
 }
-inline_nonzero!(NonZeroI8);
-inline_nonzero!(NonZeroI16);
-inline_nonzero!(NonZeroI32);
-inline_nonzero!(NonZeroI64);
-inline_nonzero!(NonZeroI128);
-inline_nonzero!(NonZeroIsize);
-inline_nonzero!(NonZeroU8);
-inline_nonzero!(NonZeroU16);
-inline_nonzero!(NonZeroU32);
-inline_nonzero!(NonZeroU64);
-inline_nonzero!(NonZeroU128);
-inline_nonzero!(NonZeroUsize);
+inline_nonzero!(std::num::NonZeroI8);
+inline_nonzero!(std::num::NonZeroI16);
+inline_nonzero!(std::num::NonZeroI32);
+inline_nonzero!(std::num::NonZeroI64);
+inline_nonzero!(std::num::NonZeroI128);
+inline_nonzero!(std::num::NonZeroIsize);
+inline_nonzero!(std::num::NonZeroU8);
+inline_nonzero!(std::num::NonZeroU16);
+inline_nonzero!(std::num::NonZeroU32);
+inline_nonzero!(std::num::NonZeroU64);
+inline_nonzero!(std::num::NonZeroU128);
+inline_nonzero!(std::num::NonZeroUsize);
 
 // Collections implementations
 // -----------------------------------------------------------------------------
 impl<T: Inline> Inline for Vec<T> {
+    #[allow(clippy::shadow_reuse)]
+    #[inline]
     fn inline(&self) -> TokenStream {
-        let fields = self.iter().map(|x| x.inline());
+        let fields = self.iter().map(Inline::inline);
         quote! {
             vec![#(#fields,)*]
         }
     }
 }
 impl<K: Inline, V: Inline> Inline for std::collections::BTreeMap<K, V> {
+    #[allow(clippy::shadow_reuse)]
+    #[inline]
     fn inline(&self) -> TokenStream {
         let (keys, values) = self
             .iter()
             .map(|(k, v)| (k.inline(), v.inline()))
             .unzip::<_, _, Vec<_>, Vec<_>>();
-        // [#((#keys,#values),)*].into_iter().cloned().collect::<std::collections::BTreeMap<_,_>>()
+
         quote! {
             {
                 let mut map = std::collections::BTreeMap::new();
@@ -113,6 +146,7 @@ impl<K: Inline, V: Inline> Inline for std::collections::BTreeMap<K, V> {
 // Misc implementations
 // -----------------------------------------------------------------------------
 impl<T> Inline for std::marker::PhantomData<T> {
+    #[inline]
     fn inline(&self) -> TokenStream {
         quote! {
             std::marker::PhantomData
@@ -120,6 +154,7 @@ impl<T> Inline for std::marker::PhantomData<T> {
     }
 }
 impl Inline for String {
+    #[inline]
     fn inline(&self) -> TokenStream {
         quote! {
             String::from(#self)
@@ -127,6 +162,7 @@ impl Inline for String {
     }
 }
 impl<T: Inline> Inline for Option<T> {
+    #[inline]
     fn inline(&self) -> TokenStream {
         match self {
             None => quote! { None },
@@ -138,6 +174,7 @@ impl<T: Inline> Inline for Option<T> {
     }
 }
 impl<T: Inline, E: Inline> Inline for Result<T, E> {
+    #[inline]
     fn inline(&self) -> TokenStream {
         match self {
             Ok(ok) => {

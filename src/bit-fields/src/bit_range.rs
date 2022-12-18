@@ -4,16 +4,15 @@
 use std::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8};
 
 /// A type interface for a range of bits.
-#[allow(clippy::exhaustive_structs)]
 #[derive(Debug, Clone)]
 pub struct BitRange<'a, T, const START: u8, const END: u8>(pub &'a T);
 
 /// A type interface for a range of bits.
-#[allow(clippy::exhaustive_structs)]
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 pub struct BitRangeMut<'a, T, const START: u8, const END: u8>(pub &'a mut T);
 
-// std::fmt::Display
+/// Macro for defining `impl Disply for BitRange`.
 macro_rules! bit_range_display {
     ($x:ty, $y:ty) => {
         impl<const START: u8, const END: u8> std::fmt::Display for BitRange<'_, $x, START, END> {
@@ -54,6 +53,7 @@ bit_range_display!(u32, NonZeroU32);
 bit_range_display!(u16, NonZeroU16);
 bit_range_display!(u8, NonZeroU8);
 
+/// Macro for defining `impl Disply for BitRangeMut`.
 macro_rules! bit_range_mut_display {
     ($x:ty, $y:ty) => {
         impl<const START: u8, const END: u8> std::fmt::Display for BitRangeMut<'_, $x, START, END> {
@@ -94,7 +94,7 @@ bit_range_mut_display!(u32, NonZeroU32);
 bit_range_mut_display!(u16, NonZeroU16);
 bit_range_mut_display!(u8, NonZeroU8);
 
-// impl BitRange<..>
+/// Macro for defining `impl BitRange`.
 macro_rules! bit_range {
     ($x:ty, $y:ty, $mask:ident, $max:ident) => {
         impl<const START: u8, const END: u8> BitRange<'_, $x, START, END> {
@@ -118,7 +118,7 @@ macro_rules! bit_range {
             }
 
             #[doc = concat!("
-                Conveniance alias for [`Self::MAX`].
+                Convenience alias for [`Self::MAX`].
                 
                 ```
                 use bit_fields::BitRange;
@@ -140,7 +140,7 @@ macro_rules! bit_range {
                 Self::MAX
             }
             #[doc = concat!("
-                Conveniance alias for [`Self::MASK`].
+                Convenience alias for [`Self::MASK`].
                 
                 ```
                 use bit_fields::BitRange;
@@ -182,7 +182,7 @@ macro_rules! bit_range {
             }
 
             #[doc = concat!("
-                Conveniance alias for [`Self::MAX`].
+                Convenience alias for [`Self::MAX`].
                 
                 ```
                 use bit_fields::BitRange;
@@ -205,7 +205,7 @@ macro_rules! bit_range {
                 Self::MAX
             }
             #[doc = concat!("
-                Conveniance alias for [`Self::MASK`].
+                Convenience alias for [`Self::MASK`].
                 
                 ```
                 use bit_fields::BitRange;
@@ -233,6 +233,7 @@ bit_range!(u32, NonZeroU32, mask_u32, max_u32);
 bit_range!(u16, NonZeroU16, mask_u16, max_u16);
 bit_range!(u8, NonZeroU8, mask_u8, max_u8);
 
+/// Macro for defining `impl BitRangeMut`.
 macro_rules! bit_mut_range {
     ($x:ty, $y:ty, $mask:ident, $max:ident) => {
         impl<const START: u8, const END: u8> BitRangeMut<'_, $x, START, END> {
@@ -414,8 +415,22 @@ macro_rules! bit_mut_range {
                     Err($crate::CheckedAssignError)
                 }
             }
+            #[doc="
+                Sets the bit range.
+
+                # Panics
+
+                In debug when `x > Self::MAX`.
+            "]
+            #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
+            #[inline]
+            pub unsafe fn unchecked_assign(&mut self, x: $x) {
+                debug_assert!(x <= Self::MAX);
+                let shift = x << START;
+                *self.0 = shift | (*self.0 & !Self::MASK);
+            }
             #[doc = concat!("
-                Conveniance alias for [`Self::MAX`].
+                Convenience alias for [`Self::MAX`].
                 
                 ```
                 use bit_fields::BitRangeMut;
@@ -437,7 +452,7 @@ macro_rules! bit_mut_range {
                 Self::MAX
             }
             #[doc = concat!("
-                Conveniance alias for [`Self::MASK`].
+                Convenience alias for [`Self::MASK`].
                 
                 ```
                 use bit_fields::BitRangeMut;
@@ -652,7 +667,7 @@ macro_rules! bit_mut_range {
                 }
             }
             #[doc = concat!("
-                Conveniance alias for [`Self::MAX`].
+                Convenience alias for [`Self::MAX`].
                 
                 ```
                 use bit_fields::BitRangeMut;
@@ -675,7 +690,7 @@ macro_rules! bit_mut_range {
                 Self::MAX
             }
             #[doc = concat!("
-                Conveniance alias for [`Self::MASK`].
+                Convenience alias for [`Self::MASK`].
                 
                 ```
                 use bit_fields::BitRangeMut;
@@ -703,24 +718,24 @@ bit_mut_range!(u32, NonZeroU32, mask_u32, max_u32);
 bit_mut_range!(u16, NonZeroU16, mask_u16, max_u16);
 bit_mut_range!(u8, NonZeroU8, mask_u8, max_u8);
 
-// impl From<..> for BitRange<..>
+/// Macro for defining `From` implementations on `BitRange` and `BitRangeMut`.
 macro_rules! bit_range_from {
-    ($x:ty, $y:ty) => {
+    ($x:ty, $y:ty, $bit_range: ident) => {
         // `START < 8 * size_of::<$x>()` is always true so the right shift will not panic.
         #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
-        impl<const START: u8, const END: u8> From<&BitRange<'_, $x, START, END>> for $x {
+        impl<const START: u8, const END: u8> From<&$bit_range<'_, $x, START, END>> for $x {
             #[inline]
-            fn from(this: &BitRange<'_, $x, START, END>) -> Self {
-                let a = BitRange::<'_, $x, START, END>::MASK & *this.0;
+            fn from(this: &$bit_range<'_, $x, START, END>) -> Self {
+                let a = $bit_range::<'_, $x, START, END>::MASK & *this.0;
                 a >> START
             }
         }
         // `START < 8 * size_of::<$x>()` is always true so the right shift will not panic.
         #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
-        impl<const START: u8, const END: u8> From<&BitRange<'_, $y, START, END>> for $y {
+        impl<const START: u8, const END: u8> From<&$bit_range<'_, $y, START, END>> for $y {
             #[inline]
-            fn from(this: &BitRange<'_, $y, START, END>) -> Self {
-                let a = BitRange::<'_, $x, START, END>::MASK & this.0.get();
+            fn from(this: &$bit_range<'_, $y, START, END>) -> Self {
+                let a = $bit_range::<'_, $x, START, END>::MASK & this.0.get();
                 // SAFETY: Always safe.
                 unsafe { <$y>::new_unchecked(a >> START) }
             }
@@ -728,55 +743,29 @@ macro_rules! bit_range_from {
     };
 }
 
-bit_range_from!(u128, NonZeroU128);
-bit_range_from!(u64, NonZeroU64);
-bit_range_from!(u32, NonZeroU32);
-bit_range_from!(u16, NonZeroU16);
-bit_range_from!(u8, NonZeroU8);
+bit_range_from!(u128, NonZeroU128, BitRange);
+bit_range_from!(u64, NonZeroU64, BitRange);
+bit_range_from!(u32, NonZeroU32, BitRange);
+bit_range_from!(u16, NonZeroU16, BitRange);
+bit_range_from!(u8, NonZeroU8, BitRange);
 
-macro_rules! bit_range_mut_from {
-    ($x:ty, $y:ty) => {
-        // These values are only evaluated at compile-time, thus a failure can only occur at
-        // compile-time and would be immediately obvious. Thus it is safe to use arithmetic here.
-        #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
-        impl<const START: u8, const END: u8> From<&BitRangeMut<'_, $x, START, END>> for $x {
-            #[inline]
-            fn from(this: &BitRangeMut<'_, $x, START, END>) -> Self {
-                let a = BitRangeMut::<'_, $x, START, END>::MASK & *this.0;
-                a >> START
-            }
-        }
-        // These values are only evaluated at compile-time, thus a failure can only occur at
-        // compile-time and would be immediately obvious. Thus it is safe to use arithmetic here.
-        #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
-        impl<const START: u8, const END: u8> From<&BitRangeMut<'_, $y, START, END>> for $y {
-            #[inline]
-            fn from(this: &BitRangeMut<'_, $y, START, END>) -> Self {
-                let a = BitRangeMut::<'_, $x, START, END>::MASK & this.0.get();
-                // SAFETY: Always safe.
-                unsafe { <$y>::new_unchecked(a >> START) }
-            }
-        }
-    };
-}
+bit_range_from!(u128, NonZeroU128, BitRangeMut);
+bit_range_from!(u64, NonZeroU64, BitRangeMut);
+bit_range_from!(u32, NonZeroU32, BitRangeMut);
+bit_range_from!(u16, NonZeroU16, BitRangeMut);
+bit_range_from!(u8, NonZeroU8, BitRangeMut);
 
-bit_range_mut_from!(u128, NonZeroU128);
-bit_range_mut_from!(u64, NonZeroU64);
-bit_range_mut_from!(u32, NonZeroU32);
-bit_range_mut_from!(u16, NonZeroU16);
-bit_range_mut_from!(u8, NonZeroU8);
-
-// impl std::cmp::PartialEq for BitRange<..>
+/// Macro for defining `PartialEq` and `Eq` implementations on `BitRange` and `BitRangeMut`.
 macro_rules! bit_range_eq {
-    ($x:ty, $y:ty) => {
-        impl<const START: u8, const END: u8> PartialEq<$x> for BitRange<'_, $x, START, END> {
+    ($x:ty, $y:ty, $bit_range: ident) => {
+        impl<const START: u8, const END: u8> PartialEq<$x> for $bit_range<'_, $x, START, END> {
             #[inline]
             fn eq(&self, other: &$x) -> bool {
                 let a = <$x>::from(self);
                 a == *other
             }
         }
-        impl<const START: u8, const END: u8> PartialEq for BitRange<'_, $x, START, END> {
+        impl<const START: u8, const END: u8> PartialEq for $bit_range<'_, $x, START, END> {
             #[inline]
             fn eq(&self, other: &Self) -> bool {
                 let a = <$x>::from(self);
@@ -784,15 +773,15 @@ macro_rules! bit_range_eq {
                 a == b
             }
         }
-        impl<const START: u8, const END: u8> Eq for BitRange<'_, $x, START, END> {}
-        impl<const START: u8, const END: u8> PartialEq<$y> for BitRange<'_, $y, START, END> {
+        impl<const START: u8, const END: u8> Eq for $bit_range<'_, $x, START, END> {}
+        impl<const START: u8, const END: u8> PartialEq<$y> for $bit_range<'_, $y, START, END> {
             #[inline]
             fn eq(&self, other: &$y) -> bool {
                 let a = <$y>::from(self);
                 a == *other
             }
         }
-        impl<const START: u8, const END: u8> PartialEq for BitRange<'_, $y, START, END> {
+        impl<const START: u8, const END: u8> PartialEq for $bit_range<'_, $y, START, END> {
             #[inline]
             fn eq(&self, other: &Self) -> bool {
                 let a = <$y>::from(self);
@@ -800,70 +789,33 @@ macro_rules! bit_range_eq {
                 a == b
             }
         }
-        impl<const START: u8, const END: u8> Eq for BitRange<'_, $y, START, END> {}
+        impl<const START: u8, const END: u8> Eq for $bit_range<'_, $y, START, END> {}
     };
 }
 
-bit_range_eq!(u128, NonZeroU128);
-bit_range_eq!(u64, NonZeroU64);
-bit_range_eq!(u32, NonZeroU32);
-bit_range_eq!(u16, NonZeroU16);
-bit_range_eq!(u8, NonZeroU8);
+bit_range_eq!(u128, NonZeroU128, BitRange);
+bit_range_eq!(u64, NonZeroU64, BitRange);
+bit_range_eq!(u32, NonZeroU32, BitRange);
+bit_range_eq!(u16, NonZeroU16, BitRange);
+bit_range_eq!(u8, NonZeroU8, BitRange);
 
-macro_rules! bit_range_mut_eq {
-    ($x:ty, $y:ty) => {
-        impl<const START: u8, const END: u8> PartialEq<$x> for BitRangeMut<'_, $x, START, END> {
-            #[inline]
-            fn eq(&self, other: &$x) -> bool {
-                let a = <$x>::from(self);
-                a == *other
-            }
-        }
-        impl<const START: u8, const END: u8> PartialEq for BitRangeMut<'_, $x, START, END> {
-            #[inline]
-            fn eq(&self, other: &Self) -> bool {
-                let a = <$x>::from(self);
-                let b = <$x>::from(other);
-                a == b
-            }
-        }
-        impl<const START: u8, const END: u8> Eq for BitRangeMut<'_, $x, START, END> {}
-        impl<const START: u8, const END: u8> PartialEq<$y> for BitRangeMut<'_, $y, START, END> {
-            #[inline]
-            fn eq(&self, other: &$y) -> bool {
-                let a = <$y>::from(self);
-                a == *other
-            }
-        }
-        impl<const START: u8, const END: u8> PartialEq for BitRangeMut<'_, $y, START, END> {
-            #[inline]
-            fn eq(&self, other: &Self) -> bool {
-                let a = <$y>::from(self);
-                let b = <$y>::from(other);
-                a == b
-            }
-        }
-        impl<const START: u8, const END: u8> Eq for BitRangeMut<'_, $y, START, END> {}
-    };
-}
+bit_range_eq!(u128, NonZeroU128, BitRangeMut);
+bit_range_eq!(u64, NonZeroU64, BitRangeMut);
+bit_range_eq!(u32, NonZeroU32, BitRangeMut);
+bit_range_eq!(u16, NonZeroU16, BitRangeMut);
+bit_range_eq!(u8, NonZeroU8, BitRangeMut);
 
-bit_range_mut_eq!(u128, NonZeroU128);
-bit_range_mut_eq!(u64, NonZeroU64);
-bit_range_mut_eq!(u32, NonZeroU32);
-bit_range_mut_eq!(u16, NonZeroU16);
-bit_range_mut_eq!(u8, NonZeroU8);
-
-// impl std::cmp::Ord for BitRange<..>
+/// Macro for defining `PartialOrd` and `Ord` implementations on `BitRange` and `BitRangeMut`.
 macro_rules! bit_range_ord {
-    ($x:ty, $y:ty) => {
-        impl<const START: u8, const END: u8> PartialOrd<$x> for BitRange<'_, $x, START, END> {
+    ($x:ty, $y:ty, $bit_range: ident) => {
+        impl<const START: u8, const END: u8> PartialOrd<$x> for $bit_range<'_, $x, START, END> {
             #[inline]
             fn partial_cmp(&self, other: &$x) -> Option<std::cmp::Ordering> {
                 let a = <$x>::from(self);
                 Some(a.cmp(other))
             }
         }
-        impl<const START: u8, const END: u8> PartialOrd for BitRange<'_, $x, START, END> {
+        impl<const START: u8, const END: u8> PartialOrd for $bit_range<'_, $x, START, END> {
             #[inline]
             fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
                 let a = <$x>::from(self);
@@ -871,20 +823,20 @@ macro_rules! bit_range_ord {
                 Some(a.cmp(&b))
             }
         }
-        impl<const START: u8, const END: u8> Ord for BitRange<'_, $x, START, END> {
+        impl<const START: u8, const END: u8> Ord for $bit_range<'_, $x, START, END> {
             #[inline]
             fn cmp(&self, other: &Self) -> std::cmp::Ordering {
                 self.partial_cmp(other).unwrap()
             }
         }
-        impl<const START: u8, const END: u8> PartialOrd<$y> for BitRange<'_, $y, START, END> {
+        impl<const START: u8, const END: u8> PartialOrd<$y> for $bit_range<'_, $y, START, END> {
             #[inline]
             fn partial_cmp(&self, other: &$y) -> Option<std::cmp::Ordering> {
                 let a = <$y>::from(self);
                 Some(a.cmp(other))
             }
         }
-        impl<const START: u8, const END: u8> PartialOrd for BitRange<'_, $y, START, END> {
+        impl<const START: u8, const END: u8> PartialOrd for $bit_range<'_, $y, START, END> {
             #[inline]
             fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
                 let a = <$y>::from(self);
@@ -892,7 +844,7 @@ macro_rules! bit_range_ord {
                 Some(a.cmp(&b))
             }
         }
-        impl<const START: u8, const END: u8> Ord for BitRange<'_, $y, START, END> {
+        impl<const START: u8, const END: u8> Ord for $bit_range<'_, $y, START, END> {
             #[inline]
             fn cmp(&self, other: &Self) -> std::cmp::Ordering {
                 self.partial_cmp(other).unwrap()
@@ -901,64 +853,17 @@ macro_rules! bit_range_ord {
     };
 }
 
-bit_range_ord!(u128, NonZeroU128);
-bit_range_ord!(u64, NonZeroU64);
-bit_range_ord!(u32, NonZeroU32);
-bit_range_ord!(u16, NonZeroU16);
-bit_range_ord!(u8, NonZeroU8);
+bit_range_ord!(u128, NonZeroU128, BitRange);
+bit_range_ord!(u64, NonZeroU64, BitRange);
+bit_range_ord!(u32, NonZeroU32, BitRange);
+bit_range_ord!(u16, NonZeroU16, BitRange);
+bit_range_ord!(u8, NonZeroU8, BitRange);
 
-macro_rules! bit_range_mut_ord {
-    ($x:ty, $y:ty) => {
-        impl<const START: u8, const END: u8> PartialOrd<$x> for BitRangeMut<'_, $x, START, END> {
-            #[inline]
-            fn partial_cmp(&self, other: &$x) -> Option<std::cmp::Ordering> {
-                let a = <$x>::from(self);
-                Some(a.cmp(other))
-            }
-        }
-        impl<const START: u8, const END: u8> PartialOrd for BitRangeMut<'_, $x, START, END> {
-            #[inline]
-            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-                let a = <$x>::from(self);
-                let b = <$x>::from(other);
-                Some(a.cmp(&b))
-            }
-        }
-        impl<const START: u8, const END: u8> Ord for BitRangeMut<'_, $x, START, END> {
-            #[inline]
-            fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-                self.partial_cmp(other).unwrap()
-            }
-        }
-        impl<const START: u8, const END: u8> PartialOrd<$y> for BitRangeMut<'_, $y, START, END> {
-            #[inline]
-            fn partial_cmp(&self, other: &$y) -> Option<std::cmp::Ordering> {
-                let a = <$y>::from(self);
-                Some(a.cmp(other))
-            }
-        }
-        impl<const START: u8, const END: u8> PartialOrd for BitRangeMut<'_, $y, START, END> {
-            #[inline]
-            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-                let a = <$y>::from(self);
-                let b = <$y>::from(other);
-                Some(a.cmp(&b))
-            }
-        }
-        impl<const START: u8, const END: u8> Ord for BitRangeMut<'_, $y, START, END> {
-            #[inline]
-            fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-                self.partial_cmp(other).unwrap()
-            }
-        }
-    };
-}
-
-bit_range_mut_ord!(u128, NonZeroU128);
-bit_range_mut_ord!(u64, NonZeroU64);
-bit_range_mut_ord!(u32, NonZeroU32);
-bit_range_mut_ord!(u16, NonZeroU16);
-bit_range_mut_ord!(u8, NonZeroU8);
+bit_range_ord!(u128, NonZeroU128, BitRangeMut);
+bit_range_ord!(u64, NonZeroU64, BitRangeMut);
+bit_range_ord!(u32, NonZeroU32, BitRangeMut);
+bit_range_ord!(u16, NonZeroU16, BitRangeMut);
+bit_range_ord!(u8, NonZeroU8, BitRangeMut);
 
 /// Returns a value where in the binary representation all bits to the right of the x'th bit from
 /// the left are 1.
@@ -980,7 +885,7 @@ macro_rules! shift {
     }};
 }
 
-// Mask functions
+/// Macro for defining mask functions.
 macro_rules! mask_fn {
     ($f:ident,$x:ty,$y:path) => {
         // These values are only evaluated at compile-time, thus a failure can only occur at
@@ -1001,7 +906,7 @@ mask_fn!(mask_u32, u32, u32::MAX);
 mask_fn!(mask_u16, u16, u16::MAX);
 mask_fn!(mask_u8, u8, u8::MAX);
 
-// Max functions
+/// Macro for defining max functions.
 macro_rules! max_fn {
     ($f:ident,$x:ty) => {
         /// Returns maximum value storable in a range.

@@ -5,7 +5,6 @@
 /// for YourBitField`.
 // There will only ever be 1 possible error as a result of `TryFrom<HashSet<..>>`, thus we will
 // never alter the layout of this struct.
-#[allow(clippy::exhaustive_structs)]
 #[derive(Debug, thiserror::Error)]
 #[error("Feature flag given in set which is not defined in bit field.")]
 pub struct TryFromFlagSetError;
@@ -69,7 +68,6 @@ pub enum CheckedSubAssignError {
 /// _>::checked_assign()`], etc.
 // There will only ever be 1 possible error as a result of `CheckedAssign`, thus we will never alter
 // the layout of this struct.
-#[allow(clippy::exhaustive_structs)]
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
 #[error("Given value is greater than maximum storable value in bit range.")]
 pub struct CheckedAssignError;

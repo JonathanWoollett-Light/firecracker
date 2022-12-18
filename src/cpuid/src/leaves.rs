@@ -22,6 +22,7 @@ pub struct Leaf<A, B, C, D> {
     pub edx: D,
 }
 impl<A: Inline, B: Inline, C: Inline, D: Inline> Inline for Leaf<A, B, C, D> {
+    #[inline]
     fn inline(&self) -> construct::TokenStream {
         let (a, b, c, d) = (
             self.eax.inline(),
@@ -48,6 +49,7 @@ impl<A: Inline, B: Inline, C: Inline, D: Inline> Inline for Leaf<A, B, C, D> {
 // }
 
 impl<A, B, C, D> From<(A, B, C, D)> for Leaf<A, B, C, D> {
+    #[inline]
     fn from((a, b, c, d): (A, B, C, D)) -> Self {
         Leaf {
             eax: a,
@@ -62,6 +64,7 @@ impl<A, B, C, D> From<(A, B, C, D)> for Leaf<A, B, C, D> {
 impl<A: From<u32>, B: From<u32>, C: From<u32>, D: From<u32>> From<std::arch::x86_64::CpuidResult>
     for Leaf<A, B, C, D>
 {
+    #[inline]
     fn from(
         std::arch::x86_64::CpuidResult { eax, ebx, ecx, edx }: std::arch::x86_64::CpuidResult,
     ) -> Self {
@@ -76,6 +79,7 @@ impl<A: From<u32>, B: From<u32>, C: From<u32>, D: From<u32>> From<std::arch::x86
 impl<A: From<u32>, B: From<u32>, C: From<u32>, D: From<u32>> From<&RawKvmCpuidEntry>
     for Leaf<A, B, C, D>
 {
+    #[inline]
     fn from(
         &RawKvmCpuidEntry {
             eax, ebx, ecx, edx, ..
@@ -91,6 +95,7 @@ impl<A: From<u32>, B: From<u32>, C: From<u32>, D: From<u32>> From<&RawKvmCpuidEn
 }
 
 impl<A: Equal, B: Equal, C: Equal, D: Equal> Equal for Leaf<A, B, C, D> {
+    #[inline]
     fn equal(&self, other: &Self) -> bool {
         self.eax.equal(&other.eax)
             && self.ebx.equal(&other.ebx)
@@ -180,6 +185,7 @@ impl Supports for Leaf0 {
     type Error = Leaf0NotSupported;
     /// We check the manufacturer id e.g. 'GenuineIntel' is an exact match and that
     /// 'Maximum Input Value for Basic CPUID Information.' is >=
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x0", true, true, true, true);
 
@@ -218,6 +224,7 @@ impl Supports for Leaf1 {
     type Error = Leaf1NotSupported;
     /// We check ECX and EDX are super sets and 'CLFLUSH line size' >= and
     /// 'Maximum number of addressable IDs for logical processors in this physical package' >=
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x1", false, false, true, true);
 

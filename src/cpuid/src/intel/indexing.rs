@@ -18,6 +18,7 @@ index_leaf!(0x3, Leaf3, IntelCpuid);
 
 impl IndexLeaf<0x4> for IntelCpuid {
     type Output<'a> = Leaf4<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         // SAFETY: Transmuting reference to same sized types is safe.
         unsafe {
@@ -32,6 +33,7 @@ impl IndexLeaf<0x4> for IntelCpuid {
 }
 impl IndexLeafMut<0x4> for IntelCpuid {
     type Output<'a> = Leaf4Mut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         // SAFETY: Transmuting reference to same sized types is safe.
         unsafe {
@@ -51,6 +53,7 @@ index_leaf!(0x6, Leaf6, IntelCpuid);
 
 impl IndexLeaf<0x7> for IntelCpuid {
     type Output<'a> = Leaf7<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         Leaf7(
             self.0
@@ -66,6 +69,7 @@ impl IndexLeaf<0x7> for IntelCpuid {
 }
 impl IndexLeafMut<0x7> for IntelCpuid {
     type Output<'a> = Leaf7Mut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         Leaf7Mut(
             self.0
@@ -86,6 +90,7 @@ index_leaf!(0xA, LeafA, IntelCpuid);
 
 impl IndexLeaf<0xB> for IntelCpuid {
     type Output<'a> = LeafB<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         // SAFETY: Transmuting reference to same sized types is safe.
         unsafe {
@@ -100,6 +105,7 @@ impl IndexLeaf<0xB> for IntelCpuid {
 }
 impl IndexLeafMut<0xB> for IntelCpuid {
     type Output<'a> = LeafBMut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         // SAFETY: Transmuting reference to same sized types is safe.
         unsafe {
@@ -115,6 +121,7 @@ impl IndexLeafMut<0xB> for IntelCpuid {
 
 impl IndexLeaf<0xF> for IntelCpuid {
     type Output<'a> = LeafF<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         LeafF(
             self.0
@@ -130,6 +137,7 @@ impl IndexLeaf<0xF> for IntelCpuid {
 }
 impl IndexLeafMut<0xF> for IntelCpuid {
     type Output<'a> = LeafFMut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         LeafFMut(
             self.0
@@ -146,6 +154,7 @@ impl IndexLeafMut<0xF> for IntelCpuid {
 
 impl IndexLeaf<0x10> for IntelCpuid {
     type Output<'a> = Leaf10<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         Leaf10(
             self.0
@@ -169,6 +178,7 @@ impl IndexLeaf<0x10> for IntelCpuid {
 }
 impl IndexLeafMut<0x10> for IntelCpuid {
     type Output<'a> = Leaf10Mut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         Leaf10Mut(
             self.0
@@ -193,6 +203,7 @@ impl IndexLeafMut<0x10> for IntelCpuid {
 
 impl IndexLeaf<0x12> for IntelCpuid {
     type Output<'a> = Leaf12<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         Leaf12(
             self.0
@@ -217,6 +228,7 @@ impl IndexLeaf<0x12> for IntelCpuid {
 }
 impl IndexLeafMut<0x12> for IntelCpuid {
     type Output<'a> = Leaf12Mut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         Leaf12Mut(
             self.0
@@ -242,6 +254,7 @@ impl IndexLeafMut<0x12> for IntelCpuid {
 
 impl IndexLeaf<0x14> for IntelCpuid {
     type Output<'a> = Leaf14<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         Leaf14(
             self.0
@@ -257,6 +270,7 @@ impl IndexLeaf<0x14> for IntelCpuid {
 }
 impl IndexLeafMut<0x14> for IntelCpuid {
     type Output<'a> = Leaf14Mut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         Leaf14Mut(
             self.0
@@ -277,6 +291,7 @@ index_leaf!(0x16, Leaf16, IntelCpuid);
 
 impl IndexLeaf<0x17> for IntelCpuid {
     type Output<'a> = Leaf17<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         Leaf17(
             self.0
@@ -300,6 +315,7 @@ impl IndexLeaf<0x17> for IntelCpuid {
 }
 impl IndexLeafMut<0x17> for IntelCpuid {
     type Output<'a> = Leaf17Mut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         Leaf17Mut(
             self.0
@@ -324,6 +340,7 @@ impl IndexLeafMut<0x17> for IntelCpuid {
 
 impl IndexLeaf<0x18> for IntelCpuid {
     type Output<'a> = Leaf18<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         Leaf18(
             self.0
@@ -344,6 +361,7 @@ impl IndexLeaf<0x18> for IntelCpuid {
 }
 impl IndexLeafMut<0x18> for IntelCpuid {
     type Output<'a> = Leaf18Mut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         Leaf18Mut(
             self.0
@@ -373,6 +391,7 @@ index_leaf!(0x1C, Leaf1C, IntelCpuid);
 
 impl IndexLeaf<0x1F> for IntelCpuid {
     type Output<'a> = Leaf1F<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         // SAFETY: Transmuting reference to same sized types is safe.
         Leaf1F(unsafe {
@@ -387,6 +406,7 @@ impl IndexLeaf<0x1F> for IntelCpuid {
 }
 impl IndexLeafMut<0x1F> for IntelCpuid {
     type Output<'a> = Leaf1FMut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         // SAFETY: Transmuting reference to same sized types is safe.
         Leaf1FMut(unsafe {

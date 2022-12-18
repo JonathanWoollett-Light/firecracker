@@ -8,6 +8,9 @@ use bit_fields::CheckedAssignError;
 #[cfg(cpuid)]
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum NormalizeCpuidError {
+    /// Provided `cpu_bits` is >=8.
+    #[error("Provided `cpu_bits` is >=8: {0}.")]
+    CpuBits(u8),
     /// Failed to set deterministic cache leaf.
     #[error("Failed to set deterministic cache leaf: {0}")]
     DeterministicCache(#[from] DeterministicCacheError),
@@ -33,12 +36,26 @@ pub enum NormalizeCpuidError {
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum DeterministicCacheError {
     /// Failed to set `Maximum number of addressable IDs for logical processors sharing this
+    /// cache` due to underflow in cpu count.
+    #[error(
+        "Failed to set `Maximum number of addressable IDs for logical processors sharing this \
+         cache` due to underflow in cpu count."
+    )]
+    MaxCpusPerCoreUnderflow,
+    /// Failed to set `Maximum number of addressable IDs for logical processors sharing this
     /// cache`.
     #[error(
         "Failed to set `Maximum number of addressable IDs for logical processors sharing this \
          cache`: {0}"
     )]
     MaxCpusPerCore(CheckedAssignError),
+    /// Failed to set `Maximum number of addressable IDs for processor cores in the physical
+    /// package` due to underflow in cores
+    #[error(
+        "Failed to set `Maximum number of addressable IDs for processor cores in the physical \
+         package` due to underflow in cores."
+    )]
+    MaxCorePerPackageUnderflow,
     /// Failed to set `Maximum number of addressable IDs for processor cores in the physical
     /// package`.
     #[error(
@@ -68,6 +85,9 @@ pub enum ExtendedTopologyError {
     /// Failed to set `Level Number`.
     #[error("Failed to set `Level Number`: {0}")]
     LevelNumber(CheckedAssignError),
+    /// Failed to set all leaves, as more than `u32::MAX` sub-leaves are present.
+    #[error("Failed to set all leaves, as more than `u32::MAX` sub-leaves are present: {0}")]
+    Overflow(<u32 as TryFrom<usize>>::Error),
 }
 
 /// Error type for [`IntelCpuid::default_brand_string`].

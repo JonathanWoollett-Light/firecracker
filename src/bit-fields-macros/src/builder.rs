@@ -1,6 +1,7 @@
 // Copyright 2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use convert_case::{Case, Casing};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 
@@ -229,7 +230,6 @@ impl BitFieldBuilder {
 
         // Flag constant
         // ------------------------
-        use convert_case::{Case, Casing};
         let identifier_str_upper_snake = identifier_str.to_case(Case::UpperSnake);
         // If the given member is already snake case, we don't define a constant.
         if identifier_str_upper_snake != identifier_str {

@@ -4,16 +4,15 @@
 use std::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8};
 
 /// A type interface for a single bit.
-#[allow(clippy::exhaustive_structs)]
 #[derive(Debug, Clone)]
 pub struct Bit<'a, T, const P: u8>(pub &'a T);
 
 /// A type interface for a single bit.
-#[allow(clippy::exhaustive_structs)]
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 pub struct BitMut<'a, T, const P: u8>(pub &'a mut T);
 
-// impl std::fmt::Display for Bit<..>
+/// Macro for defining `impl Display for Bit`.
 macro_rules! bit_display {
     ($x:ty, $y:ty) => {
         impl<const P: u8> std::fmt::Display for Bit<'_, $x, P> {
@@ -55,6 +54,7 @@ bit_display!(u32, NonZeroU32);
 bit_display!(u16, NonZeroU16);
 bit_display!(u8, NonZeroU8);
 
+/// Macro for defining `impl Display for BitMut`.
 macro_rules! bit_mut_display {
     ($x:ty, $y:ty) => {
         impl<const P: u8> std::fmt::Display for BitMut<'_, $x, P> {
@@ -96,7 +96,7 @@ bit_mut_display!(u32, NonZeroU32);
 bit_mut_display!(u16, NonZeroU16);
 bit_mut_display!(u8, NonZeroU8);
 
-// impl Bit<..>
+/// Macro for defining `impl Bit`.
 macro_rules! bit {
     ($x:ty,$y:ty) => {
         impl<const P: u8> Bit<'_, $x, P> {
@@ -211,6 +211,7 @@ bit!(u32, NonZeroU32);
 bit!(u16, NonZeroU16);
 bit!(u8, NonZeroU8);
 
+/// Macro for defining `impl BitMut`.
 macro_rules! bit_mut {
     ($x:ty,$y:ty) => {
         impl<const P: u8> BitMut<'_, $x, P> {
@@ -545,7 +546,7 @@ bit_mut!(u32, NonZeroU32);
 bit_mut!(u16, NonZeroU16);
 bit_mut!(u8, NonZeroU8);
 
-// impl From<..> for Bit<..>
+/// Macro for defining `From` implementations on `Bit`.
 macro_rules! bit_from {
     ($x:ty,$y:ty) => {
         // These values are only evaluated at compile-time, thus a failure can only occur at
@@ -598,6 +599,7 @@ bit_from!(u32, NonZeroU32);
 bit_from!(u16, NonZeroU16);
 bit_from!(u8, NonZeroU8);
 
+/// Macro for defining `From` implementations on `BitMut`.
 macro_rules! bit_mut_from {
     ($x:ty,$y:ty) => {
         // These values are only evaluated at compile-time, thus a failure can only occur at
@@ -651,7 +653,7 @@ bit_mut_from!(u32, NonZeroU32);
 bit_mut_from!(u16, NonZeroU16);
 bit_mut_from!(u8, NonZeroU8);
 
-// impl PartialEq<..> for Bit<..>
+/// Macro for defining `PartiaEq` and `Eq` implementations on `Bit`.
 macro_rules! bit_eq {
     ($x:ty, $y:ty) => {
         impl<const P: u8> PartialEq for Bit<'_, $x, P> {
@@ -734,6 +736,7 @@ bit_eq!(u32, NonZeroU32);
 bit_eq!(u16, NonZeroU16);
 bit_eq!(u8, NonZeroU8);
 
+/// Macro for defining `PartiaEq` and `Eq` implementations on `BitMut`.
 macro_rules! bit_mut_eq {
     ($x:ty, $y:ty) => {
         impl<const P: u8> PartialEq for BitMut<'_, $x, P> {

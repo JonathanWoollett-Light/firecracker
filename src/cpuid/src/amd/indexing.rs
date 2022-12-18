@@ -22,6 +22,7 @@ index_leaf!(0x80000008, Leaf80000008, AmdCpuid);
 
 impl IndexLeaf<0x8000001d> for AmdCpuid {
     type Output<'a> = Leaf8000001d<'a>;
+    #[inline]
     fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
         // SAFETY: Transmuting reference to same sized types is safe.
         unsafe {
@@ -36,6 +37,7 @@ impl IndexLeaf<0x8000001d> for AmdCpuid {
 }
 impl IndexLeafMut<0x8000001d> for AmdCpuid {
     type Output<'a> = Leaf8000001dMut<'a>;
+    #[inline]
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
         // SAFETY: Transmuting reference to same sized types is safe.
         unsafe {

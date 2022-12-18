@@ -18,12 +18,14 @@ pub enum Error {
 }
 
 impl From<utils::fam::Error> for Error {
+    #[inline]
     fn from(x: utils::fam::Error) -> Self {
         Self::FamError(x)
     }
 }
 
 impl From<crate::common::Error> for Error {
+    #[inline]
     fn from(x: crate::common::Error) -> Self {
         Self::InternalError(x)
     }

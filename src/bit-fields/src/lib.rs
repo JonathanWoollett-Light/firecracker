@@ -1,6 +1,22 @@
 // Copyright 2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#![warn(clippy::pedantic, clippy::restriction)]
+#![allow(
+    clippy::blanket_clippy_restriction_lints,
+    clippy::implicit_return,
+    clippy::pattern_type_mismatch,
+    clippy::std_instead_of_alloc,
+    clippy::std_instead_of_core,
+    clippy::pub_use,
+    clippy::non_ascii_literal,
+    clippy::single_char_lifetime_names,
+    clippy::exhaustive_enums,
+    clippy::exhaustive_structs,
+    clippy::unseparated_literal_suffix,
+    clippy::mod_module_files
+)]
+
 //! A macro to generate structures which support bit flags and sub-bytes ranges.
 //!
 //! A [bitflags](https://crates.io/crates/bitflags) like library which also supports value ranges.
@@ -12,34 +28,17 @@
 //! ## Features
 //! - `serde`: Serde serialize and deserialize implementations.
 
-#![warn(clippy::pedantic, clippy::restriction)]
-// The only way I can see the enums changing would be changes to the variants themselves rather than
-// addition of new variants. This means whether they non-exhaustive or not would not matter as the
-// changes would be breaking regardless.
-#![allow(
-    clippy::blanket_clippy_restriction_lints,
-    clippy::implicit_return,
-    clippy::exhaustive_enums,
-    clippy::decimal_literal_representation,
-    clippy::non_ascii_literal,
-    clippy::std_instead_of_core,
-    clippy::missing_docs_in_private_items,
-    clippy::std_instead_of_alloc,
-    clippy::pub_use,
-    clippy::single_char_lifetime_names,
-    clippy::wildcard_imports,
-    clippy::module_name_repetitions,
-    clippy::mod_module_files
-)]
-
-#[cfg(doc)]
 /// Example bit fields.
+#[cfg(doc)]
 pub mod example;
+
 pub use bit_fields_macros::*;
 
+/// Bit flag types.
 mod bit;
 pub use bit::*;
 
+/// Bit range types.
 mod bit_range;
 pub use bit_range::*;
 
@@ -92,7 +91,7 @@ pub trait BitIndexMut<T, const P: u8> {
     /// Gets a mutable reference to a bit.
     fn bit_mut(&mut self) -> BitMut<'_, T, P>;
 }
-
+/// Trait defining function that returns if all defined bits are equal, ignoring undefined bits.
 pub trait Equal {
     /// Returns if all defined bits are equal, ignoring undefined bits.
     fn equal(&self, other: &Self) -> bool;
@@ -109,6 +108,7 @@ impl<T: Equal> Equal for &mut T {
         (**self).equal(other)
     }
 }
+/// Convenience macro for defining `Equal` implementations on primitives.
 macro_rules! impl_equal {
     ($t:ty) => {
         impl Equal for $t {

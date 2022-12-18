@@ -51,10 +51,12 @@ pub struct IntelCpuid(pub std::collections::BTreeMap<CpuidKey, CpuidEntry>);
 
 impl CpuidTrait for IntelCpuid {
     /// Gets a given sub-leaf.
+    #[inline]
     fn get(&self, key: &CpuidKey) -> Option<&CpuidEntry> {
         self.0.get(key)
     }
     /// Gets a given sub-leaf.
+    #[inline]
     fn get_mut(&mut self, key: &CpuidKey) -> Option<&mut CpuidEntry> {
         self.0.get_mut(key)
     }
@@ -73,7 +75,15 @@ impl IntelCpuid {
     ///
     /// Never.
     // As we pass through host freqeuncy, we require CPUID and thus `cfg(cpuid)`.
+    // TODO Using `split_array_ref` will raise safety and remove allows, use it when stabilized.
+    // <https://doc.rust-lang.org/std/primitive.array.html#method.split_array_ref>
+    #[allow(
+        clippy::indexing_slicing,
+        clippy::integer_arithmetic,
+        clippy::arithmetic_side_effects
+    )]
     #[cfg(cpuid)]
+    #[inline]
     pub fn default_brand_string(
     ) -> Result<[u8; super::BRAND_STRING_LENGTH], DefaultBrandStringError> {
         /// We always use this brand string.
@@ -81,7 +91,7 @@ impl IntelCpuid {
 
         // Get host brand string.
         // This will look like b"Intel(4) Xeon(R) Processor @ 3.00GHz".
-        let host_brand_string = super::host_brand_string();
+        let host_brand_string: [u8; super::BRAND_STRING_LENGTH] = super::host_brand_string();
 
         // The slice of the host string before the frequency suffix
         // e.g. b"Intel(4) Xeon(R) Processor @ 3.00" and "GHz"
@@ -94,6 +104,10 @@ impl IntelCpuid {
             }
             Err(DefaultBrandStringError::MissingFreqeuncy(host_brand_string))
         }?;
+        debug_assert_eq!(
+            before.len().checked_add(after.len()),
+            Some(super::BRAND_STRING_LENGTH)
+        );
 
         // We iterate from the end until hitting a space, getting the frequency number
         // e.g. b"Intel(4) Xeon(R) Processor @ " and "3.00"
@@ -105,7 +119,18 @@ impl IntelCpuid {
             }
             Err(DefaultBrandStringError::MissingSpace(host_brand_string))
         }?;
+        debug_assert!(frequency.len() <= before.len());
 
+        debug_assert!(
+            matches!(frequency.len().checked_add(after.len()), Some(x) if x <= super::BRAND_STRING_LENGTH)
+        );
+        debug_assert!(DEFUALT_BRAND_STRING_BASE.len() <= super::BRAND_STRING_LENGTH);
+        debug_assert!(super::BRAND_STRING_LENGTH.checked_mul(2).is_some());
+
+        // As `DEFUALT_BRAND_STRING_BASE.len() + frequency.len() + after.len()` is guranteed
+        // to be less than or equal to  `2*BRAND_STRING_LENGTH` and we know
+        // `2*BRAND_STRING_LENGTH <= usize::MAX` since `BRAND_STRING_LENGTH==48`, this is always
+        // safe.
         let len = DEFUALT_BRAND_STRING_BASE.len() + frequency.len() + after.len();
 
         let brand_string = DEFUALT_BRAND_STRING_BASE
@@ -124,9 +149,10 @@ impl IntelCpuid {
                 ),
             )
             .collect::<Vec<_>>();
+        debug_assert_eq!(brand_string.len(), super::BRAND_STRING_LENGTH);
 
-        // This `unwrap` is safe as padding ensures `brand_string.len() == BRAND_STRING_LENGTH`.
-        Ok(brand_string.try_into().unwrap())
+        // SAFETY: Padding ensures `brand_string.len() == BRAND_STRING_LENGTH`.
+        Ok(unsafe { brand_string.try_into().unwrap_unchecked() })
     }
 
     /// Applies required modifications to CPUID respective of a vCPU.
@@ -138,6 +164,7 @@ impl IntelCpuid {
     // As we pass through host freqeuncy, we require CPUID and thus `cfg(cpuid)`.
     #[cfg(cpuid)]
     #[allow(clippy::too_many_lines)]
+    #[inline]
     pub fn normalize(
         &mut self,
         // The index of the current logical CPU in the range [0..cpu_count].
@@ -147,7 +174,9 @@ impl IntelCpuid {
         // The number of bits needed to enumerate logical CPUs per core.
         cpu_bits: u8,
     ) -> Result<(), NormalizeCpuidError> {
-        let cpus_per_core = 1 << cpu_bits;
+        let cpus_per_core = 1u8
+            .checked_shl(u32::from(cpu_bits))
+            .ok_or(NormalizeCpuidError::CpuBits(cpu_bits))?;
 
         // Update deterministic cache entry
         {
@@ -159,22 +188,35 @@ impl IntelCpuid {
                     1 | 2 => subleaf
                         .eax
                         .max_num_addressable_ids_for_logical_processors_sharing_this_cache_mut()
-                        .checked_assign(u32::from(cpus_per_core - 1))
+                        // SAFETY: We know `cpus_per_core > 0` therefore this is always safe.
+                        .checked_assign(u32::from(unsafe {
+                            cpus_per_core.checked_sub(1).unwrap_unchecked()
+                        }))
                         .map_err(DeterministicCacheError::MaxCpusPerCore)?,
                     // L3 Cache
                     // The L3 cache is shared among all the logical threads
                     3 => subleaf
                         .eax
                         .max_num_addressable_ids_for_logical_processors_sharing_this_cache_mut()
-                        .checked_assign(u32::from(cpu_count - 1))
+                        .checked_assign(u32::from(
+                            cpu_count
+                                .checked_sub(1)
+                                .ok_or(DeterministicCacheError::MaxCpusPerCoreUnderflow)?,
+                        ))
                         .map_err(DeterministicCacheError::MaxCpusPerCore)?,
                     _ => (),
                 }
+                // SAFETY: We know `cpus_per_core !=0` therefore this is always safe.
+                let cores = unsafe { cpu_count.checked_div(cpus_per_core).unwrap_unchecked() };
                 // Put all the cores in the same socket
                 subleaf
                     .eax
                     .max_num_addressable_ids_for_processor_cores_in_physical_package_mut()
-                    .checked_assign(u32::from(cpu_count / cpus_per_core) - 1)
+                    .checked_assign(
+                        u32::from(cores)
+                            .checked_sub(1)
+                            .ok_or(DeterministicCacheError::MaxCorePerPackageUnderflow)?,
+                    )
                     .map_err(DeterministicCacheError::MaxCorePerPackage)?;
             }
         }
@@ -272,8 +314,7 @@ impl IntelCpuid {
                             .ecx
                             .level_number_mut()
                             .checked_assign(
-                                u32::try_from(index)
-                                    .expect("Failed to convert sub-leaf index to u32."),
+                                u32::try_from(index).map_err(ExtendedTopologyError::Overflow)?,
                             )
                             .map_err(ExtendedTopologyError::LevelNumber)?;
                         subleaf
@@ -286,12 +327,12 @@ impl IntelCpuid {
                     // No other levels available; This should already be set correctly,
                     // and it is added here as a "re-enforcement" in case we run on
                     // different hardware
-                    level => {
+                    _ => {
                         // We expect here as this is an extremely rare case that is unlikely to ever
                         // occur. It would require manual editing of the CPUID structure to push
                         // more than 2^32 subleaves.
                         subleaf.ecx.0 =
-                            u32::try_from(level).expect("Failed to convert sub-leaf index to u32.");
+                            u32::try_from(index).map_err(ExtendedTopologyError::Overflow)?;
                     }
                 }
             }
@@ -312,6 +353,7 @@ impl IntelCpuid {
 
 impl bit_fields::Equal for IntelCpuid {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.leaf::<0x0>().equal(&other.leaf::<0x0>())
@@ -448,6 +490,7 @@ impl Supports for IntelCpuid {
     ///
     /// Checks if a process from an environment with CPUID `other` could be continued in an
     /// environment with the CPUID `self`.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         match (self.leaf::<0x00>(), other.leaf::<0x00>()) {
             (_, None) => (),
@@ -541,8 +584,9 @@ impl Supports for IntelCpuid {
 
         #[rustfmt::skip]
         warn_support!(
-            0x2,0x3,0x4,0x9,0xB,0xD,0x12,0x15,0x16,0x17,0x18,0x1A,0x1B,0x1F,0x80000002_u64,
-            0x80000003_u64,0x80000004_u64,0x80000005_u64,0x80000006_u64
+            0x2u64,0x3u64,0x4u64,0x9u64,0xBu64,0xDu64,0x12u64,0x15u64,0x16u64,0x17u64,
+            0x18u64,0x1Au64,0x1Bu64,0x1Fu64,0x80000002u64,0x80000003u64,0x80000004u64,
+            0x80000005u64,0x80000006u64
         );
 
         Ok(())
@@ -550,6 +594,7 @@ impl Supports for IntelCpuid {
 }
 
 impl From<RawCpuid> for IntelCpuid {
+    #[inline]
     fn from(raw_cpuid: RawCpuid) -> Self {
         let map = raw_cpuid
             .iter()
@@ -561,6 +606,7 @@ impl From<RawCpuid> for IntelCpuid {
 }
 
 impl From<IntelCpuid> for RawCpuid {
+    #[inline]
     fn from(intel_cpuid: IntelCpuid) -> Self {
         let entries = intel_cpuid
             .0

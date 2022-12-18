@@ -21,6 +21,7 @@ pub trait IndexLeafMut<const INDEX: usize> {
     fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a>;
 }
 
+/// Transmutes `Vec<T>` into `Vec<U>` where `size::<T>() == size::<U>()`.
 pub(crate) unsafe fn transmute_vec<T, U>(from: Vec<T>) -> Vec<U> {
     let mut intermediate = std::mem::ManuallyDrop::new(from);
     Vec::from_raw_parts(
@@ -30,12 +31,12 @@ pub(crate) unsafe fn transmute_vec<T, U>(from: Vec<T>) -> Vec<U> {
     )
 }
 
-/// Conveniance macro for indexing shared leaves.
+/// Convenience macro for indexing shared leaves.
 macro_rules! cpuid_index_leaf {
     ($index: literal, $leaf: ty) => {
         impl IndexLeaf<$index> for super::Cpuid {
             type Output<'a> = Option<&'a $leaf>;
-
+            #[inline]
             fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
                 match self {
                     Self::Intel(intel_cpuid) => {
@@ -49,7 +50,7 @@ macro_rules! cpuid_index_leaf {
         }
         impl IndexLeafMut<$index> for super::Cpuid {
             type Output<'a> = Option<&'a mut $leaf>;
-
+            #[inline]
             fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
                 match self {
                     Self::Intel(intel_cpuid) => {
@@ -67,13 +68,13 @@ macro_rules! cpuid_index_leaf {
 }
 
 // TODO Remove this export
-/// Conveniance macro for indexing leaves.
+/// Convenience macro for indexing leaves.
 #[macro_export]
 macro_rules! index_leaf {
     ($index: literal, $leaf: ty, $cpuid: ty) => {
         impl $crate::IndexLeaf<$index> for $cpuid {
             type Output<'a> = Option<&'a $leaf>;
-
+            #[inline]
             fn index_leaf<'a>(&'a self) -> Self::Output<'a> {
                 self.0
                     .get(&$crate::CpuidKey::leaf($index))
@@ -83,7 +84,7 @@ macro_rules! index_leaf {
         }
         impl $crate::IndexLeafMut<$index> for $cpuid {
             type Output<'a> = Option<&'a mut $leaf>;
-
+            #[inline]
             fn index_leaf_mut<'a>(&'a mut self) -> Self::Output<'a> {
                 self.0
                     .get_mut(&$crate::CpuidKey::leaf($index))

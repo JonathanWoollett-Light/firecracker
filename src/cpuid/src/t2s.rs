@@ -5,6 +5,7 @@ use arch::x86_64::msr::{ArchCapaMSRFlags, MSR_IA32_ARCH_CAPABILITIES};
 use kvm_bindings::kvm_msr_entry;
 
 /// Add the MSR entries specific to this T2S template.
+#[inline]
 pub fn update_msr_entries(msr_entries: &mut Vec<kvm_msr_entry>) {
     let capabilities = ArchCapaMSRFlags::RSBA
         | ArchCapaMSRFlags::SKIP_L1DFL_VMENTRY
@@ -18,9 +19,11 @@ pub fn update_msr_entries(msr_entries: &mut Vec<kvm_msr_entry>) {
     });
 }
 
+#[allow(clippy::missing_docs_in_private_items)]
 static EXTRA_MSR_ENTRIES: &[u32] = &[MSR_IA32_ARCH_CAPABILITIES];
 
 /// Return a list of MSRs specific to this T2S template.
+#[inline]
 #[must_use]
 pub fn msr_entries_to_save() -> &'static [u32] {
     EXTRA_MSR_ENTRIES

@@ -1,18 +1,24 @@
 // Copyright 2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Do not use this. Use `bit-fields` instead.
 #![warn(clippy::pedantic, clippy::restriction)]
 #![allow(
-    clippy::non_ascii_literal,
     clippy::blanket_clippy_restriction_lints,
     clippy::implicit_return,
-    clippy::items_after_statements,
-    clippy::std_instead_of_core,
-    clippy::single_char_lifetime_names,
+    clippy::pattern_type_mismatch,
     clippy::std_instead_of_alloc,
-    clippy::unseparated_literal_suffix
+    clippy::std_instead_of_core,
+    clippy::pub_use,
+    clippy::non_ascii_literal,
+    clippy::single_char_lifetime_names,
+    clippy::exhaustive_enums,
+    clippy::exhaustive_structs,
+    clippy::unseparated_literal_suffix,
+    clippy::mod_module_files
 )]
+
+//! Procedural macros for the `bit-fields` crate.
+
 use std::convert::TryFrom;
 
 use proc_macro2::{Delimiter, Ident, Span, TokenTree};

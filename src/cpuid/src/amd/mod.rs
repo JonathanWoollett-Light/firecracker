@@ -41,10 +41,12 @@ pub struct AmdCpuid(pub std::collections::BTreeMap<CpuidKey, CpuidEntry>);
 
 impl CpuidTrait for AmdCpuid {
     /// Gets a given sub-leaf.
+    #[inline]
     fn get(&self, key: &CpuidKey) -> Option<&CpuidEntry> {
         self.0.get(key)
     }
     /// Gets a given sub-leaf.
+    #[inline]
     fn get_mut(&mut self, key: &CpuidKey) -> Option<&mut CpuidEntry> {
         self.0.get_mut(key)
     }
@@ -65,9 +67,10 @@ impl AmdCpuid {
     /// # Panics
     ///
     /// Never.
-    // As we pass through host freqeuncy, we require CPUID and thus `cfg(cpuid)`.
+    // As we pass through host frequency, we require CPUID and thus `cfg(cpuid)`.
+    #[allow(clippy::too_many_lines)]
     #[cfg(cpuid)]
-    #[allow(clippy::unused_self, clippy::too_many_lines)]
+    #[inline]
     pub fn normalize(
         &mut self,
         // The index of the current logical CPU in the range [0..cpu_count].
@@ -77,7 +80,9 @@ impl AmdCpuid {
         // The number of bits needed to enumerate logical CPUs per core.
         cpu_bits: u8,
     ) -> Result<(), NormalizeCpuidError> {
-        let cpus_per_core = 1 << cpu_bits;
+        let cpus_per_core = 1u8
+            .checked_shl(u32::from(cpu_bits))
+            .ok_or(NormalizeCpuidError::CpuBits(cpu_bits))?;
 
         // Process CPUID
         {
@@ -88,12 +93,11 @@ impl AmdCpuid {
             // Pass-through host CPUID for leaves 0x8000001e and 0x8000001d.
             {
                 // 0x8000001e
-                let entry = CpuidEntry {
+                self.0.insert(CpuidKey::leaf(0x8000001e), CpuidEntry {
                     flags: KvmCpuidFlags::empty(),
                     // SAFETY: Safe as `cfg(cpuid)` ensure CPUID is supported.
                     result: CCpuidResult::from(unsafe { core::arch::x86_64::__cpuid(0x8000001e) }),
-                };
-                self.0.insert(CpuidKey::leaf(0x8000001e), entry);
+                });
 
                 // 0x8000001d
                 for subleaf in 0.. {
@@ -104,11 +108,10 @@ impl AmdCpuid {
                     if Leaf8000001dEax::from(result.eax).cache_type() == 0 {
                         break;
                     }
-                    let entry = CpuidEntry {
+                    self.0.insert(CpuidKey::subleaf(0x8000001d, subleaf), CpuidEntry {
                         flags: KvmCpuidFlags::SIGNIFICANT_INDEX,
                         result,
-                    };
-                    self.0.insert(CpuidKey::subleaf(0x8000001d, subleaf), entry);
+                    });
                 }
             }
         }
@@ -120,12 +123,13 @@ impl AmdCpuid {
             let leaf_80000000 = self
                 .leaf_mut::<0x80000000>()
                 .ok_or(NormalizeCpuidError::MissingLeaf0x80000000)?;
-            // Unwrap is safe, as `0x8000_001f` is within the known range.
-            leaf_80000000
+            // SAFETY: Safe, as `0x8000_001f` is within the known range.
+            unsafe {
+                leaf_80000000
                 .eax
                 .l_func_ext_mut()
-                .checked_assign(0x8000_001f)
-                .unwrap();
+                .unchecked_assign(0x8000_001f);
+            }
         }
 
         // Updated extended feature fn entry
@@ -145,16 +149,17 @@ impl AmdCpuid {
                 .leaf_mut::<0x80000008>()
                 .ok_or(FeatureEntryError::MissingLeaf0x80000008)?;
             // This value allows at most 64 logical threads within a package.
-            // Unwrap is safe, as `7` is within the known range.
-            leaf_80000008
-                .ecx
-                .apic_id_size_mut()
-                .checked_assign(7)
-                .unwrap();
+            // SAFETY: `7` is within the known range and always safe.
+            unsafe {
+                leaf_80000008
+                    .ecx
+                    .apic_id_size_mut()
+                    .unchecked_assign(7);
+            }
             leaf_80000008
                 .ecx
                 .nt_mut()
-                .checked_assign(u32::from(cpu_count - 1))
+                .checked_assign(u32::from(cpu_count.checked_sub(1).ok_or(FeatureEntryError::NumberOfPhysicalThreadsOverflow)?))
                 .map_err(FeatureEntryError::NumberOfPhysicalThreads)?;
         }
 
@@ -164,18 +169,19 @@ impl AmdCpuid {
             for subleaf in leaf_8000001d.0 {
                 match u32::from(&subleaf.eax.cache_level()) {
                     // L1 & L2 Cache
-                    // The L1 & L2 cache is shared by at most 2 hyperthreads
+                    // The L1 & L2 cache is shared by at most 2 hyper-threads
                     1 | 2 => subleaf
                         .eax
                         .num_sharing_cache_mut()
-                        .checked_assign(u32::from(cpus_per_core - 1))
+                        // SAFETY: We know `cpus_per_core > 0` therefore this is always safe.
+                        .checked_assign(u32::from(unsafe { cpus_per_core.checked_sub(1).unwrap_unchecked() }))
                         .map_err(ExtendedCacheTopologyError::NumSharingCache)?,
                     // L3 Cache
                     // The L3 cache is shared among all the logical threads
                     3 => subleaf
                         .eax
                         .num_sharing_cache_mut()
-                        .checked_assign(u32::from(cpu_count - 1))
+                        .checked_assign(u32::from(cpu_count.checked_sub(1).ok_or(ExtendedCacheTopologyError::NumSharingCacheOverflow)?))
                         .map_err(ExtendedCacheTopologyError::NumSharingCache)?,
                     _ => (),
                 }
@@ -191,7 +197,10 @@ impl AmdCpuid {
             // logical CPU 1 -> core id: 0
             // logical CPU 2 -> core id: 1
             // logical CPU 3 -> core id: 1
-            let core_id = u32::from(cpu_index / cpus_per_core);
+            // SAFETY: We know `cpus_per_core != 0` therefore this is always safe.
+            let core_id = unsafe {
+                u32::from(cpu_index.checked_div(cpus_per_core).unwrap_unchecked())
+            };
 
             let leaf_8000001e = self
                 .leaf_mut::<0x8000001e>()
@@ -210,17 +219,20 @@ impl AmdCpuid {
             leaf_8000001e
                 .ebx
                 .threads_per_compute_unit_mut()
-                .checked_assign(u32::from(cpus_per_core - 1))
+                // SAFETY: We know `cpus_per_core > 0` therefore this is always safe.
+                .checked_assign(u32::from(unsafe { cpus_per_core.checked_sub(1).unwrap_unchecked() }))
                 .map_err(ExtendedApicIdError::ThreadPerComputeUnit)?;
 
-            // This value means there is 1 node per processor.
-            leaf_8000001e
-                .ecx
-                .nodes_per_processor_mut()
-                .checked_assign(0)
-                .unwrap();
-            // Put all the cpus in the same node.
-            leaf_8000001e.ecx.node_id_mut().checked_assign(0).unwrap();
+            // SAFETY: We know the value always fits within the range and thus is always safe.
+            unsafe {
+                // This value means there is 1 node per processor.
+                leaf_8000001e
+                    .ecx
+                    .nodes_per_processor_mut()
+                    .unchecked_assign(0);
+                // Put all the cpus in the same node.
+                leaf_8000001e.ecx.node_id_mut().unchecked_assign(0);
+            }
         }
 
         // Update brand string entry
@@ -242,12 +254,14 @@ impl Supports for AmdCpuid {
     ///
     /// Checks if a process from an environment with CPUID `other` could be continued in an
     /// environment with the CPUID `self`.
+    #[inline]
     fn supports(&self, _other: &Self) -> Result<(), Self::Error> {
         Ok(())
     }
 }
 
 impl From<RawCpuid> for AmdCpuid {
+    #[inline]
     fn from(raw_cpuid: RawCpuid) -> Self {
         let map = raw_cpuid
             .iter()
@@ -259,6 +273,7 @@ impl From<RawCpuid> for AmdCpuid {
 }
 
 impl From<AmdCpuid> for RawCpuid {
+    #[inline]
     fn from(amd_cpuid: AmdCpuid) -> Self {
         let entries = amd_cpuid
             .0

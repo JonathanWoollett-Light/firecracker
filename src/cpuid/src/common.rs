@@ -1,6 +1,6 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-#![allow(missing_docs, dead_code)]
+#![allow(clippy::restriction)]
 
 #[cfg(cpuid)]
 use crate::bit_helper::BitHelper;
@@ -15,7 +15,7 @@ macro_rules! bit_range {
 }
 
 // Basic CPUID Information
-#[allow(clippy::doc_markdown)]
+#[allow(clippy::doc_markdown, dead_code)]
 mod leaf_0x1 {
     pub const LEAF_NUM: u32 = 0x1;
 
@@ -93,18 +93,7 @@ mod leaf_0x1 {
         pub const HTT_BITINDEX: u32 = 28;
     }
 }
-// Deterministic Cache Parameters Leaf
-pub mod leaf_0x4 {
-    pub const LEAF_NUM: u32 = 0x4;
 
-    pub mod eax {
-        use crate::bit_helper::BitRange;
-
-        pub const CACHE_LEVEL_BITRANGE: BitRange = bit_range!(7, 5);
-        pub const MAX_CPUS_PER_CORE_BITRANGE: BitRange = bit_range!(25, 14);
-        pub const MAX_CORES_PER_PACKAGE_BITRANGE: BitRange = bit_range!(31, 26);
-    }
-}
 // Structured Extended Feature Flags Enumeration Leaf
 pub mod leaf_0x7 {
     pub const LEAF_NUM: u32 = 0x7;
@@ -206,15 +195,6 @@ pub mod leaf_0x7 {
         }
     }
 }
-mod leaf_0x80000000 {
-    pub const LEAF_NUM: u32 = 0x8000_0000;
-
-    pub mod eax {
-        use crate::bit_helper::BitRange;
-
-        pub const LARGEST_EXTENDED_FN_BITRANGE: BitRange = bit_range!(31, 0);
-    }
-}
 
 /// Intel brand string.
 pub const VENDOR_ID_INTEL: &[u8; 12] = b"GenuineIntel";
@@ -253,7 +233,7 @@ pub enum GetCpuidError {
 pub fn get_cpuid(leaf: u32, subleaf: u32) -> Result<std::arch::x86_64::CpuidResult, GetCpuidError> {
     let max_leaf =
         // SAFETY: This is safe because the host supports the `cpuid` instruction
-        unsafe { std::arch::x86_64::__get_cpuid_max(leaf & leaf_0x80000000::LEAF_NUM).0 };
+        unsafe { std::arch::x86_64::__get_cpuid_max(leaf & 0x8000_0000).0 };
     if leaf > max_leaf {
         return Err(GetCpuidError::UnsupportedLeaf(leaf));
     }
@@ -379,14 +359,6 @@ pub fn is_same_model(cpuid: &kvm_bindings::CpuId) -> bool {
 
     true
 }
-// Extended Cache Topology Leaf
-pub mod leaf_0x8000001d {
-    use crate::bit_helper::BitRange;
-    pub const LEAF_NUM: u32 = 0x8000_001d;
-
-    pub const CACHE_LEVEL_BITRANGE: BitRange = bit_range!(7, 5);
-    pub const MAX_CPUS_PER_CORE_BITRANGE: BitRange = bit_range!(25, 14);
-}
 
 /// Returns MSRs to be saved based on CPUID features that are enabled.
 ///
@@ -481,96 +453,4 @@ pub fn intel_msrs_to_save_by_cpuid(cpuid: &kvm_bindings::CpuId) -> std::collecti
     cpuid_msr_dep!(0x1, 0, edx, leaf_0x1::edx::MCE_BITINDEX, 0x400..0x480);
 
     msrs
-}
-
-#[allow(clippy::missing_panics_doc)]
-#[cfg(test)]
-pub mod tests {
-    #[cfg(cpuid)]
-    use super::*;
-
-    #[cfg(cpuid)]
-    #[must_use]
-    pub fn get_topoext_fn() -> u32 {
-        let vendor_id = get_vendor_id_from_host();
-        assert!(vendor_id.is_ok());
-        let function = match &vendor_id.ok().unwrap() {
-            VENDOR_ID_INTEL => leaf_0x4::LEAF_NUM,
-            VENDOR_ID_AMD => leaf_0x8000001d::LEAF_NUM,
-            _ => 0,
-        };
-        assert!(function != 0);
-
-        function
-    }
-
-    #[cfg(cpuid)]
-    #[test]
-    fn test_get_cpu_id() {
-        // get_cpu_id should work correctly here
-        let topoext_fn = get_topoext_fn();
-
-        // check that get_cpuid works for valid parameters
-        assert!(matches!(
-            get_cpuid(topoext_fn, 0),
-            Ok(topoext_entry) if topoext_entry.eax != 0));
-
-        // check that get_cpuid returns correct error for invalid `function`
-        assert!(matches!(
-            get_cpuid(0x9000_0000, 0),
-            Err(GetCpuidError::UnsupportedLeaf(0x9000_0000))
-        ));
-
-        // check that get_cpuid returns correct error for invalid `count`
-        assert!(matches!(
-            get_cpuid(topoext_fn, 100),
-            Err(GetCpuidError::InvalidSubleaf(100))
-        ));
-    }
-
-    #[cfg(cpuid)]
-    #[test]
-    fn test_get_vendor_id() {
-        let vendor_id = get_vendor_id_from_host();
-        assert!(vendor_id.is_ok());
-        matches!(&vendor_id.ok().unwrap(), VENDOR_ID_INTEL | VENDOR_ID_AMD);
-    }
-
-    #[cfg(cpuid)]
-    #[test]
-    fn test_is_same_model() {
-        let mut curr_cpuid = kvm_bindings::CpuId::new(2).unwrap();
-
-        // Add the vendor ID leaf.
-        let vendor = get_cpuid(0x0, 0).unwrap();
-        curr_cpuid.as_mut_slice()[0].function = 0x0;
-        curr_cpuid.as_mut_slice()[0].index = 0;
-        curr_cpuid.as_mut_slice()[0].ebx = vendor.ebx;
-        curr_cpuid.as_mut_slice()[0].ecx = vendor.ecx;
-        curr_cpuid.as_mut_slice()[0].edx = vendor.edx;
-
-        // Add the feature info leaf.
-        let feature_info = get_cpuid(0x1, 0).unwrap();
-        curr_cpuid.as_mut_slice()[1].function = 0x1;
-        curr_cpuid.as_mut_slice()[1].index = 0;
-        curr_cpuid.as_mut_slice()[1].eax = feature_info.eax;
-
-        assert!(is_same_model(&curr_cpuid));
-
-        let mut diff_vendor_cpuid = curr_cpuid.clone();
-        for mut entry in diff_vendor_cpuid.as_mut_slice() {
-            if entry.function == 0x0 && entry.index == 0 {
-                entry.ebx = 0xFFFF_FFFF;
-            }
-        }
-        assert!(!is_same_model(&diff_vendor_cpuid));
-
-        let mut diff_feature_cpuid = curr_cpuid;
-        for mut entry in diff_feature_cpuid.as_mut_slice() {
-            if entry.function == 0x1 && entry.index == 0 {
-                entry.eax ^= 0x1;
-            }
-        }
-        assert!(!is_same_model(&diff_feature_cpuid));
-    }
 }

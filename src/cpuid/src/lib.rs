@@ -4,18 +4,32 @@
 // Portions Copyright 2017 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the THIRD-PARTY file.
-#![warn(clippy::pedantic)]
+
+#![warn(clippy::pedantic, clippy::restriction)]
+#![allow(
+    clippy::blanket_clippy_restriction_lints,
+    clippy::implicit_return,
+    clippy::pattern_type_mismatch,
+    clippy::std_instead_of_alloc,
+    clippy::std_instead_of_core,
+    clippy::pub_use,
+    clippy::non_ascii_literal,
+    clippy::single_char_lifetime_names,
+    clippy::exhaustive_enums,
+    clippy::exhaustive_structs,
+    clippy::unseparated_literal_suffix,
+    clippy::mod_module_files
+)]
+// Apply CPUID specific lint adjustments.
 #![allow(
     clippy::unsafe_derive_deserialize,
     clippy::unreadable_literal,
     clippy::doc_markdown,
     clippy::similar_names,
-    clippy::needless_lifetimes
+    clippy::needless_lifetimes,
+    clippy::same_name_method
 )]
-#![warn(missing_docs)]
-#![warn(clippy::ptr_as_ptr)]
-#![warn(clippy::undocumented_unsafe_blocks)]
-#![warn(clippy::cast_lossless)]
+
 //! Utility for configuring the CPUID (CPU identification) for the guest microVM.
 
 use std::convert::TryFrom;
@@ -45,7 +59,7 @@ mod leaves;
 pub use leaves::*;
 
 /// Contains helper methods for bit operations.
-pub mod bit_helper;
+pub(crate) mod bit_helper;
 /// T2S Intel template
 #[cfg(cpuid)]
 pub mod t2s;
@@ -84,6 +98,7 @@ pub const BRAND_STRING_LENGTH: usize = 3 * 4 * 4;
 /// Intel(4) Xeon(R) Processor @ 3.00Ghz
 /// ```
 #[cfg(cpuid)]
+#[inline]
 #[must_use]
 pub fn host_brand_string() -> [u8; BRAND_STRING_LENGTH] {
     // TODO Check in CPUID that leaves 0x80000002, 0x80000003 and 0x80000004 are supported.
@@ -122,6 +137,7 @@ pub fn host_brand_string() -> [u8; BRAND_STRING_LENGTH] {
 pub trait CpuidTrait {
     /// Returns the CPUID manufacturers ID (e.g. `GenuineIntel` or `AuthenticAMD`) or `None` if it
     /// cannot be found in CPUID (e.g. leaf 0x0 is missing).
+    #[inline]
     #[must_use]
     fn manufacturer_id(&self) -> Option<[u8; 12]> {
         let leaf_0 = self.get(&CpuidKey::leaf(0x0))?;
@@ -140,6 +156,7 @@ pub trait CpuidTrait {
     }
 
     /// Get immutable reference to leaf.
+    #[inline]
     #[must_use]
     fn leaf<'a, const N: usize>(&'a self) -> <Self as IndexLeaf<N>>::Output<'a>
     where
@@ -149,6 +166,7 @@ pub trait CpuidTrait {
     }
 
     /// Get mutable reference to leaf.
+    #[inline]
     #[must_use]
     fn leaf_mut<'a, const N: usize>(&'a mut self) -> <Self as IndexLeafMut<N>>::Output<'a>
     where
@@ -168,6 +186,7 @@ pub trait CpuidTrait {
     /// # Errors
     ///
     /// When any of the leaves 0x80000002, 0x80000003 or 0x80000004 are not present.
+    #[inline]
     fn apply_brand_string(
         &mut self,
         brand_string: &[u8; BRAND_STRING_LENGTH],
@@ -271,6 +290,7 @@ pub trait CpuidTrait {
 
 impl CpuidTrait for Cpuid {
     /// Gets a given sub-leaf.
+    #[inline]
     fn get(&self, key: &CpuidKey) -> Option<&CpuidEntry> {
         match self {
             Self::Intel(intel_cpuid) => intel_cpuid.get(key),
@@ -279,6 +299,7 @@ impl CpuidTrait for Cpuid {
     }
 
     /// Gets a given sub-leaf.
+    #[inline]
     fn get_mut(&mut self, key: &CpuidKey) -> Option<&mut CpuidEntry> {
         match self {
             Self::Intel(intel_cpuid) => intel_cpuid.get_mut(key),
@@ -294,6 +315,7 @@ impl Cpuid {
     ///
     /// When failed to access KVM.
     #[cfg(cpuid)]
+    #[inline]
     pub fn kvm_get_supported_cpuid() -> std::result::Result<Self, KvmGetSupportedCpuidError> {
         let supported_kvm_cpuid =
             kvm_ioctls::Kvm::new()?.get_supported_cpuid(kvm_bindings::KVM_MAX_CPUID_ENTRIES)?;
@@ -301,6 +323,7 @@ impl Cpuid {
         Cpuid::try_from(supported_raw_cpuid).map_err(KvmGetSupportedCpuidError::CpuidFromRaw)
     }
     /// Returns `Some(&IntelCpuid)` if `Self == Self::Intel(_)` else returns `None`.
+    #[inline]
     #[must_use]
     pub fn intel_mut(&mut self) -> Option<&mut IntelCpuid> {
         match self {
@@ -309,6 +332,7 @@ impl Cpuid {
         }
     }
     /// Returns `Some(&mut IntelCpuid)` if `Self == Self::Intel(_)` else returns `None`.
+    #[inline]
     #[must_use]
     pub fn intel(&self) -> Option<&IntelCpuid> {
         match self {
@@ -317,6 +341,7 @@ impl Cpuid {
         }
     }
     /// Returns `Some(&AmdCpuid)` if `Self == Self::Amd(_)` else returns `None`.
+    #[inline]
     #[must_use]
     pub fn amd(&self) -> Option<&AmdCpuid> {
         match self {
@@ -325,6 +350,7 @@ impl Cpuid {
         }
     }
     /// Returns `Some(&mut AmdCpuid)` if `Self == Self::Amd(_)` else returns `None`.
+    #[inline]
     #[must_use]
     pub fn amd_mut(&mut self) -> Option<&mut AmdCpuid> {
         match self {
@@ -341,6 +367,7 @@ impl Cpuid {
     /// - [`AmdCpuid::normalize`] errors.
     // As we pass through host freqeuncy, we require CPUID and thus `cfg(cpuid)`.
     #[cfg(cpuid)]
+    #[inline]
     pub fn normalize(
         &mut self,
         // The index of the current logical CPU in the range [0..cpu_count].
@@ -424,6 +451,7 @@ impl Cpuid {
         }
     }
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     pub fn equal(&self, other: &Self) -> bool {
         match (self, other) {
@@ -440,6 +468,7 @@ impl Supports for Cpuid {
     ///
     /// For checking if a process from an environment with cpuid `other` could be continued in the
     /// environment with the cpuid `self`.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         match (self, other) {
             (Self::Intel(a), Self::Intel(b)) => a.supports(b).map_err(CpuidNotSupported::Intel),
@@ -463,6 +492,7 @@ pub trait Supports {
 
 impl TryFrom<RawCpuid> for Cpuid {
     type Error = CpuidTryFromRawCpuid;
+    #[inline]
     fn try_from(raw_cpuid: RawCpuid) -> Result<Self, Self::Error> {
         let leaf_0 = raw_cpuid
             .get(0, 0)
@@ -496,6 +526,7 @@ impl TryFrom<RawCpuid> for Cpuid {
 }
 
 impl From<Cpuid> for RawCpuid {
+    #[inline]
     fn from(cpuid: Cpuid) -> Self {
         match cpuid {
             Cpuid::Intel(intel_cpuid) => RawCpuid::from(intel_cpuid),
@@ -506,6 +537,7 @@ impl From<Cpuid> for RawCpuid {
 
 #[cfg(cpuid)]
 impl From<Cpuid> for kvm_bindings::CpuId {
+    #[inline]
     fn from(cpuid: Cpuid) -> Self {
         let raw_cpuid = RawCpuid::from(cpuid);
         Self::from(raw_cpuid)
@@ -523,11 +555,13 @@ pub struct CpuidKey {
 
 impl CpuidKey {
     /// `CpuidKey { leaf, subleaf: 0 }`
+    #[inline]
     #[must_use]
     pub fn leaf(leaf: u32) -> Self {
         Self { leaf, subleaf: 0 }
     }
     /// `CpuidKey { leaf, subleaf }`
+    #[inline]
     #[must_use]
     pub fn subleaf(leaf: u32, subleaf: u32) -> Self {
         Self { leaf, subleaf }
@@ -535,6 +569,7 @@ impl CpuidKey {
 }
 
 impl std::cmp::PartialOrd for CpuidKey {
+    #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(
             self.leaf
@@ -545,8 +580,11 @@ impl std::cmp::PartialOrd for CpuidKey {
 }
 
 impl std::cmp::Ord for CpuidKey {
+    #[inline]
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.partial_cmp(other).unwrap()
+        self.leaf
+            .cmp(&other.leaf)
+            .then(self.subleaf.cmp(&other.subleaf))
     }
 }
 
@@ -622,6 +660,7 @@ pub struct CCpuidResult {
 
 #[cfg(cpuid)]
 impl From<core::arch::x86_64::CpuidResult> for CCpuidResult {
+    #[inline]
     fn from(
         core::arch::x86_64::CpuidResult { eax, ebx, ecx, edx }: core::arch::x86_64::CpuidResult,
     ) -> Self {
@@ -629,6 +668,7 @@ impl From<core::arch::x86_64::CpuidResult> for CCpuidResult {
     }
 }
 impl From<(CpuidKey, CpuidEntry)> for RawKvmCpuidEntry {
+    #[inline]
     fn from(
         (CpuidKey { leaf, subleaf }, CpuidEntry { flags, result }): (CpuidKey, CpuidEntry),
     ) -> Self {
@@ -647,6 +687,7 @@ impl From<(CpuidKey, CpuidEntry)> for RawKvmCpuidEntry {
 }
 
 impl From<RawKvmCpuidEntry> for (CpuidKey, CpuidEntry) {
+    #[inline]
     fn from(
         RawKvmCpuidEntry {
             function,

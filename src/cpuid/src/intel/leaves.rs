@@ -10,6 +10,7 @@ use bit_fields::Equal;
 use super::*;
 use crate::{warn_support, Leaf, Supports};
 
+/// Cache and TLB infomation keywords.
 #[allow(clippy::non_ascii_literal)]
 static KEYWORDS: phf::Map<u8, &'static str> = phf::phf_map! {
     0x00u8 => "Null descriptor, this byte contains no information",
@@ -127,36 +128,80 @@ static KEYWORDS: phf::Map<u8, &'static str> = phf::phf_map! {
     0xFFu8 => "CPUID leaf 2 does not report cache descriptor information, use CPUID leaf 4 to query cache parameters"
 };
 impl fmt::Display for Leaf2 {
+    #[allow(clippy::unwrap_used, clippy::unwrap_in_result)]
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#?}", <[&'static str; 16]>::from(self))
+        write!(f, "{:#?}", <[&'static str; 16]>::try_from(self).unwrap())
     }
 }
+
+/// Error type for [`<[&'static str; 16] as TryFrom<&Leaf2>>::try_from`].
+#[derive(Debug, thiserror::Error, Eq, PartialEq)]
+#[error("Unknown cache and TLB infomation keyword: {0}")]
+pub struct UnknownKeyword(u8);
+
 // - The least-significant-byte of eax always returns 01h.
 // - The most significant bit indicates whether the register contains valid information (TODO Does
 //   this mean we only have 3 descriptors per register?)
-impl From<&Leaf2> for [&'static str; 16] {
-    fn from(leaf: &Leaf2) -> Self {
-        [
-            KEYWORDS.get(&leaf.eax[0]).unwrap(),
-            KEYWORDS.get(&leaf.eax[1]).unwrap(),
-            KEYWORDS.get(&leaf.eax[2]).unwrap(),
-            KEYWORDS.get(&leaf.eax[3]).unwrap(),
-            KEYWORDS.get(&leaf.ebx[0]).unwrap(),
-            KEYWORDS.get(&leaf.ebx[1]).unwrap(),
-            KEYWORDS.get(&leaf.ebx[2]).unwrap(),
-            KEYWORDS.get(&leaf.ebx[3]).unwrap(),
-            KEYWORDS.get(&leaf.ecx[0]).unwrap(),
-            KEYWORDS.get(&leaf.ecx[1]).unwrap(),
-            KEYWORDS.get(&leaf.ecx[2]).unwrap(),
-            KEYWORDS.get(&leaf.ecx[3]).unwrap(),
-            KEYWORDS.get(&leaf.edx[0]).unwrap(),
-            KEYWORDS.get(&leaf.edx[1]).unwrap(),
-            KEYWORDS.get(&leaf.edx[2]).unwrap(),
-            KEYWORDS.get(&leaf.edx[3]).unwrap(),
-        ]
+// TODO Implement the above conditions.
+impl TryFrom<&Leaf2> for [&'static str; 16] {
+    type Error = UnknownKeyword;
+    #[inline]
+    fn try_from(leaf: &Leaf2) -> Result<Self, Self::Error> {
+        Ok([
+            KEYWORDS
+                .get(&leaf.eax[0])
+                .ok_or(UnknownKeyword(leaf.eax[0]))?,
+            KEYWORDS
+                .get(&leaf.eax[1])
+                .ok_or(UnknownKeyword(leaf.eax[1]))?,
+            KEYWORDS
+                .get(&leaf.eax[2])
+                .ok_or(UnknownKeyword(leaf.eax[2]))?,
+            KEYWORDS
+                .get(&leaf.eax[3])
+                .ok_or(UnknownKeyword(leaf.eax[3]))?,
+            KEYWORDS
+                .get(&leaf.ebx[0])
+                .ok_or(UnknownKeyword(leaf.ebx[0]))?,
+            KEYWORDS
+                .get(&leaf.ebx[1])
+                .ok_or(UnknownKeyword(leaf.ebx[1]))?,
+            KEYWORDS
+                .get(&leaf.ebx[2])
+                .ok_or(UnknownKeyword(leaf.ebx[2]))?,
+            KEYWORDS
+                .get(&leaf.ebx[3])
+                .ok_or(UnknownKeyword(leaf.ebx[3]))?,
+            KEYWORDS
+                .get(&leaf.ecx[0])
+                .ok_or(UnknownKeyword(leaf.ecx[0]))?,
+            KEYWORDS
+                .get(&leaf.ecx[1])
+                .ok_or(UnknownKeyword(leaf.ecx[1]))?,
+            KEYWORDS
+                .get(&leaf.ecx[2])
+                .ok_or(UnknownKeyword(leaf.ecx[2]))?,
+            KEYWORDS
+                .get(&leaf.ecx[3])
+                .ok_or(UnknownKeyword(leaf.ecx[3]))?,
+            KEYWORDS
+                .get(&leaf.edx[0])
+                .ok_or(UnknownKeyword(leaf.edx[0]))?,
+            KEYWORDS
+                .get(&leaf.edx[1])
+                .ok_or(UnknownKeyword(leaf.edx[1]))?,
+            KEYWORDS
+                .get(&leaf.edx[2])
+                .ok_or(UnknownKeyword(leaf.edx[2]))?,
+            KEYWORDS
+                .get(&leaf.edx[3])
+                .ok_or(UnknownKeyword(leaf.edx[3]))?,
+        ])
     }
 }
 impl From<(u32, u32, u32, u32)> for Leaf2 {
+    #[inline]
     fn from((eax, ebx, ecx, edx): (u32, u32, u32, u32)) -> Self {
         Self {
             eax: eax.to_ne_bytes(),
@@ -180,8 +225,10 @@ pub type Leaf3 = Leaf<Leaf3Eax, Leaf3Ebx, Leaf3Ecx, Leaf3Edx>;
 /// Leaf 04H
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf4<'a>(pub Vec<&'a Leaf4Subleaf>);
+/// Leaf 04H
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf4Mut<'a>(pub Vec<&'a mut Leaf4Subleaf>);
+/// Leaf 04H subleaf
 pub type Leaf4Subleaf = Leaf<Leaf4Eax, Leaf4Ebx, Leaf4Ecx, Leaf4Edx>;
 
 /// Leaf 05H
@@ -193,13 +240,16 @@ pub type Leaf6 = Leaf<Leaf6Eax, Leaf6Ebx, Leaf6Ecx, Leaf6Edx>;
 /// Leaf 07H
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf7<'a>(pub Option<&'a Leaf7Subleaf0>, pub Option<&'a Leaf7Subleaf1>);
+/// Leaf 07H
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf7Mut<'a>(
     pub Option<&'a mut Leaf7Subleaf0>,
     pub Option<&'a mut Leaf7Subleaf1>,
 );
+/// Leaf 07H subleaf 0
 pub type Leaf7Subleaf0 =
     Leaf<Leaf7Subleaf0Eax, Leaf7Subleaf0Ebx, Leaf7Subleaf0Ecx, Leaf7Subleaf0Edx>;
+/// Leaf 07H subleaf 1
 pub type Leaf7Subleaf1 =
     Leaf<Leaf7Subleaf1Eax, Leaf7Subleaf1Ebx, Leaf7Subleaf1Ecx, Leaf7Subleaf1Edx>;
 
@@ -212,8 +262,10 @@ pub type LeafA = Leaf<LeafAEax, LeafAEbx, LeafAEcx, LeafAEdx>;
 /// Leaf 0BH
 #[derive(Debug, PartialEq, Eq)]
 pub struct LeafB<'a>(pub Vec<&'a LeafBSubleaf>);
+/// Leaf 0BH
 #[derive(Debug, PartialEq, Eq)]
 pub struct LeafBMut<'a>(pub Vec<&'a mut LeafBSubleaf>);
+/// Leaf 0BH subleaf
 pub type LeafBSubleaf = Leaf<LeafBEax, LeafBEbx, LeafBEcx, LeafBEdx>;
 
 // /// Leaf 0DH
@@ -229,13 +281,16 @@ pub type LeafBSubleaf = Leaf<LeafBEax, LeafBEbx, LeafBEcx, LeafBEdx>;
 /// Leaf 0FH
 #[derive(Debug, PartialEq, Eq)]
 pub struct LeafF<'a>(pub Option<&'a LeafFSubleaf0>, pub Option<&'a LeafFSubleaf1>);
+/// Leaf 0FH
 #[derive(Debug, PartialEq, Eq)]
 pub struct LeafFMut<'a>(
     pub Option<&'a mut LeafFSubleaf0>,
     pub Option<&'a mut LeafFSubleaf1>,
 );
+/// Leaf 0FH subleaf 0
 pub type LeafFSubleaf0 =
     Leaf<LeafFSubleaf0Eax, LeafFSubleaf0Ebx, LeafFSubleaf0Ecx, LeafFSubleaf0Edx>;
+/// Leaf 0FH subleaf 1
 pub type LeafFSubleaf1 =
     Leaf<LeafFSubleaf1Eax, LeafFSubleaf1Ebx, LeafFSubleaf1Ecx, LeafFSubleaf1Edx>;
 
@@ -247,6 +302,7 @@ pub struct Leaf10<'a>(
     pub Option<&'a Leaf10Subleaf2>,
     pub Option<&'a Leaf10Subleaf3>,
 );
+/// Leaf 10H
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf10Mut<'a>(
     pub Option<&'a mut Leaf10Subleaf0>,
@@ -254,12 +310,16 @@ pub struct Leaf10Mut<'a>(
     pub Option<&'a mut Leaf10Subleaf2>,
     pub Option<&'a mut Leaf10Subleaf3>,
 );
+/// Leaf 10H subleaf 0
 pub type Leaf10Subleaf0 =
     Leaf<Leaf10Subleaf0Eax, Leaf10Subleaf0Ebx, Leaf10Subleaf0Ecx, Leaf10Subleaf0Edx>;
+/// Leaf 10H subleaf 1
 pub type Leaf10Subleaf1 =
     Leaf<Leaf10Subleaf1Eax, Leaf10Subleaf1Ebx, Leaf10Subleaf1Ecx, Leaf10Subleaf1Edx>;
+/// Leaf 10H subleaf 2
 pub type Leaf10Subleaf2 =
     Leaf<Leaf10Subleaf2Eax, Leaf10Subleaf2Ebx, Leaf10Subleaf2Ecx, Leaf10Subleaf2Edx>;
+/// Leaf 10H subleaf 3
 pub type Leaf10Subleaf3 =
     Leaf<Leaf10Subleaf3Eax, Leaf10Subleaf3Ebx, Leaf10Subleaf3Ecx, Leaf10Subleaf3Edx>;
 
@@ -270,16 +330,20 @@ pub struct Leaf12<'a>(
     pub Option<&'a Leaf12Subleaf1>,
     pub Vec<&'a Leaf12SubleafGt1>,
 );
+/// Leaf 12H
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf12Mut<'a>(
     pub Option<&'a mut Leaf12Subleaf0>,
     pub Option<&'a mut Leaf12Subleaf1>,
     pub Vec<&'a mut Leaf12SubleafGt1>,
 );
+/// Leaf 12H subleaf 0
 pub type Leaf12Subleaf0 =
     Leaf<Leaf12Subleaf0Eax, Leaf12Subleaf0Ebx, Leaf12Subleaf0Ecx, Leaf12Subleaf0Edx>;
+/// Leaf 12H subleaf 1
 pub type Leaf12Subleaf1 =
     Leaf<Leaf12Subleaf1Eax, Leaf12Subleaf1Ebx, Leaf12Subleaf1Ecx, Leaf12Subleaf1Edx>;
+/// Leaf 12H subleaf >1
 pub type Leaf12SubleafGt1 =
     Leaf<Leaf12SubleafGt1Eax, Leaf12SubleafGt1Ebx, Leaf12SubleafGt1Ecx, Leaf12SubleafGt1Edx>;
 
@@ -289,13 +353,16 @@ pub struct Leaf14<'a>(
     pub Option<&'a Leaf14Subleaf0>,
     pub Option<&'a Leaf14Subleaf1>,
 );
+/// Leaf 14H
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf14Mut<'a>(
     pub Option<&'a mut Leaf14Subleaf0>,
     pub Option<&'a mut Leaf14Subleaf1>,
 );
+/// Leaf 14H subleaf 0
 pub type Leaf14Subleaf0 =
     Leaf<Leaf14Subleaf0Eax, Leaf14Subleaf0Ebx, Leaf14Subleaf0Ecx, Leaf14Subleaf0Edx>;
+/// Leaf 14H subleaf 1
 pub type Leaf14Subleaf1 =
     Leaf<Leaf14Subleaf1Eax, Leaf14Subleaf1Ebx, Leaf14Subleaf1Ecx, Leaf14Subleaf1Edx>;
 
@@ -313,6 +380,7 @@ pub struct Leaf17<'a>(
     pub Option<&'a Leaf17Subleaf2>,
     pub Option<&'a Leaf17Subleaf3>,
 );
+/// Leaf 17H
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf17Mut<'a>(
     pub Option<&'a mut Leaf17Subleaf0>,
@@ -320,11 +388,15 @@ pub struct Leaf17Mut<'a>(
     pub Option<&'a mut Leaf17Subleaf2>,
     pub Option<&'a mut Leaf17Subleaf3>,
 );
+/// Leaf 18H subleaf 0
 pub type Leaf17Subleaf0 =
     Leaf<Leaf17Subleaf0Eax, Leaf17Subleaf0Ebx, Leaf17Subleaf0Ecx, Leaf17Subleaf0Edx>;
+/// Leaf 17H subleaf 1
 pub type Leaf17Subleaf1 =
     Leaf<Leaf17Subleaf1Eax, Leaf17Subleaf1Ebx, Leaf17Subleaf1Ecx, Leaf17Subleaf1Edx>;
+/// Leaf 17H subleaf 2
 pub type Leaf17Subleaf2 = Leaf17Subleaf1;
+/// Leaf 17H subleaf 3
 pub type Leaf17Subleaf3 = Leaf17Subleaf1;
 
 /// Leaf 18H
@@ -333,13 +405,16 @@ pub struct Leaf18<'a>(
     pub Option<&'a Leaf18Subleaf0>,
     pub Vec<&'a Leaf18SubleafGt0>,
 );
+/// Leaf 18H
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf18Mut<'a>(
     pub Option<&'a mut Leaf18Subleaf0>,
     pub Vec<&'a mut Leaf18SubleafGt0>,
 );
+/// Leaf 18H subleaf 0
 pub type Leaf18Subleaf0 =
     Leaf<Leaf18Subleaf0Eax, Leaf18Subleaf0Ebx, Leaf18Subleaf0Ecx, Leaf18Subleaf0Edx>;
+/// Leaf 18H subleaf 1
 pub type Leaf18SubleafGt0 =
     Leaf<Leaf18SubleafGt0Eax, Leaf18SubleafGt0Ebx, Leaf18SubleafGt0Ecx, Leaf18SubleafGt0Edx>;
 
@@ -359,8 +434,10 @@ pub type Leaf1C = Leaf<Leaf1CEax, Leaf1CEbx, Leaf1CEcx, Leaf1CEdx>;
 /// Leaf 1FH
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf1F<'a>(pub Vec<&'a Leaf1FSubleaf>);
+/// Leaf 1FH
 #[derive(Debug, PartialEq, Eq)]
 pub struct Leaf1FMut<'a>(pub Vec<&'a mut Leaf1FSubleaf>);
+/// Leaf 1F subleaf 1
 pub type Leaf1FSubleaf = Leaf<Leaf1FEax, Leaf1FEbx, Leaf1FEcx, Leaf1FEdx>;
 
 // TODO I need to investigate the layout of this leaf
@@ -391,6 +468,7 @@ pub type Leaf80000008 = Leaf<Leaf80000008Eax, Leaf80000008Ebx, Leaf80000008Ecx, 
 
 impl Equal for Leaf4<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0)
@@ -398,6 +476,7 @@ impl Equal for Leaf4<'_> {
 }
 impl Equal for Leaf4Mut<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0)
@@ -405,6 +484,7 @@ impl Equal for Leaf4Mut<'_> {
 }
 impl Equal for Leaf7<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0) && self.1.equal(&other.1)
@@ -412,6 +492,7 @@ impl Equal for Leaf7<'_> {
 }
 impl Equal for Leaf7Mut<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0) && self.1.equal(&other.1)
@@ -419,6 +500,7 @@ impl Equal for Leaf7Mut<'_> {
 }
 impl Equal for LeafB<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0)
@@ -426,6 +508,7 @@ impl Equal for LeafB<'_> {
 }
 impl Equal for LeafBMut<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0)
@@ -445,6 +528,7 @@ impl Equal for LeafBMut<'_> {
 
 impl Equal for LeafF<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0) && self.1.equal(&other.1)
@@ -452,6 +536,7 @@ impl Equal for LeafF<'_> {
 }
 impl Equal for LeafFMut<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0) && self.1.equal(&other.1)
@@ -460,6 +545,7 @@ impl Equal for LeafFMut<'_> {
 
 impl Equal for Leaf10<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0)
@@ -470,6 +556,7 @@ impl Equal for Leaf10<'_> {
 }
 impl Equal for Leaf10Mut<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0)
@@ -481,6 +568,7 @@ impl Equal for Leaf10Mut<'_> {
 
 impl Equal for Leaf12<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0) && self.1.equal(&other.1) && self.2.equal(&other.2)
@@ -488,6 +576,7 @@ impl Equal for Leaf12<'_> {
 }
 impl Equal for Leaf12Mut<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0) && self.1.equal(&other.1) && self.2.equal(&other.2)
@@ -495,6 +584,7 @@ impl Equal for Leaf12Mut<'_> {
 }
 impl Equal for Leaf14<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0) && self.1.equal(&other.1)
@@ -502,6 +592,7 @@ impl Equal for Leaf14<'_> {
 }
 impl Equal for Leaf14Mut<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0) && self.1.equal(&other.1)
@@ -509,6 +600,7 @@ impl Equal for Leaf14Mut<'_> {
 }
 impl Equal for Leaf17<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0)
@@ -519,6 +611,7 @@ impl Equal for Leaf17<'_> {
 }
 impl Equal for Leaf17Mut<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0)
@@ -530,6 +623,7 @@ impl Equal for Leaf17Mut<'_> {
 
 impl Equal for Leaf18<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0) && self.1.equal(&other.1)
@@ -537,6 +631,7 @@ impl Equal for Leaf18<'_> {
 }
 impl Equal for Leaf18Mut<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0) && self.1.equal(&other.1)
@@ -545,6 +640,7 @@ impl Equal for Leaf18Mut<'_> {
 
 impl Equal for Leaf1F<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0)
@@ -552,6 +648,7 @@ impl Equal for Leaf1F<'_> {
 }
 impl Equal for Leaf1FMut<'_> {
     /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
     #[must_use]
     fn equal(&self, other: &Self) -> bool {
         self.0.equal(&other.0)
@@ -562,19 +659,24 @@ impl Equal for Leaf1FMut<'_> {
 // Supports
 // -------------------------------------------------------------------------------------------------
 
+/// Error type for [`<Leaf5 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf5NotSupported {
-    #[error("SmallestMonitorLineSize")]
+    /// SmallestMonitorLineSize.
+    #[error("SmallestMonitorLineSize.")]
     SmallestMonitorLineSize,
-    #[error("LargestMonitorLineSize")]
+    /// LargestMonitorLineSize.
+    #[error("LargestMonitorLineSize.")]
     LargestMonitorLineSize,
-    #[error("Ecx")]
+    /// Ecx.
+    #[error("Ecx.")]
     Ecx,
 }
 
 impl Supports for Leaf5 {
     type Error = Leaf5NotSupported;
     /// We check everything here.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x5", true, true, true, false);
         // We compare `<=` therefore `Ordering::Less` corresponds  greater support and to
@@ -593,21 +695,27 @@ impl Supports for Leaf5 {
     }
 }
 
+/// Error type for [`<Leaf6 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf6NotSupported {
-    #[error("Eax")]
+    /// Eax.
+    #[error("Eax.")]
     Eax,
-    #[error("NumberOfInterruptThresholdsInDigitalThermalSensor")]
+    /// NumberOfInterruptThresholdsInDigitalThermalSensor.
+    #[error("NumberOfInterruptThresholdsInDigitalThermalSensor.")]
     NumberOfInterruptThresholdsInDigitalThermalSensor,
-    #[error("IntelThreadDirectorClasses")]
+    /// IntelThreadDirectorClasses.
+    #[error("IntelThreadDirectorClasses.")]
     IntelThreadDirectorClasses,
-    #[error("Ecx")]
+    /// Ecx.
+    #[error("Ecx.")]
     Ecx,
 }
 
 impl Supports for Leaf6 {
     type Error = Leaf6NotSupported;
     /// We do not currently check EDX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x6", true, true, true, false);
         match self.eax.cmp_flags(&other.eax) {
@@ -636,14 +744,19 @@ impl Supports for Leaf6 {
     }
 }
 
+/// Error type for [`<Leaf7 as Supports>::supports`] and [`<Leaf7Mut as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf7NotSupported {
+    /// MissingSubleaf0.
     #[error("MissingSubleaf0.")]
     MissingSubleaf0,
+    /// Subleaf0.
     #[error("Subleaf0: {0}")]
     Subleaf0(Leaf7Subleaf0NotSupported),
+    /// MissingSubleaf1.
     #[error("MissingSubleaf1.")]
     MissingSubleaf1,
+    /// Subleaf1.
     #[error("Subleaf1: {0}")]
     Subleaf1(Leaf7Subleaf1NotSupported),
 }
@@ -651,6 +764,7 @@ pub enum Leaf7NotSupported {
 impl Supports for Leaf7<'_> {
     type Error = Leaf7NotSupported;
     /// We do not currently check EDX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         match (self.0, other.0) {
             (_, None) => (),
@@ -669,6 +783,7 @@ impl Supports for Leaf7<'_> {
 impl Supports for Leaf7Mut<'_> {
     type Error = Leaf7NotSupported;
     /// We do not currently check EDX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         match (self.0.as_ref(), other.0.as_ref()) {
             (_, None) => (),
@@ -685,14 +800,19 @@ impl Supports for Leaf7Mut<'_> {
     }
 }
 
+/// Error type for [`<Leaf7Subleaf0 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf7Subleaf0NotSupported {
+    /// MaxInputValueSubleaf.
     #[error("MaxInputValueSubleaf: {0} vs {1}.")]
     MaxInputValueSubleaf(u32, u32),
+    /// Ebx.
     #[error("Ebx: {0} vs {1}.")]
     Ebx(u32, u32),
+    /// Ecx.
     #[error("Ecx: {0} vs {1}.")]
     Ecx(u32, u32),
+    /// Edx.
     #[error("Edx: {0} vs {1}.")]
     Edx(u32, u32),
 }
@@ -700,6 +820,7 @@ pub enum Leaf7Subleaf0NotSupported {
 impl Supports for Leaf7Subleaf0 {
     type Error = Leaf7Subleaf0NotSupported;
     /// We check everything here.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         debug_assert!(
             self.eax.max_input_value_subleaf() == 1 || self.eax.max_input_value_subleaf() == 0
@@ -736,10 +857,13 @@ impl Supports for Leaf7Subleaf0 {
     }
 }
 
+/// Error type for [`<Leaf7Subleaf1 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf7Subleaf1NotSupported {
+    /// Eax.
     #[error("Eax.")]
     Eax,
+    /// Ebx.
     #[error("Ebx.")]
     Ebx,
 }
@@ -747,6 +871,7 @@ pub enum Leaf7Subleaf1NotSupported {
 impl Supports for Leaf7Subleaf1 {
     type Error = Leaf7Subleaf1NotSupported;
     /// We check everything here.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x7 sub-leaf 1", true, true, true, true);
         if matches!(self.eax.cmp_flags(&other.eax), Some(Ordering::Less) | None) {
@@ -759,8 +884,10 @@ impl Supports for Leaf7Subleaf1 {
     }
 }
 
+/// Error type for [`<LeafA as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum LeafANotSupported {
+    /// Ebx.
     #[error("Ebx.")]
     Ebx,
 }
@@ -768,6 +895,7 @@ pub enum LeafANotSupported {
 impl Supports for LeafA {
     type Error = LeafANotSupported;
     /// We do not currently check EAX, ECX and EDX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0xA", false, true, false, false);
         if matches!(self.ebx.cmp_flags(&other.ebx), Some(Ordering::Less) | None) {
@@ -777,14 +905,19 @@ impl Supports for LeafA {
     }
 }
 
+/// Error type for [`<LeafF as Supports>::supports`] and [`<LeafFMut as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum LeafFNotSupported {
+    /// MissingSubleaf0.
     #[error("MissingSubleaf0.")]
     MissingSubleaf0,
+    /// Subleaf0.
     #[error("Subleaf0: {0}")]
     Subleaf0(LeafFSubleaf0NotSupported),
+    /// MissingSubleaf1.
     #[error("MissingSubleaf1.")]
     MissingSubleaf1,
+    /// Subleaf1.
     #[error("Subleaf1: {0}")]
     Subleaf1(LeafFSubleaf1NotSupported),
 }
@@ -792,6 +925,7 @@ pub enum LeafFNotSupported {
 impl Supports for LeafF<'_> {
     type Error = LeafFNotSupported;
     /// We check sub-leaves 0 and 1.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         match (self.0, other.0) {
             (_, None) => (),
@@ -810,6 +944,7 @@ impl Supports for LeafF<'_> {
 impl Supports for LeafFMut<'_> {
     type Error = LeafFNotSupported;
     /// We check sub-leaves 0 and 1.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         match (self.0.as_ref(), other.0.as_ref()) {
             (_, None) => (),
@@ -825,10 +960,13 @@ impl Supports for LeafFMut<'_> {
     }
 }
 
+/// Error type for [`<LeafFSubleaf0 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum LeafFSubleaf0NotSupported {
+    /// MaxRmidRange.
     #[error("MaxRmidRange.")]
     MaxRmidRange,
+    /// Edx.
     #[error("Edx.")]
     Edx,
 }
@@ -836,6 +974,7 @@ pub enum LeafFSubleaf0NotSupported {
 impl Supports for LeafFSubleaf0 {
     type Error = LeafFSubleaf0NotSupported;
     /// We check everything here.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0xF sub-leaf 0", true, true, true, true);
         if self.ebx.max_rmid_range() < other.ebx.max_rmid_range() {
@@ -849,10 +988,13 @@ impl Supports for LeafFSubleaf0 {
     }
 }
 
+/// Error type for [`<LeafFSubleaf1 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum LeafFSubleaf1NotSupported {
+    /// RmidMax.
     #[error("RmidMax.")]
     RmidMax,
+    /// Edx.
     #[error("Edx.")]
     Edx,
 }
@@ -860,6 +1002,7 @@ pub enum LeafFSubleaf1NotSupported {
 impl Supports for LeafFSubleaf1 {
     type Error = LeafFSubleaf1NotSupported;
     /// We do not check EBX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0xF sub-leaf 1", true, false, true, true);
         if self.ecx.rmid_max() < other.ecx.rmid_max() {
@@ -873,18 +1016,25 @@ impl Supports for LeafFSubleaf1 {
     }
 }
 
+/// Error type for [`<Leaf10 as Supports>::supports`] and [`<Leaf10Mut as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf10NotSupported {
+    /// MissingSubleaf0.
     #[error("MissingSubleaf0.")]
     MissingSubleaf0,
+    /// Subleaf0.
     #[error("Subleaf0: {0}")]
     Subleaf0(Leaf10Subleaf0NotSupported),
+    /// MissingSubleaf1.
     #[error("MissingSubleaf1.")]
     MissingSubleaf1,
+    /// Subleaf1.
     #[error("Subleaf1: {0}")]
     Subleaf1(Leaf10Subleaf1NotSupported),
+    /// MissingSubleaf3.
     #[error("MissingSubleaf3.")]
     MissingSubleaf3,
+    /// Subleaf3.
     #[error("Subleaf3: {0}")]
     Subleaf3(Leaf10Subleaf3NotSupported),
 }
@@ -892,6 +1042,7 @@ pub enum Leaf10NotSupported {
 impl Supports for Leaf10<'_> {
     type Error = Leaf10NotSupported;
     /// We check sub-leaves 0 and 1.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         log::warn!(
             "Could not fully validate support for Intel CPUID leaf 0x10 due to being unable to \
@@ -919,6 +1070,7 @@ impl Supports for Leaf10<'_> {
 impl Supports for Leaf10Mut<'_> {
     type Error = Leaf10NotSupported;
     /// We check sub-leaves 0 and 1.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         log::warn!(
             "Could not fully validate support for Intel CPUID leaf 0x10 due to being unable to \
@@ -943,8 +1095,10 @@ impl Supports for Leaf10Mut<'_> {
     }
 }
 
+/// Error type for [`<Leaf10Subleaf0 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf10Subleaf0NotSupported {
+    /// Ebx.
     #[error("Ebx.")]
     Ebx,
 }
@@ -952,6 +1106,7 @@ pub enum Leaf10Subleaf0NotSupported {
 impl Supports for Leaf10Subleaf0 {
     type Error = Leaf10Subleaf0NotSupported;
     /// We check everything here.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x10 sub-leaf 0", true, true, true, true);
         if matches!(self.ebx.cmp_flags(&other.ebx), Some(Ordering::Less) | None) {
@@ -961,8 +1116,10 @@ impl Supports for Leaf10Subleaf0 {
     }
 }
 
+/// Error type for [`<Leaf10Subleaf1 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf10Subleaf1NotSupported {
+    /// Ecx.
     #[error("Ecx.")]
     Ecx,
 }
@@ -970,6 +1127,7 @@ pub enum Leaf10Subleaf1NotSupported {
 impl Supports for Leaf10Subleaf1 {
     type Error = Leaf10Subleaf1NotSupported;
     /// We only check ECX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x10 sub-leaf 1", false, false, true, false);
         if matches!(self.ecx.cmp_flags(&other.ecx), Some(Ordering::Less) | None) {
@@ -979,8 +1137,10 @@ impl Supports for Leaf10Subleaf1 {
     }
 }
 
+/// Error type for [`<Leaf10Subleaf3 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf10Subleaf3NotSupported {
+    /// Ecx.
     #[error("Ecx.")]
     Ecx,
 }
@@ -988,6 +1148,7 @@ pub enum Leaf10Subleaf3NotSupported {
 impl Supports for Leaf10Subleaf3 {
     type Error = Leaf10Subleaf3NotSupported;
     /// We only check ECX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x10 sub-leaf 3", false, false, true, false);
         if matches!(self.ecx.cmp_flags(&other.ecx), Some(Ordering::Less) | None) {
@@ -997,10 +1158,13 @@ impl Supports for Leaf10Subleaf3 {
     }
 }
 
+/// Error type for [`<Leaf14 as Supports>::supports`] and [`<Leaf14Mut as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf14NotSupported {
+    /// MissingSubleaf0.
     #[error("MissingSubleaf0.")]
     MissingSubleaf0,
+    /// Subleaf0.
     #[error("Subleaf0: {0}")]
     Subleaf0(Leaf14Subleaf0NotSupported),
 }
@@ -1008,6 +1172,7 @@ pub enum Leaf14NotSupported {
 impl Supports for Leaf14<'_> {
     type Error = Leaf14NotSupported;
     /// Only checks subleaf 1.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         log::warn!(
             "Could not fully validate support for Intel CPUID leaf 0x14 due to being unable to \
@@ -1025,6 +1190,7 @@ impl Supports for Leaf14<'_> {
 impl Supports for Leaf14Mut<'_> {
     type Error = Leaf14NotSupported;
     /// Only checks subleaf 1.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         log::warn!(
             "Could not fully validate support for Intel CPUID leaf 0x14 due to being unable to \
@@ -1039,19 +1205,24 @@ impl Supports for Leaf14Mut<'_> {
     }
 }
 
+/// Error type for [`<Leaf14Subleaf0 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf14Subleaf0NotSupported {
+    /// MaxSubleaf.
     #[error("MaxSubleaf.")]
     MaxSubleaf,
+    /// Ebx.
     #[error("Ebx.")]
     Ebx,
-    #[error("Ecx")]
+    /// Ecx.
+    #[error("Ecx.")]
     Ecx,
 }
 
 impl Supports for Leaf14Subleaf0 {
     type Error = Leaf14Subleaf0NotSupported;
     /// We check everything here.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x14 sub-leaf 0", true, true, true, true);
         if self.eax.max_subleaf() < other.eax.max_subleaf() {
@@ -1067,10 +1238,13 @@ impl Supports for Leaf14Subleaf0 {
     }
 }
 
+/// Error type for [`<Leaf18 as Supports>::supports`] and [`<Leaf18Mut as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf18NotSupported {
+    /// MissingSubleaf0.
     #[error("MissingSubleaf0.")]
     MissingSubleaf0,
+    /// Subleaf0.
     #[error("Subleaf0: {0}")]
     Subleaf0(Leaf18Subleaf0NotSupported),
 }
@@ -1078,6 +1252,7 @@ pub enum Leaf18NotSupported {
 impl Supports for Leaf18<'_> {
     type Error = Leaf18NotSupported;
     /// Only checks subleaf 1.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         log::warn!(
             "Could not fully validate support for Intel CPUID leaf 0x18 due to being unable to \
@@ -1095,6 +1270,7 @@ impl Supports for Leaf18<'_> {
 impl Supports for Leaf18Mut<'_> {
     type Error = Leaf18NotSupported;
     /// Only checks subleaf 1.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         log::warn!(
             "Could not fully validate support for Intel CPUID leaf 0x18 due to being unable to \
@@ -1109,10 +1285,13 @@ impl Supports for Leaf18Mut<'_> {
     }
 }
 
+/// Error type for [`<Leaf18Subleaf0 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf18Subleaf0NotSupported {
+    /// MissingSubleaf0.
     #[error("MissingSubleaf0.")]
     MaxSubleaf,
+    /// Ebx.
     #[error("Ebx.")]
     Ebx,
 }
@@ -1120,6 +1299,7 @@ pub enum Leaf18Subleaf0NotSupported {
 impl Supports for Leaf18Subleaf0 {
     type Error = Leaf18Subleaf0NotSupported;
     /// We do not check ECX or EDX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x18 sub-leaf 0", true, true, false, false);
         if self.eax.max_subleaf() < other.eax.max_subleaf() {
@@ -1132,12 +1312,16 @@ impl Supports for Leaf18Subleaf0 {
     }
 }
 
+/// Error type for [`<Leaf19 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf19NotSupported {
+    /// Eax.
     #[error("Eax.")]
     Eax,
+    /// Ebx.
     #[error("Ebx.")]
     Ebx,
+    /// Ecx.
     #[error("Ecx.")]
     Ecx,
 }
@@ -1145,6 +1329,7 @@ pub enum Leaf19NotSupported {
 impl Supports for Leaf19 {
     type Error = Leaf19NotSupported;
     /// We check everything here.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x19", true, true, true, true);
         if matches!(self.eax.cmp_flags(&other.eax), Some(Ordering::Less) | None) {
@@ -1160,12 +1345,16 @@ impl Supports for Leaf19 {
     }
 }
 
+/// Error type for [`<Leaf1C as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf1CNotSupported {
+    /// Eax.
     #[error("Eax.")]
     Eax,
+    /// Ebx.
     #[error("Ebx.")]
     Ebx,
+    /// Ecx.
     #[error("Ecx.")]
     Ecx,
 }
@@ -1173,6 +1362,7 @@ pub enum Leaf1CNotSupported {
 impl Supports for Leaf1C {
     type Error = Leaf1CNotSupported;
     /// We do not check EAX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x1C", true, true, true, true);
         if matches!(self.eax.cmp_flags(&other.eax), Some(Ordering::Less) | None) {
@@ -1188,10 +1378,13 @@ impl Supports for Leaf1C {
     }
 }
 
+/// Error type for [`<Leaf20 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf20NotSupported {
+    /// MaxSubleaves.
     #[error("MaxSubleaves.")]
     MaxSubleaves,
+    /// Ebx.
     #[error("Ebx.")]
     Ebx,
 }
@@ -1199,6 +1392,7 @@ pub enum Leaf20NotSupported {
 impl Supports for Leaf20 {
     type Error = Leaf20NotSupported;
     /// We do not check EBX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         debug_assert_eq!(self.eax.max_subleaves(), 1);
         debug_assert_eq!(other.eax.max_subleaves(), 1);
@@ -1214,8 +1408,10 @@ impl Supports for Leaf20 {
     }
 }
 
+/// Error type for [`<Leaf80000000 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf80000000NotSupported {
+    /// MaxExtendedFunctionInput.
     #[error("MaxExtendedFunctionInput.")]
     MaxExtendedFunctionInput,
 }
@@ -1223,6 +1419,7 @@ pub enum Leaf80000000NotSupported {
 impl Supports for Leaf80000000 {
     type Error = Leaf80000000NotSupported;
     /// We check everything here.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x80000000", true, true, true, true);
 
@@ -1233,10 +1430,13 @@ impl Supports for Leaf80000000 {
     }
 }
 
+/// Error type for [`<Leaf80000001 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf80000001NotSupported {
+    /// Ecx.
     #[error("Ecx.")]
     Ecx,
+    /// Edx.
     #[error("Edx.")]
     Edx,
 }
@@ -1244,6 +1444,7 @@ pub enum Leaf80000001NotSupported {
 impl Supports for Leaf80000001 {
     type Error = Leaf80000001NotSupported;
     /// We do not check EAX.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x80000001", true, true, true, true);
 
@@ -1257,8 +1458,10 @@ impl Supports for Leaf80000001 {
     }
 }
 
+/// Error type for [`<Leaf80000007 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf80000007NotSupported {
+    /// Edx.
     #[error("Edx.")]
     Edx,
 }
@@ -1266,6 +1469,7 @@ pub enum Leaf80000007NotSupported {
 impl Supports for Leaf80000007 {
     type Error = Leaf80000007NotSupported;
     /// We check everything here.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x80000007", true, true, true, true);
 
@@ -1276,12 +1480,16 @@ impl Supports for Leaf80000007 {
     }
 }
 
+/// Error type for [`<Leaf80000008 as Supports>::supports`].
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum Leaf80000008NotSupported {
+    /// PhysicalAddressBits.
     #[error("PhysicalAddressBits.")]
     PhysicalAddressBits,
+    /// LinearAddressBits.
     #[error("LinearAddressBits.")]
     LinearAddressBits,
+    /// Ebx.
     #[error("Ebx.")]
     Ebx,
 }
@@ -1289,6 +1497,7 @@ pub enum Leaf80000008NotSupported {
 impl Supports for Leaf80000008 {
     type Error = Leaf80000008NotSupported;
     /// We check everything here.
+    #[inline]
     fn supports(&self, other: &Self) -> Result<(), Self::Error> {
         warn_support!("0x80000008", true, true, true, true);
 

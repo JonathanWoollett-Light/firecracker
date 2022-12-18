@@ -8,6 +8,9 @@ use bit_fields::CheckedAssignError;
 #[cfg(cpuid)]
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum NormalizeCpuidError {
+    /// Provided `cpu_bits` is >=8.
+    #[error("Provided `cpu_bits` is >=8: {0}.")]
+    CpuBits(u8),
     /// Missing leaf 0x80000000.
     #[error("Missing leaf 0x80000000.")]
     MissingLeaf0x80000000,
@@ -34,7 +37,10 @@ pub enum FeatureEntryError {
     /// Missing leaf 0x80000008.
     #[error("Missing leaf 0x80000008.")]
     MissingLeaf0x80000008,
-    /// Failed to set `nt` (number of physical threads).s
+    /// Failed to set `nt` (number of physical threads) due to overflow.
+    #[error("Failed to set `nt` (number of physical threads) due to overflow.")]
+    NumberOfPhysicalThreadsOverflow,
+    /// Failed to set `nt` (number of physical threads).
     #[error("Failed to set `nt` (number of physical threads).")]
     NumberOfPhysicalThreads(CheckedAssignError),
 }
@@ -46,6 +52,9 @@ pub enum ExtendedCacheTopologyError {
     /// Missing leaf 0x8000001d.
     #[error("Missing leaf 0x8000001d.")]
     MissingLeaf0x8000001d,
+    /// Failed to set `num_sharing_cache` due to overflow.
+    #[error("Failed to set `num_sharing_cache` due to overflow.")]
+    NumSharingCacheOverflow,
     /// Failed to set `num_sharing_cache`.
     #[error("Failed to set `num_sharing_cache`: {0}")]
     NumSharingCache(CheckedAssignError),

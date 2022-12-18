@@ -48,16 +48,19 @@ pub struct RawCpuid {
     // TODO Use `std::ptr::Unqiue` when stabilized
     /// Pointer to entries.
     entries: NonNull<RawKvmCpuidEntry>,
+    /// Marker type.
     _marker: PhantomData<RawKvmCpuidEntry>,
 }
 
 impl RawCpuid {
     /// Alias for [`RawCpuid::default()`].
+    #[inline]
     #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
     /// Returns number of elements.
+    #[inline]
     #[must_use]
     pub fn nent(&self) -> u32 {
         self.nent
@@ -65,6 +68,7 @@ impl RawCpuid {
     /// Returns an entry for a given lead (function) and sub-leaf (index).
     ///
     /// Returning `None` if it is not present.
+    #[inline]
     #[must_use]
     pub fn get(&self, leaf: u32, sub_leaf: u32) -> Option<&RawKvmCpuidEntry> {
         // TODO Would using binary search here for leaf offer much speedup?
@@ -72,7 +76,7 @@ impl RawCpuid {
             .find(|entry| entry.function == leaf && entry.index == sub_leaf)
     }
     /// Resizes allocated memory
-    #[allow(clippy::cast_ptr_alignment)]
+    #[allow(clippy::cast_ptr_alignment, clippy::unwrap_used, clippy::else_if_without_else)]
     fn resize(&mut self, n: usize) {
         // alloc
         if self.nent == 0 && n > 0 {
@@ -129,6 +133,12 @@ impl RawCpuid {
     /// # Panics
     ///
     /// On allocation failure.
+    #[allow(
+        clippy::unwrap_used,
+        clippy::integer_arithmetic,
+        clippy::arithmetic_side_effects
+    )]
+    #[inline]
     pub fn push(&mut self, entry: RawKvmCpuidEntry) {
         self.resize(usize::try_from(self.nent).unwrap() + 1);
         // SAFETY: Always safe.
@@ -146,12 +156,15 @@ impl RawCpuid {
     /// # Panics
     ///
     /// On allocation failure.
+    #[allow(clippy::unwrap_used, clippy::unwrap_in_result)]
+    #[inline]
     pub fn pop(&mut self) -> Option<RawKvmCpuidEntry> {
         if self.nent > 0 {
             let u_nent = usize::try_from(self.nent).unwrap();
             // SAFETY: When `self.entries.as_ptr().add(u_nent)` contains a valid value.
             let rtn = unsafe { Some(std::ptr::read(self.entries.as_ptr().add(u_nent))) };
-            self.resize(u_nent - 1);
+            // We check before `self.nent > 0` therefore unwrapping here is safe.
+            self.resize(u_nent.checked_sub(1).unwrap());
             rtn
         } else {
             None
@@ -164,6 +177,7 @@ impl RawCpuid {
     ///
     /// When failed to access KVM.
     #[cfg(cpuid)]
+    #[inline]
     pub fn kvm_get_supported_cpuid() -> std::result::Result<Self, KvmGetSupportedRawCpuidError> {
         let supported_kvm_cpuid =
             kvm_ioctls::Kvm::new()?.get_supported_cpuid(kvm_bindings::KVM_MAX_CPUID_ENTRIES)?;
@@ -172,10 +186,16 @@ impl RawCpuid {
 }
 
 impl Clone for RawCpuid {
+    #[allow(clippy::indexing_slicing)]
+    #[inline]
     fn clone(&self) -> Self {
         let mut new_raw_cpuid = Self::new();
-        new_raw_cpuid.resize(self.nent as usize);
-        for i in 0..self.nent as usize {
+        // SAFETY: `usize` will always be 64 bits, thus `u32` can always be converted into it
+        let n = unsafe {
+            usize::try_from(self.nent).unwrap_unchecked()
+        };
+        new_raw_cpuid.resize(n);
+        for i in 0..n {
             new_raw_cpuid[i] = self[i].clone();
         }
         new_raw_cpuid
@@ -183,19 +203,26 @@ impl Clone for RawCpuid {
 }
 
 impl serde::Serialize for RawCpuid {
+    #[allow(clippy::indexing_slicing)]
+    #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
         use serde::ser::SerializeSeq;
-        let mut seq = serializer.serialize_seq(Some(self.nent as usize))?;
-        for i in 0..self.nent as usize {
+        // SAFETY: `usize` will always be 64 bits, thus `u32` can always be converted into it
+        let n = unsafe {
+            usize::try_from(self.nent).unwrap_unchecked()
+        };
+        let mut seq = serializer.serialize_seq(Some(n))?;
+        for i in 0..n {
             seq.serialize_element(&self[i])?;
         }
         seq.end()
     }
 }
 
+/// Unit struct used in the `serde::de::Visitor` implementation of `RawCpuid`.
 struct RawCpuidVisitor;
 
 impl<'de> serde::de::Visitor<'de> for RawCpuidVisitor {
@@ -218,6 +245,7 @@ impl<'de> serde::de::Visitor<'de> for RawCpuidVisitor {
 }
 
 impl<'de> serde::Deserialize<'de> for RawCpuid {
+    #[inline]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -227,9 +255,15 @@ impl<'de> serde::Deserialize<'de> for RawCpuid {
 }
 
 impl PartialEq for RawCpuid {
+    #[allow(clippy::indexing_slicing)]
+    #[inline]
     fn eq(&self, other: &Self) -> bool {
         if self.nent == other.nent {
-            for i in 0..self.nent as usize {
+            // SAFETY: `usize` will always be 64 bits, thus `u32` can always be converted into it
+            let n = unsafe {
+                usize::try_from(self.nent).unwrap_unchecked()
+            };
+            for i in 0..n {
                 if self[i] != other[i] {
                     return false;
                 }
@@ -249,10 +283,12 @@ unsafe impl Send for RawCpuid {}
 unsafe impl Sync for RawCpuid {}
 
 impl Inline for RawCpuid {
+    #[allow(clippy::shadow_reuse, clippy::unwrap_used, clippy::indexing_slicing)]
+    #[inline]
     fn inline(&self) -> construct::TokenStream {
         let nent = self.nent;
-        let item = (0..self.nent).map(|i| self[i as usize].inline());
-        let i = 0..self.nent as usize;
+        let item = (0..self.nent).map(|i| self[usize::try_from(i).unwrap()].inline());
+        let i = 0..usize::try_from(self.nent).unwrap();
         construct::quote! {
             let mut cpuid = Self::new();
             cpuid.resize(#nent);
@@ -265,6 +301,7 @@ impl Inline for RawCpuid {
 }
 
 impl Default for RawCpuid {
+    #[inline]
     fn default() -> Self {
         Self {
             nent: 0,
@@ -277,6 +314,8 @@ impl Default for RawCpuid {
 
 // We implement custom drop which drops all entries using `self.nent`
 impl Drop for RawCpuid {
+    #[allow(clippy::unwrap_used)]
+    #[inline]
     fn drop(&mut self) {
         // TODO Is this safe when `self.nent == 0` e.g. `RawCpuid::default()`?
         if self.nent != 0 {
@@ -293,6 +332,8 @@ impl Drop for RawCpuid {
 
 impl Deref for RawCpuid {
     type Target = [RawKvmCpuidEntry];
+    #[allow(clippy::unwrap_used)]
+    #[inline]
     fn deref(&self) -> &Self::Target {
         // SAFETY: Always safe.
         unsafe {
@@ -302,6 +343,8 @@ impl Deref for RawCpuid {
 }
 
 impl DerefMut for RawCpuid {
+    #[allow(clippy::unwrap_used)]
+    #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
         // SAFETY: Always safe.
         unsafe {
@@ -315,6 +358,8 @@ impl DerefMut for RawCpuid {
 
 #[cfg(cpuid)]
 impl From<kvm_bindings::CpuId> for RawCpuid {
+    #[allow(clippy::unwrap_used)]
+    #[inline]
     fn from(value: kvm_bindings::CpuId) -> Self {
         // As cannot acquire ownership of the underlying slice, we clone it.
         let cloned = value.as_slice().to_vec();
@@ -329,6 +374,8 @@ impl From<kvm_bindings::CpuId> for RawCpuid {
 }
 
 impl From<Vec<RawKvmCpuidEntry>> for RawCpuid {
+    #[allow(clippy::unwrap_used)]
+    #[inline]
     fn from(vec: Vec<RawKvmCpuidEntry>) -> Self {
         let (ptr, len, _cap) = vec_into_raw_parts(vec);
         Self {
@@ -341,6 +388,7 @@ impl From<Vec<RawKvmCpuidEntry>> for RawCpuid {
 }
 
 impl FromIterator<RawKvmCpuidEntry> for RawCpuid {
+    #[inline]
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoIterator<Item = RawKvmCpuidEntry>,
@@ -352,13 +400,14 @@ impl FromIterator<RawKvmCpuidEntry> for RawCpuid {
 
 #[cfg(cpuid)]
 impl From<RawCpuid> for kvm_bindings::CpuId {
+    #[allow(clippy::transmute_ptr_to_ptr, clippy::unwrap_used)]
+    #[inline]
     fn from(this: RawCpuid) -> Self {
         // SAFETY: Always safe.
         let cpuid_slice = unsafe {
             std::slice::from_raw_parts(this.entries.as_ptr(), usize::try_from(this.nent).unwrap())
         };
 
-        #[allow(clippy::transmute_ptr_to_ptr)]
         // SAFETY: Always safe.
         let kvm_bindings_slice = unsafe { std::mem::transmute(cpuid_slice) };
         kvm_bindings::CpuId::from_entries(kvm_bindings_slice).unwrap()
@@ -374,12 +423,14 @@ impl From<RawCpuid> for kvm_bindings::CpuId {
 pub struct Padding<const N: usize>(MaybeUninit<[u8; N]>);
 
 impl<const N: usize> Default for Padding<N> {
+    #[inline]
     fn default() -> Self {
         Self(MaybeUninit::uninit())
     }
 }
 
 impl<const N: usize> serde::Serialize for Padding<N> {
+    #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -389,6 +440,7 @@ impl<const N: usize> serde::Serialize for Padding<N> {
 }
 
 impl<'de, const N: usize> serde::Deserialize<'de> for Padding<N> {
+    #[inline]
     fn deserialize<D>(_deserializer: D) -> Result<Padding<N>, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -398,6 +450,7 @@ impl<'de, const N: usize> serde::Deserialize<'de> for Padding<N> {
 }
 
 impl<const N: usize> PartialEq for Padding<N> {
+    #[inline]
     fn eq(&self, _other: &Self) -> bool {
         true
     }
@@ -406,6 +459,7 @@ impl<const N: usize> PartialEq for Padding<N> {
 impl<const N: usize> Eq for Padding<N> {}
 
 impl<const N: usize> Inline for Padding<N> {
+    #[inline]
     fn inline(&self) -> construct::TokenStream {
         construct::quote! { Self::default() }
     }
@@ -448,6 +502,7 @@ pub struct RawKvmCpuidEntry {
     pub padding: Padding<{ size_of::<[u32; 3]>() }>,
 }
 impl fmt::LowerHex for RawKvmCpuidEntry {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("RawKvmCpuidEntry")
             .field("function", &format!("{:x}", self.function))
@@ -461,6 +516,7 @@ impl fmt::LowerHex for RawKvmCpuidEntry {
     }
 }
 
+#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod tests {
     #[cfg(cpuid)]
