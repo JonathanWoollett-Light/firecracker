@@ -492,6 +492,8 @@ impl BitFieldBuilder {
         };
         let base_type = data_type.base();
 
+        let construct = quote! { , construct::Inline };
+
         quote! {
             #[doc=#rustdoc]
             ///
@@ -508,7 +510,7 @@ impl BitFieldBuilder {
             #(#struct_doc_table_layout)*
             /// </table>
             #[allow(clippy::unsafe_derive_deserialize)]
-            #[derive(Debug, Clone, Copy, Eq, PartialEq #serde)]
+            #[derive(Debug, Clone, Copy, Eq, PartialEq #construct #serde)]
             #[repr(C)]
             pub struct #struct_name(pub #data_type);
 
