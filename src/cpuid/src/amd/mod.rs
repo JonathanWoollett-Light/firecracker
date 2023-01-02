@@ -54,7 +54,7 @@ impl CpuidTrait for AmdCpuid {
 
 impl AmdCpuid {
     /// We always use this brand string.
-    pub const DEFUALT_BRAND_STRING: &[u8; super::BRAND_STRING_LENGTH] =
+    pub const DEFAULT_BRAND_STRING: &[u8; super::BRAND_STRING_LENGTH] =
         b"AMD EPYC\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
     /// Applies `vm_spec` to `self`.
@@ -252,7 +252,7 @@ impl AmdCpuid {
         }
 
         // Update brand string entry
-        self.apply_brand_string(Self::DEFUALT_BRAND_STRING)
+        self.apply_brand_string(Self::DEFAULT_BRAND_STRING)
             .map_err(NormalizeCpuidError::BrandString)?;
 
         Ok(())

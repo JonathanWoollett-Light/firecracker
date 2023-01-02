@@ -45,7 +45,6 @@ pub struct RawCpuid {
     nent: u32,
     /// Padding.
     padding: Padding<{ size_of::<u32>() }>,
-    // TODO Use `std::ptr::Unqiue` when stabilized
     /// Pointer to entries.
     entries: NonNull<RawKvmCpuidEntry>,
     /// Marker type.
@@ -55,7 +54,7 @@ pub struct RawCpuid {
 /// Error type for [`RawCpuid::resize`].
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
 #[error("Failed to resize: {0}")]
-pub struct RawCpuidResizeErrro(std::alloc::LayoutError);
+pub struct RawCpuidResizeError(std::alloc::LayoutError);
 
 impl RawCpuid {
     /// Alias for [`RawCpuid::default()`].
@@ -76,7 +75,6 @@ impl RawCpuid {
     #[inline]
     #[must_use]
     pub fn get(&self, leaf: u32, sub_leaf: u32) -> Option<&RawKvmCpuidEntry> {
-        // TODO Would using binary search here for leaf offer much speedup?
         self.iter()
             .find(|entry| entry.function == leaf && entry.index == sub_leaf)
     }
@@ -86,7 +84,7 @@ impl RawCpuid {
     ///
     /// When failing to construct a layout.
     #[allow(clippy::cast_ptr_alignment, clippy::else_if_without_else)]
-    fn resize(&mut self, n: u32) -> Result<(), RawCpuidResizeErrro> {
+    fn resize(&mut self, n: u32) -> Result<(), RawCpuidResizeError> {
         // alloc
         if self.nent == 0 && n > 0 {
             // SAFETY: `usize` will always be at least 32 bits, thus `u32` can always be safely
@@ -94,7 +92,7 @@ impl RawCpuid {
             let new_len = unsafe { usize::try_from(n).unwrap_unchecked() };
 
             let new_layout =
-                Layout::array::<RawKvmCpuidEntry>(new_len).map_err(RawCpuidResizeErrro)?;
+                Layout::array::<RawKvmCpuidEntry>(new_len).map_err(RawCpuidResizeError)?;
 
             // SAFETY: Always safe.
             let new_ptr = unsafe { std::alloc::alloc(new_layout) };
@@ -110,13 +108,13 @@ impl RawCpuid {
             let new_len = unsafe { usize::try_from(n).unwrap_unchecked() };
 
             let new_layout =
-                Layout::array::<RawKvmCpuidEntry>(new_len).map_err(RawCpuidResizeErrro)?;
+                Layout::array::<RawKvmCpuidEntry>(new_len).map_err(RawCpuidResizeError)?;
 
             // SAFETY: `usize` will always be at least 32 bits, thus `u32` can always be safely
             // converted into it.
             let len = unsafe { usize::try_from(self.nent).unwrap_unchecked() };
 
-            let old_layout = Layout::array::<RawKvmCpuidEntry>(len).map_err(RawCpuidResizeErrro)?;
+            let old_layout = Layout::array::<RawKvmCpuidEntry>(len).map_err(RawCpuidResizeError)?;
             let old_ptr = self.entries.as_ptr().cast::<u8>();
             // SAFETY: Always safe.
             let new_ptr = unsafe { std::alloc::realloc(old_ptr, old_layout, new_layout.size()) };
@@ -132,7 +130,7 @@ impl RawCpuid {
             // converted into it.
             let len = unsafe { usize::try_from(self.nent).unwrap_unchecked() };
 
-            let old_layout = Layout::array::<RawKvmCpuidEntry>(len).map_err(RawCpuidResizeErrro)?;
+            let old_layout = Layout::array::<RawKvmCpuidEntry>(len).map_err(RawCpuidResizeError)?;
             let old_ptr = self.entries.as_ptr().cast::<u8>();
             // SAFETY: Always safe.
             unsafe { std::alloc::dealloc(old_ptr, old_layout) };
@@ -149,7 +147,7 @@ impl RawCpuid {
     /// On resize failure.
     #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
     #[inline]
-    pub fn push(&mut self, entry: RawKvmCpuidEntry) -> Result<(), RawCpuidResizeErrro> {
+    pub fn push(&mut self, entry: RawKvmCpuidEntry) -> Result<(), RawCpuidResizeError> {
         self.resize(self.nent + 1)?;
 
         // SAFETY: `usize` will always be at least 32 bits, thus `u32` can always be safely
@@ -337,7 +335,6 @@ impl Drop for RawCpuid {
     #[allow(clippy::unwrap_used)]
     #[inline]
     fn drop(&mut self) {
-        // TODO Is this safe when `self.nent == 0` e.g. `RawCpuid::default()`?
         if self.nent != 0 {
             // SAFETY: Always safe.
             unsafe {

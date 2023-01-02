@@ -385,8 +385,6 @@ index_leaf!(0x19, Leaf19, IntelCpuid);
 
 index_leaf!(0x1A, Leaf1A, IntelCpuid);
 
-index_leaf!(0x1B, Leaf1B, IntelCpuid);
-
 index_leaf!(0x1C, Leaf1C, IntelCpuid);
 
 impl IndexLeaf<0x1F> for IntelCpuid {

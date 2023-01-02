@@ -651,7 +651,6 @@ bitfield!(LeafDSubleaf0Ecx, u32, {
 });
 #[rustfmt::skip]
 bitfield!(LeafDSubleaf0Edx, u32, {
-    // TODO Double check this
     // Reports the supported bits of the upper 32 bits of XCR0. XCR0[n+32] can be set to 1 only if 
     // EDX[n] is 1.
     // Reserved
@@ -1132,7 +1131,7 @@ bitfield!(Leaf15Ecx, u32, {
     /// the nominal core crystal clock frequency is not enumerated. “TSC frequency” = “core crystal 
     /// clock frequency” * EBX/EAX. The core crystal clock may differ from the reference clock, bus 
     /// clock, or core clock frequencies.
-    nominal_freqeuncy: 0..32
+    nominal_frequency: 0..32
 });
 #[rustfmt::skip]
 bitfield!(Leaf15Edx, u32, {
@@ -1428,25 +1427,6 @@ bitfield!(Leaf1AEcx, u32, {
 #[rustfmt::skip]
 bitfield!(Leaf1AEdx, u32, {
     // Reserved.
-});
-// -------------------------------------------------------------------------------------------------
-// Leaf 1B
-// -------------------------------------------------------------------------------------------------
-#[rustfmt::skip]
-bitfield!(Leaf1BEax, u32, {
-    // TODO
-});
-#[rustfmt::skip]
-bitfield!(Leaf1BEbx, u32, {
-    // TODO
-});
-#[rustfmt::skip]
-bitfield!(Leaf1BEcx, u32, {
-    // TODO
-});
-#[rustfmt::skip]
-bitfield!(Leaf1BEdx, u32, {
-    // TODO
 });
 // -------------------------------------------------------------------------------------------------
 // Leaf 1C

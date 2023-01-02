@@ -96,7 +96,7 @@ pub enum ExtendedTopologyError {
 pub enum DefaultBrandStringError {
     /// Missing frequency.
     #[error("Missing frequency: {0:?}.")]
-    MissingFreqeuncy([u8; crate::BRAND_STRING_LENGTH]),
+    Missingfrequency([u8; crate::BRAND_STRING_LENGTH]),
     /// Missing space.
     #[error("Missing space: {0:?}.")]
     MissingSpace([u8; crate::BRAND_STRING_LENGTH]),

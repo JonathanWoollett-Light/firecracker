@@ -83,7 +83,7 @@ pub enum Cpuid {
 pub const BRAND_STRING_LENGTH: usize = 3 * 4 * 4;
 
 /// Gets the Intel default brand.
-// As we pass through host freqeuncy, we require CPUID and thus `cfg(cpuid)`.
+// As we pass through host frequency, we require CPUID and thus `cfg(cpuid)`.
 /// Gets host brand string.
 ///
 /// Its stored in-order with bytes flipped in each register e.g.:
@@ -98,30 +98,13 @@ pub const BRAND_STRING_LENGTH: usize = 3 * 4 * 4;
 #[inline]
 #[must_use]
 pub fn host_brand_string() -> [u8; BRAND_STRING_LENGTH] {
-    // TODO Check in CPUID that leaves 0x80000002, 0x80000003 and 0x80000004 are supported.
-
-    // SAFETY: Safe we check `CPUID` avaiblity with `cfg(cpuid)`.
+    // SAFETY: Safe we check `CPUID` availability with `cfg(cpuid)`.
     let leaf_a = unsafe { core::arch::x86_64::__cpuid(0x80000002) };
-    // SAFETY: Safe we check `CPUID` avaiblity with `cfg(cpuid)`.
+    // SAFETY: Safe we check `CPUID` availability with `cfg(cpuid)`.
     let leaf_b = unsafe { core::arch::x86_64::__cpuid(0x80000003) };
-    // SAFETY: Safe we check `CPUID` avaiblity with `cfg(cpuid)`.
+    // SAFETY: Safe we check `CPUID` availability with `cfg(cpuid)`.
     let leaf_c = unsafe { core::arch::x86_64::__cpuid(0x80000004) };
 
-    // Since the bytes are stored swapped, we un-swap them.
-    // let arr = [
-    //     leaf_a.eax.swap_bytes(),
-    //     leaf_a.ebx.swap_bytes(),
-    //     leaf_a.ecx.swap_bytes(),
-    //     leaf_a.edx.swap_bytes(),
-    //     leaf_b.eax.swap_bytes(),
-    //     leaf_b.ebx.swap_bytes(),
-    //     leaf_b.ecx.swap_bytes(),
-    //     leaf_b.edx.swap_bytes(),
-    //     leaf_c.eax.swap_bytes(),
-    //     leaf_c.ebx.swap_bytes(),
-    //     leaf_c.ecx.swap_bytes(),
-    //     leaf_c.edx.swap_bytes(),
-    // ];
     let arr = [
         leaf_a.eax, leaf_a.ebx, leaf_a.ecx, leaf_a.edx, leaf_b.eax, leaf_b.ebx, leaf_b.ecx,
         leaf_b.edx, leaf_c.eax, leaf_c.ebx, leaf_c.ecx, leaf_c.edx,
@@ -362,7 +345,7 @@ impl Cpuid {
     /// When:
     /// - [`IntelCpuid::normalize`] errors.
     /// - [`AmdCpuid::normalize`] errors.
-    // As we pass through host freqeuncy, we require CPUID and thus `cfg(cpuid)`.
+    // As we pass through host frequency, we require CPUID and thus `cfg(cpuid)`.
     #[cfg(cpuid)]
     #[inline]
     pub fn normalize(

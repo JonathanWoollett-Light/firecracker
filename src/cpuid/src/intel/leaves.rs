@@ -131,36 +131,104 @@ impl fmt::Display for Leaf2 {
     #[allow(clippy::unwrap_used, clippy::unwrap_in_result)]
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:#?}", <[&'static str; 16]>::try_from(self).unwrap())
+        write!(f, "{:#?}", <Vec<&'static str>>::try_from(self).unwrap())
     }
 }
 
 /// Error type for [`<[&'static str; 16] as TryFrom<&Leaf2>>::try_from`].
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
-#[error("Unknown cache and TLB infomation keyword: {0}")]
+#[error("Unknown cache and TLB information keyword: {0}")]
 pub struct UnknownKeyword(u8);
 
-// - The least-significant-byte of eax always returns 01h.
-// - The most significant bit indicates whether the register contains valid information (TODO Does
-//   this mean we only have 3 descriptors per register?)
-// TODO Implement the above conditions.
-impl TryFrom<&Leaf2> for [&'static str; 16] {
+/// Most significant bit
+fn most_significant_bit(x: u8) -> bool {
+    x & (u8::MAX >> 1)
+}
+
+impl TryFrom<&Leaf2> for Vec<&'static str> {
+    type Error = UnknownKeyword;
+    #[inline]
+    fn try_from(leaf: &Leaf2) -> Result<Self,Self::Error> {
+        let (a_opt,b_opt,c_opt,d_opt) = <(Option<[&'static; 3]>, Option<[&'static; 4]>, Option<[&'static; 4]>, Option<[&'static; 4]>)>::try_from(leaf)?;
+        let mut vec = Vec::new();
+        if let Some(a) = a_opt {
+            vec.extend(a);
+        }
+        if let Some(b) = b_opt {
+            vec.extend(b);
+        }
+        if let Some(c) = c_opt {
+            vec.extend(c);
+        }
+        if let Some(d) = d_opt {
+            vec.extend(d);
+        }
+        Ok(vec)
+    }
+}
+// - The least-significant-byte of eax always returns 01h, this value should be ignored.
+// - The most significant bit indicates whether the register contains valid information.
+impl TryFrom<&Leaf2> for (Option<[&'static; 3]>, Option<[&'static; 4]>, Option<[&'static; 4]>, Option<[&'static; 4]>) {
     type Error = UnknownKeyword;
     #[inline]
     fn try_from(leaf: &Leaf2) -> Result<Self, Self::Error> {
+        (
+            most_significant_bit(leaf.eax[3]).then(|| [
+                KEYWORDS
+                    .get(&leaf.eax[1])
+                    .ok_or(UnknownKeyword(leaf.eax[1]))?,
+                KEYWORDS
+                    .get(&leaf.eax[2])
+                    .ok_or(UnknownKeyword(leaf.eax[2]))?,
+                KEYWORDS
+                    .get(&leaf.eax[3])
+                    .ok_or(UnknownKeyword(leaf.eax[3]))?
+            ]),
+            most_significant_bit(leaf.ebx[3]).then(|| [
+                KEYWORDS
+                    .get(&leaf.ebx[0])
+                    .ok_or(UnknownKeyword(leaf.ebx[0]))?,
+                KEYWORDS
+                    .get(&leaf.ebx[1])
+                    .ok_or(UnknownKeyword(leaf.ebx[1]))?,
+                KEYWORDS
+                    .get(&leaf.ebx[2])
+                    .ok_or(UnknownKeyword(leaf.ebx[2]))?,
+                KEYWORDS
+                    .get(&leaf.ebx[3])
+                    .ok_or(UnknownKeyword(leaf.ebx[3]))?
+            ]),
+            most_significant_bit(leaf.ecx[3]).then(|| [
+                KEYWORDS
+                    .get(&leaf.ecx[0])
+                    .ok_or(UnknownKeyword(leaf.ecx[0]))?,
+                KEYWORDS
+                    .get(&leaf.ecx[1])
+                    .ok_or(UnknownKeyword(leaf.ecx[1]))?,
+                KEYWORDS
+                    .get(&leaf.ecx[2])
+                    .ok_or(UnknownKeyword(leaf.ecx[2]))?,
+                KEYWORDS
+                    .get(&leaf.ecx[3])
+                    .ok_or(UnknownKeyword(leaf.ecx[3]))?
+            ]),
+            most_significant_bit(leaf.edx[3]).then(|| [
+                KEYWORDS
+                    .get(&leaf.edx[0])
+                    .ok_or(UnknownKeyword(leaf.edx[0]))?,
+                KEYWORDS
+                    .get(&leaf.edx[1])
+                    .ok_or(UnknownKeyword(leaf.edx[1]))?,
+                KEYWORDS
+                    .get(&leaf.edx[2])
+                    .ok_or(UnknownKeyword(leaf.edx[2]))?,
+                KEYWORDS
+                    .get(&leaf.edx[3])
+                    .ok_or(UnknownKeyword(leaf.edx[3]))?
+            ])
+        )
         Ok([
-            KEYWORDS
-                .get(&leaf.eax[0])
-                .ok_or(UnknownKeyword(leaf.eax[0]))?,
-            KEYWORDS
-                .get(&leaf.eax[1])
-                .ok_or(UnknownKeyword(leaf.eax[1]))?,
-            KEYWORDS
-                .get(&leaf.eax[2])
-                .ok_or(UnknownKeyword(leaf.eax[2]))?,
-            KEYWORDS
-                .get(&leaf.eax[3])
-                .ok_or(UnknownKeyword(leaf.eax[3]))?,
+            ,
             KEYWORDS
                 .get(&leaf.ebx[0])
                 .ok_or(UnknownKeyword(leaf.ebx[0]))?,
@@ -414,10 +482,6 @@ pub type Leaf19 = Leaf<Leaf19Eax, Leaf19Ebx, Leaf19Ecx, Leaf19Edx>;
 /// Leaf 1AH
 pub type Leaf1A = Leaf<Leaf1AEax, Leaf1AEbx, Leaf1AEcx, Leaf1AEdx>;
 
-// TODO I need to investigate the layout of this leaf
-/// Leaf 1BH
-pub type Leaf1B = Leaf<Leaf1BEax, Leaf1BEbx, Leaf1BEcx, Leaf1BEdx>;
-
 /// Leaf 1CH
 pub type Leaf1C = Leaf<Leaf1CEax, Leaf1CEbx, Leaf1CEcx, Leaf1CEdx>;
 
@@ -430,7 +494,6 @@ pub struct Leaf1FMut<'a>(pub Vec<&'a mut Leaf1FSubleaf>);
 /// Leaf 1F subleaf 1
 pub type Leaf1FSubleaf = Leaf<Leaf1FEax, Leaf1FEbx, Leaf1FEcx, Leaf1FEdx>;
 
-// TODO I need to investigate the layout of this leaf
 /// Leaf 20H
 pub type Leaf20 = Leaf<Leaf20Eax, Leaf20Ebx, Leaf20Ecx, Leaf20Edx>;
 

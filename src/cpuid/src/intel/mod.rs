@@ -74,9 +74,9 @@ impl IntelCpuid {
     /// # Panics
     ///
     /// Never.
-    // As we pass through host freqeuncy, we require CPUID and thus `cfg(cpuid)`.
-    // TODO Using `split_array_ref` will raise safety and remove allows, use it when stabilized.
-    // <https://doc.rust-lang.org/std/primitive.array.html#method.split_array_ref>
+    // As we pass through host frequency, we require CPUID and thus `cfg(cpuid)`.
+    // TODO: Use `split_array_ref`
+    // (https://doc.rust-lang.org/std/primitive.array.html#method.split_array_ref)
     #[allow(
         clippy::indexing_slicing,
         clippy::integer_arithmetic,
@@ -87,7 +87,7 @@ impl IntelCpuid {
     pub fn default_brand_string(
     ) -> Result<[u8; super::BRAND_STRING_LENGTH], DefaultBrandStringError> {
         /// We always use this brand string.
-        const DEFUALT_BRAND_STRING_BASE: &[u8] = b"Intel(R) Xeon(R) Processor @";
+        const DEFAULT_BRAND_STRING_BASE: &[u8] = b"Intel(R) Xeon(R) Processor @";
 
         // Get host brand string.
         // This will look like b"Intel(4) Xeon(R) Processor @ 3.00GHz".
@@ -102,7 +102,7 @@ impl IntelCpuid {
                     break 'outer Ok(host_brand_string.split_at(i));
                 }
             }
-            Err(DefaultBrandStringError::MissingFreqeuncy(host_brand_string))
+            Err(DefaultBrandStringError::Missingfrequency(host_brand_string))
         }?;
         debug_assert_eq!(
             before.len().checked_add(after.len()),
@@ -124,21 +124,21 @@ impl IntelCpuid {
         debug_assert!(
             matches!(frequency.len().checked_add(after.len()), Some(x) if x <= super::BRAND_STRING_LENGTH)
         );
-        debug_assert!(DEFUALT_BRAND_STRING_BASE.len() <= super::BRAND_STRING_LENGTH);
+        debug_assert!(DEFAULT_BRAND_STRING_BASE.len() <= super::BRAND_STRING_LENGTH);
         debug_assert!(super::BRAND_STRING_LENGTH.checked_mul(2).is_some());
 
-        // As `DEFUALT_BRAND_STRING_BASE.len() + frequency.len() + after.len()` is guranteed
+        // As `DEFAULT_BRAND_STRING_BASE.len() + frequency.len() + after.len()` is guaranteed
         // to be less than or equal to  `2*BRAND_STRING_LENGTH` and we know
         // `2*BRAND_STRING_LENGTH <= usize::MAX` since `BRAND_STRING_LENGTH==48`, this is always
         // safe.
-        let len = DEFUALT_BRAND_STRING_BASE.len() + frequency.len() + after.len();
+        let len = DEFAULT_BRAND_STRING_BASE.len() + frequency.len() + after.len();
 
-        let brand_string = DEFUALT_BRAND_STRING_BASE
+        let brand_string = DEFAULT_BRAND_STRING_BASE
             .iter()
             .copied()
-            // Include freqeuncy e.g. "3.00"
+            // Include frequency e.g. "3.00"
             .chain(frequency.iter().copied())
-            // Include freqeuncy suffix e.g. "GHz"
+            // Include frequency suffix e.g. "GHz"
             .chain(after.iter().copied())
             // Pad with 0s to `BRAND_STRING_LENGTH`
             .chain(
@@ -159,9 +159,9 @@ impl IntelCpuid {
     ///
     /// # Errors
     ///
-    /// When attempting to access misisng leaves or set fields within leaves to values that don't
+    /// When attempting to access missing leaves or set fields within leaves to values that don't
     /// fit.
-    // As we pass through host freqeuncy, we require CPUID and thus `cfg(cpuid)`.
+    // As we pass through host frequency, we require CPUID and thus `cfg(cpuid)`.
     #[cfg(cpuid)]
     #[allow(clippy::too_many_lines)]
     #[inline]
