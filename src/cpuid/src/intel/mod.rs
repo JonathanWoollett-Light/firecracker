@@ -104,6 +104,10 @@ impl IntelCpuid {
             }
             Err(DefaultBrandStringError::Missingfrequency(host_brand_string))
         }?;
+        debug_assert_eq!(
+            before.len().checked_add(after.len()),
+            Some(super::BRAND_STRING_LENGTH)
+        );
 
         // We iterate from the end until hitting a space, getting the frequency number
         // e.g. b"Intel(4) Xeon(R) Processor @ " and "3.00"
@@ -115,6 +119,13 @@ impl IntelCpuid {
             }
             Err(DefaultBrandStringError::MissingSpace(host_brand_string))
         }?;
+        debug_assert!(frequency.len() <= before.len());
+
+        debug_assert!(
+            matches!(frequency.len().checked_add(after.len()), Some(x) if x <= super::BRAND_STRING_LENGTH)
+        );
+        debug_assert!(DEFAULT_BRAND_STRING_BASE.len() <= super::BRAND_STRING_LENGTH);
+        debug_assert!(super::BRAND_STRING_LENGTH.checked_mul(2).is_some());
 
         // As `DEFAULT_BRAND_STRING_BASE.len() + frequency.len() + after.len()` is guaranteed
         // to be less than or equal to  `2*BRAND_STRING_LENGTH` and we know
@@ -138,6 +149,7 @@ impl IntelCpuid {
                 ),
             )
             .collect::<Vec<_>>();
+        debug_assert_eq!(brand_string.len(), super::BRAND_STRING_LENGTH);
 
         // SAFETY: Padding ensures `brand_string.len() == BRAND_STRING_LENGTH`.
         Ok(unsafe { brand_string.try_into().unwrap_unchecked() })

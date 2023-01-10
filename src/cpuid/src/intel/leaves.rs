@@ -3,6 +3,8 @@
 #![allow(clippy::similar_names, clippy::module_name_repetitions)]
 use std::fmt;
 
+use bit_fields::Equal;
+
 #[allow(clippy::wildcard_imports)]
 use super::registers::*;
 use crate::Leaf;
@@ -538,3 +540,199 @@ pub type Leaf80000007 = Leaf<Leaf80000007Eax, Leaf80000007Ebx, Leaf80000007Ecx, 
 
 /// Leaf 80000008H
 pub type Leaf80000008 = Leaf<Leaf80000008Eax, Leaf80000008Ebx, Leaf80000008Ecx, Leaf80000008Edx>;
+
+// -------------------------------------------------------------------------------------------------
+// Equal
+// -------------------------------------------------------------------------------------------------
+
+impl Equal for Leaf4<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0)
+    }
+}
+
+impl Equal for Leaf4Mut<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0)
+    }
+}
+
+impl Equal for Leaf7<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0) && self.1.equal(&other.1)
+    }
+}
+
+impl Equal for Leaf7Mut<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0) && self.1.equal(&other.1)
+    }
+}
+
+impl Equal for LeafB<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0)
+    }
+}
+
+impl Equal for LeafBMut<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0)
+    }
+}
+
+impl Equal for LeafF<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0) && self.1.equal(&other.1)
+    }
+}
+
+impl Equal for LeafFMut<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0) && self.1.equal(&other.1)
+    }
+}
+
+impl Equal for Leaf10<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0)
+            && self.1.equal(&other.1)
+            && self.2.equal(&other.2)
+            && self.3.equal(&other.3)
+    }
+}
+
+impl Equal for Leaf10Mut<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0)
+            && self.1.equal(&other.1)
+            && self.2.equal(&other.2)
+            && self.3.equal(&other.3)
+    }
+}
+
+impl Equal for Leaf12<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0) && self.1.equal(&other.1) && self.2.equal(&other.2)
+    }
+}
+
+impl Equal for Leaf12Mut<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0) && self.1.equal(&other.1) && self.2.equal(&other.2)
+    }
+}
+
+impl Equal for Leaf14<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0) && self.1.equal(&other.1)
+    }
+}
+
+impl Equal for Leaf14Mut<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0) && self.1.equal(&other.1)
+    }
+}
+
+impl Equal for Leaf17<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0)
+            && self.1.equal(&other.1)
+            && self.2.equal(&other.2)
+            && self.3.equal(&other.3)
+    }
+}
+
+impl Equal for Leaf17Mut<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0)
+            && self.1.equal(&other.1)
+            && self.2.equal(&other.2)
+            && self.3.equal(&other.3)
+    }
+}
+
+impl Equal for Leaf18<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0) && self.1.equal(&other.1)
+    }
+}
+
+impl Equal for Leaf18Mut<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0) && self.1.equal(&other.1)
+    }
+}
+
+impl Equal for Leaf1F<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0)
+    }
+}
+
+impl Equal for Leaf1FMut<'_> {
+    /// Compares `self` to `other` ignoring undefined bits.
+    #[inline]
+    #[must_use]
+    fn equal(&self, other: &Self) -> bool {
+        self.0.equal(&other.0)
+    }
+}

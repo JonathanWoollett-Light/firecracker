@@ -23,6 +23,18 @@ pub enum GetCpuidError {
     InvalidSubleaf(u32),
 }
 
+/// Error type for [`get_cpuid`].
+#[cfg(cpuid)]
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum GetCpuidError {
+    /// Invalid leaf.
+    #[error("Un-supported leaf: {0}")]
+    UnsupportedLeaf(u32),
+    /// Invalid subleaf.
+    #[error("Invalid subleaf: {0}")]
+    InvalidSubleaf(u32),
+}
+
 /// Extract entry from the cpuid.
 ///
 /// # Errors

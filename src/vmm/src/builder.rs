@@ -477,7 +477,7 @@ pub enum BuildMicrovmFromSnapshotError {
     MissingVmmSeccompFilters,
     /// Failed to apply VMM secccomp filter.
     #[error("Failed to apply VMM secccomp filter: {0}")]
-    SeccompFiltersInternal(#[from] seccompiler::InstallationError),
+    SeccompFiltersInternal(#[from] InstallationError),
 }
 
 /// Builds and starts a microVM based on the provided MicrovmState.
