@@ -1,5 +1,6 @@
 // Copyright 2023 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+use bit_fields::Equal;
 
 use super::cpuid_ffi::RawKvmCpuidEntry;
 #[allow(clippy::wildcard_imports)]
@@ -63,6 +64,16 @@ impl<A: From<u32>, B: From<u32>, C: From<u32>, D: From<u32>> From<&RawKvmCpuidEn
             ecx: C::from(ecx),
             edx: D::from(edx),
         }
+    }
+}
+
+impl<A: Equal, B: Equal, C: Equal, D: Equal> Equal for Leaf<A, B, C, D> {
+    #[inline]
+    fn equal(&self, other: &Self) -> bool {
+        self.eax.equal(&other.eax)
+            && self.ebx.equal(&other.ebx)
+            && self.ecx.equal(&other.ecx)
+            && self.edx.equal(&other.edx)
     }
 }
 
