@@ -83,6 +83,13 @@ RUN apt-get update \
         chef-utils:16.6.14 \
         mdl:0.11.0
 
+# Install iotools
+RUN git clone https://github.com/adurbin/iotools.git \
+    && cd iotools \
+    # Quirk for Amazon linux - static build has link failures
+    && make STATIC=0 \
+    && ./iotools --make-links
+
 # Update Python to 3.10
 # This method isn't ideal, compiling from source can be dropped
 # once the container definition is based on ubuntu:22.04

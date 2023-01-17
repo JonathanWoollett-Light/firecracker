@@ -72,7 +72,7 @@
 DEVCTR_IMAGE_NO_TAG="public.ecr.aws/firecracker/fcuvm"
 
 # Development container tag
-DEVCTR_IMAGE_TAG="v51"
+DEVCTR_IMAGE_TAG="latest"
 
 # Development container image (name:tag)
 # This should be updated whenever we upgrade the development container.
@@ -629,6 +629,16 @@ umount_ramdisk() {
     sudo rmdir ${DEFAULT_RAMDISK_PATH} &>/dev/null
 }
 
+ensure_cstate() {
+    # Disable c-states >1 on host
+    chmod +x ./tools/cstate_control.sh
+    ./tools/cstate_control.sh 1
+
+    # Prevent `mwait` going to lower power states
+    chmod +x ./tools/enable_mwait_workaround.sh
+    ./tools/enable_mwait_workaround.sh
+}
+
 # `$0 test` - run integration tests
 # Please see `$0 help` for more information.
 #
@@ -663,6 +673,7 @@ cmd_test() {
     ensure_kvm
     ensure_devctr
     ensure_build_dir
+    ensure_cstate
 
     # If we got to here, we've got all we need to continue.
     say "$(date -u +'%F %H:%M:%S %Z')"
