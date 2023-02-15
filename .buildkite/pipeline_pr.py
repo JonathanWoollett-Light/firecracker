@@ -12,7 +12,7 @@ INSTANCES = [
     "m5d.metal",
     "m6i.metal",
     "m6a.metal",
-    "m6gd.metal",
+    "m6g.metal",
 ]
 
 KERNELS = ["4.14", "5.10"]
@@ -41,13 +41,13 @@ def group(group_name, command, agent_tags=None, priority=0, timeout=30):
     for instance in INSTANCES:
         for kv in KERNELS:
             agents = [
-                f"type={instance}",
-                f"kv={kv}",
+                f"instance={instance}",
+                f"kv=linux_{kv}",
             ]
             agents.extend(agent_tags)
             step = {
                 "command": command,
-                "label": f"{label1} {instance} kv={kv}",
+                "label": f"{label1} {instance} kv=linux_{kv}",
                 "priority": priority,
                 "timeout": timeout,
                 "agents": agents,
@@ -61,7 +61,7 @@ step_style = {
     "command": "./tools/devtool -y test -- ../tests/integration_tests/style/",
     "label": "🪶 Style",
     # we only install the required dependencies in x86_64
-    "agents": ["platform=x86_64.metal"],
+    "agents": ["instance=m5d.metal"]
 }
 
 build_grp = group(
@@ -107,7 +107,7 @@ if any(x.suffix != ".md" for x in changed_files):
     ]
 
 pipeline = {
-    "agents": {"queue": "default"},
+    "agents": {"queue": "private-prod-us-east-1"},
     "steps": steps,
 }
 
