@@ -8,23 +8,26 @@
 //! Emulates virtual and hardware devices.
 use std::io;
 
-mod bus;
+pub mod bus;
 pub mod legacy;
 pub mod pseudo;
 pub mod virtio;
 
-use logger::{error, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
+use tracing::error;
 
-pub use self::bus::{Bus, BusDevice, Error as BusError};
+pub use self::bus::{Bus, Error as BusError};
 use crate::virtio::{QueueError, VsockError};
 
 // Function used for reporting error in terms of logging
 // but also in terms of METRICS net event fails.
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn report_net_event_fail(err: Error) {
     error!("{:?}", err);
     METRICS.net.event_fails.inc();
 }
 
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn report_balloon_event_fail(err: virtio::balloon::Error) {
     error!("{:?}", err);
     METRICS.balloon.event_fails.inc();

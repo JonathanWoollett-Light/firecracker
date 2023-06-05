@@ -103,6 +103,9 @@ pub struct VirtioDeviceState {
 }
 
 impl VirtioDeviceState {
+    // TODO Remove `skip(device)`. This will likely require removing dynamic dispatch with
+    // `dyn VirtioDevice` and replacing it with an enum `enum VirtioDevice`, this may be a tricky.
+    #[tracing::instrument(level = "trace", ret, skip(device))]
     pub fn from_device(device: &dyn VirtioDevice) -> Self {
         VirtioDeviceState {
             device_type: device.device_type(),
@@ -116,6 +119,7 @@ impl VirtioDeviceState {
 
     /// Does sanity checking on the `self` state against expected values
     /// and builds queues from state.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn build_queues_checked(
         &self,
         mem: &GuestMemoryMmap,
@@ -177,6 +181,7 @@ pub struct MmioTransportState {
     config_generation: u32,
 }
 
+#[derive(Debug)]
 pub struct MmioTransportConstructorArgs {
     pub mem: GuestMemoryMmap,
     pub device: Arc<Mutex<dyn VirtioDevice>>,

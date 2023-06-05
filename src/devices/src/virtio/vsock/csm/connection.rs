@@ -1,6 +1,7 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
+use std::fmt::Debug;
 /// The main job of `VsockConnection` is to forward data traffic, back and forth, between a
 /// guest-side AF_VSOCK socket and a host-side generic `Read + Write + AsRawFd` stream, while
 /// also managing its internal state.
@@ -83,7 +84,8 @@ use std::num::Wrapping;
 use std::os::unix::io::{AsRawFd, RawFd};
 use std::time::{Duration, Instant};
 
-use logger::{debug, error, info, warn, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
+use tracing::{debug, error, info, warn};
 use utils::epoll::EventSet;
 use utils::vm_memory::{GuestMemoryError, GuestMemoryMmap};
 
@@ -95,6 +97,7 @@ use super::{defs, ConnState, Error, PendingRx, PendingRxSet, Result};
 
 /// A self-managing connection object, that handles communication between a guest-side AF_VSOCK
 /// socket and a host-side `Read + Write + AsRawFd` stream.
+#[derive(Debug)]
 pub struct VsockConnection<S: Read + Write + AsRawFd> {
     /// The current connection state.
     state: ConnState,
@@ -132,7 +135,7 @@ pub struct VsockConnection<S: Read + Write + AsRawFd> {
 
 impl<S> VsockChannel for VsockConnection<S>
 where
-    S: Read + Write + AsRawFd,
+    S: std::fmt::Debug + Read + Write + AsRawFd,
 {
     /// Fill in a vsock packet, to be delivered to our peer (the guest driver).
     ///
@@ -407,7 +410,7 @@ where
 
 impl<S> VsockEpollListener for VsockConnection<S>
 where
-    S: Read + Write + AsRawFd,
+    S: std::fmt::Debug + Read + Write + AsRawFd,
 {
     /// Get the event set that this connection is interested in.
     ///
@@ -484,9 +487,10 @@ where
 
 impl<S> VsockConnection<S>
 where
-    S: Read + Write + AsRawFd,
+    S: std::fmt::Debug + Read + Write + AsRawFd,
 {
     /// Create a new guest-initiated connection object.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new_peer_init(
         stream: S,
         local_cid: u64,
@@ -514,6 +518,7 @@ where
     }
 
     /// Create a new host-initiated connection object.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new_local_init(
         stream: S,
         local_cid: u64,
@@ -541,6 +546,7 @@ where
 
     /// Check if there is an expiry (kill) timer set for this connection, sometime in the
     /// future.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn will_expire(&self) -> bool {
         match self.expiry {
             None => false,
@@ -550,6 +556,7 @@ where
 
     /// Check if this connection needs to be scheduled for forceful termination, due to its
     /// kill timer having expired.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn has_expired(&self) -> bool {
         match self.expiry {
             None => false,
@@ -558,18 +565,21 @@ where
     }
 
     /// Get the kill timer value, if one is set.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn expiry(&self) -> Option<Instant> {
         self.expiry
     }
 
     /// Schedule the connection to be forcefully terminated ASAP (i.e. the next time the
     /// connection is asked to yield a packet, via `recv_pkt()`).
+    #[tracing::instrument(level = "trace", ret)]
     pub fn kill(&mut self) {
         self.state = ConnState::Killed;
         self.pending_rx.insert(PendingRx::Rst);
     }
 
     /// Return the connections state.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn state(&self) -> ConnState {
         self.state
     }
@@ -580,6 +590,7 @@ where
     /// Warning: this will bypass the connection state machine and write directly to the
     /// underlying stream. No account of this write is kept, which includes bypassing
     /// vsock flow control.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn send_bytes_raw(&mut self, buf: &[u8]) -> Result<usize> {
         self.stream.write(buf).map_err(Error::StreamWrite)
     }
@@ -685,6 +696,7 @@ mod tests {
     const PEER_PORT: u32 = 1003;
     const PEER_BUF_ALLOC: u32 = 64 * 1024;
 
+    #[derive(Debug)]
     enum StreamState {
         Closed,
         Error(ErrorKind),
@@ -692,6 +704,7 @@ mod tests {
         WouldBlock,
     }
 
+    #[derive(Debug)]
     struct TestStream {
         fd: EventFd,
         read_buf: Vec<u8>,
@@ -761,14 +774,16 @@ mod tests {
 
     impl<S> VsockConnection<S>
     where
-        S: Read + Write + AsRawFd,
+        S: Read + Write + AsRawFd + Debug,
     {
         /// Get the fwd_cnt value from the connection.
+        #[tracing::instrument(level = "trace", ret)]
         pub(crate) fn fwd_cnt(&self) -> Wrapping<u32> {
             self.fwd_cnt
         }
 
         /// Forcefully insert a credit update flag.
+        #[tracing::instrument(level = "trace", ret)]
         pub(crate) fn insert_credit_update(&mut self) {
             self.pending_rx.insert(PendingRx::CreditUpdate);
         }
@@ -794,6 +809,7 @@ mod tests {
     // packet.  A single `VsockConnection` object will also suffice for our testing needs. We'll
     // be using a specially crafted `Read + Write + AsRawFd` object as a backing stream, so that
     // we can control the various error conditions that might arise.
+    #[derive(Debug)]
     struct CsmTestContext {
         _vsock_test_ctx: TestContext,
         pkt: VsockPacket,

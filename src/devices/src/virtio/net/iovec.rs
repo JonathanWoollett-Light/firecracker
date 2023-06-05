@@ -33,6 +33,7 @@ pub(crate) struct IoVecBuffer {
 
 impl IoVecBuffer {
     /// Create an `IoVecBuffer` from a `DescriptorChain`
+    #[tracing::instrument(level = "trace", ret)]
     pub fn from_descriptor_chain(mem: &GuestMemoryMmap, head: DescriptorChain) -> Result<Self> {
         let mut vecs = vec![];
         let mut len = 0usize;
@@ -63,16 +64,19 @@ impl IoVecBuffer {
     }
 
     /// Get the total length of the memory regions covered by this `IoVecBuffer`
+    #[tracing::instrument(level = "trace", ret)]
     pub fn len(&self) -> usize {
         self.len
     }
 
     /// Returns a pointer to the memory keeping the `iovec` structs
+    #[tracing::instrument(level = "trace", ret)]
     pub fn as_iovec_ptr(&self) -> *const iovec {
         self.vecs.as_ptr()
     }
 
     /// Returns the length of the `iovec` array.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn iovec_count(&self) -> usize {
         self.vecs.len()
     }
@@ -85,6 +89,7 @@ impl IoVecBuffer {
     /// # Returns
     ///
     /// The number of bytes read (if any)
+    #[tracing::instrument(level = "trace", ret)]
     pub fn read_at(&self, buf: &mut [u8], offset: usize) -> Option<usize> {
         // We can't read past the end of this `IoVecBuffer`
         if offset >= self.len() {

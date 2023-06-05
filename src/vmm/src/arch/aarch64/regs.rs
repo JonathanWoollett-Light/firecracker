@@ -183,6 +183,7 @@ arm64_sys_reg!(KVM_REG_ARM_TIMER_CNT, 3, 3, 14, 3, 2);
 ///
 /// * `state` - Array slice of [`Aarch64Register`] structures, representing the registers of a VCPU
 ///   state.
+#[tracing::instrument(level = "trace", ret)]
 pub fn get_manufacturer_id_from_state(state: &[Aarch64Register]) -> Result<u32> {
     let midr_el1 = state.iter().find(|reg| reg.id == MIDR_EL1);
     match midr_el1 {
@@ -195,6 +196,7 @@ pub fn get_manufacturer_id_from_state(state: &[Aarch64Register]) -> Result<u32> 
 
 /// Extract the Manufacturer ID from the host.
 /// The ID is found between bits 24-31 of MIDR_EL1 register.
+#[tracing::instrument(level = "trace", ret)]
 pub fn get_manufacturer_id_from_host() -> Result<u32> {
     let midr_el1_path =
         &PathBuf::from("/sys/devices/system/cpu/cpu0/regs/identification/midr_el1".to_string());
@@ -217,6 +219,7 @@ pub fn get_manufacturer_id_from_host() -> Result<u32> {
 /// * `cpu_id` - Index of current vcpu.
 /// * `boot_ip` - Starting instruction pointer.
 /// * `mem` - Reserved DRAM for current VM.
+#[tracing::instrument(level = "trace", ret)]
 pub fn setup_boot_regs(
     vcpu: &VcpuFd,
     cpu_id: u8,
@@ -261,6 +264,7 @@ pub fn setup_boot_regs(
 /// # Arguments
 ///
 /// * `regid` - The index of the register we are checking.
+#[tracing::instrument(level = "trace", ret)]
 pub fn is_system_register(regid: u64) -> bool {
     if (regid & u64::from(KVM_REG_ARM_COPROC_MASK)) == u64::from(KVM_REG_ARM_CORE) {
         return false;
@@ -278,6 +282,7 @@ pub fn is_system_register(regid: u64) -> bool {
 /// # Arguments
 ///
 /// * `vcpu` - Structure for the VCPU that holds the VCPU's fd.
+#[tracing::instrument(level = "trace", ret)]
 pub fn read_mpidr(vcpu: &VcpuFd) -> Result<u64> {
     match vcpu.get_one_reg(MPIDR_EL1) {
         Err(err) => Err(Error::GetSysRegister(MPIDR_EL1, err)),
@@ -293,6 +298,7 @@ pub fn read_mpidr(vcpu: &VcpuFd) -> Result<u64> {
 ///
 /// * `vcpu` - Structure for the VCPU that holds the VCPU's fd.
 /// * `state` - Input/Output vector of registers states.
+#[tracing::instrument(level = "trace", ret)]
 pub fn save_core_registers(vcpu: &VcpuFd, state: &mut Vec<Aarch64Register>) -> Result<()> {
     let mut off = offset__of!(user_pt_regs, regs);
     // There are 31 user_pt_regs:
@@ -419,6 +425,7 @@ pub fn save_core_registers(vcpu: &VcpuFd, state: &mut Vec<Aarch64Register>) -> R
 ///
 /// * `vcpu` - Structure for the VCPU that holds the VCPU's fd.
 /// * `state` - Input/Output vector of registers states.
+#[tracing::instrument(level = "trace", ret)]
 pub fn save_system_registers(vcpu: &VcpuFd, state: &mut Vec<Aarch64Register>) -> Result<()> {
     // Call KVM_GET_REG_LIST to get all registers available to the guest. For ArmV8 there are
     // less than 500 registers.
@@ -447,6 +454,7 @@ pub fn save_system_registers(vcpu: &VcpuFd, state: &mut Vec<Aarch64Register>) ->
 /// * `vcpu` - Structure for the VCPU that holds the VCPU's fd.
 /// * `ids` - Slice of registers ids to save.
 /// * `state` - Input/Output vector of registers states.
+#[tracing::instrument(level = "trace", ret)]
 pub fn save_registers(vcpu: &VcpuFd, ids: &[u64], state: &mut Vec<Aarch64Register>) -> Result<()> {
     for id in ids.iter() {
         state.push(Aarch64Register {
@@ -466,6 +474,7 @@ pub fn save_registers(vcpu: &VcpuFd, ids: &[u64], state: &mut Vec<Aarch64Registe
 ///
 /// * `vcpu` - Structure for the VCPU that holds the VCPU's fd.
 /// * `state` - Structure containing the state of the system registers.
+#[tracing::instrument(level = "trace", ret)]
 pub fn restore_registers(vcpu: &VcpuFd, state: &[Aarch64Register]) -> Result<()> {
     for reg in state {
         vcpu.set_one_reg(reg.id, reg.value)
@@ -479,6 +488,7 @@ pub fn restore_registers(vcpu: &VcpuFd, state: &[Aarch64Register]) -> Result<()>
 /// # Arguments
 ///
 /// * `vcpu` - Structure for the VCPU that holds the VCPU's fd.
+#[tracing::instrument(level = "trace", ret)]
 pub fn get_mpstate(vcpu: &VcpuFd) -> Result<kvm_mp_state> {
     vcpu.get_mp_state().map_err(Error::GetMp)
 }
@@ -489,6 +499,7 @@ pub fn get_mpstate(vcpu: &VcpuFd) -> Result<kvm_mp_state> {
 ///
 /// * `vcpu` - Structure for the VCPU that holds the VCPU's fd.
 /// * `state` - Structure for returning the state of the system registers.
+#[tracing::instrument(level = "trace", ret)]
 pub fn set_mpstate(vcpu: &VcpuFd, state: kvm_mp_state) -> Result<()> {
     vcpu.set_mp_state(state).map_err(Error::SetMp)
 }

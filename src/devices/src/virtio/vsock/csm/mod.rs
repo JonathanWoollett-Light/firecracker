@@ -82,6 +82,7 @@ impl PendingRx {
 }
 
 /// A set of RX indications (`PendingRx` items).
+#[derive(Debug)]
 struct PendingRxSet {
     data: u16,
 }

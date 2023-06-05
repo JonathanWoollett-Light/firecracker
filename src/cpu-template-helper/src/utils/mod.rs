@@ -90,6 +90,7 @@ pub enum Error {
 }
 
 #[allow(dead_code)]
+#[tracing::instrument(level = "trace", ret)]
 pub fn build_microvm_from_config(config: &str) -> Result<(Arc<Mutex<Vmm>>, VmResources), Error> {
     // Prepare resources from the given config file.
     let instance_info = InstanceInfo {
@@ -101,7 +102,7 @@ pub fn build_microvm_from_config(config: &str) -> Result<(Arc<Mutex<Vmm>>, VmRes
     let vm_resources = VmResources::from_json(config, &instance_info, HTTP_MAX_PAYLOAD_SIZE, None)
         .map_err(Error::CreateVmResources)?;
     let mut event_manager = EventManager::new().unwrap();
-    let seccomp_filters = get_filters(SeccompConfig::None).unwrap();
+    let seccomp_filters = get_filters(SeccompConfig::<std::io::Empty>::None).unwrap();
 
     // Build a microVM.
     let vmm = build_microvm_for_boot(
@@ -114,6 +115,7 @@ pub fn build_microvm_from_config(config: &str) -> Result<(Arc<Mutex<Vmm>>, VmRes
     Ok((vmm, vm_resources))
 }
 
+#[tracing::instrument(level = "trace", ret)]
 pub fn add_suffix(path: &Path, suffix: &str) -> PathBuf {
     // Extract the part of the filename before the extension.
     let mut new_file_name = OsString::from(path.file_stem().unwrap());

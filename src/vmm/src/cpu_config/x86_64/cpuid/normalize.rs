@@ -88,6 +88,7 @@ pub struct CheckedAssignError;
 
 /// Sets a given bit to a true or false (1 or 0).
 #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
+#[tracing::instrument(level = "trace", ret)]
 pub fn set_bit(x: &mut u32, bit: u8, y: bool) {
     debug_assert!(bit < 32);
     *x = (*x & !(1 << bit)) | ((u32::from(u8::from(y))) << bit);
@@ -95,6 +96,7 @@ pub fn set_bit(x: &mut u32, bit: u8, y: bool) {
 
 /// Sets a given range to a given value.
 #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
+#[tracing::instrument(level = "trace", ret)]
 pub fn set_range(
     x: &mut u32,
     range: std::ops::Range<u8>,
@@ -121,6 +123,7 @@ pub fn set_range(
 }
 /// Gets a given range within a given value.
 #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
+#[tracing::instrument(level = "trace", ret)]
 pub fn get_range(x: u32, range: std::ops::Range<u8>) -> u32 {
     debug_assert!(range.end >= range.start);
     (x & mask(range.clone())) >> range.start
@@ -170,6 +173,7 @@ impl super::Cpuid {
     /// - [`AmdCpuid::normalize`] errors.
     // As we pass through host frequency, we require CPUID and thus `cfg(cpuid)`.
     #[inline]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn normalize(
         &mut self,
         // The index of the current logical CPU in the range [0..cpu_count].

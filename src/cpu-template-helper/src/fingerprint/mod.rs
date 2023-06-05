@@ -6,7 +6,7 @@ use vmm::cpu_config::templates::CustomCpuTemplate;
 
 pub mod dump;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Fingerprint {
     pub firecracker_version: String,
     pub kernel_version: String,

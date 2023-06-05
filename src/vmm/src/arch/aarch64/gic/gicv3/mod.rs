@@ -129,6 +129,7 @@ impl GICDevice for GICv3 {
 /// RDIST pending tables into guest RAM.
 ///
 /// The tables get flushed to guest RAM whenever the VM gets stopped.
+#[tracing::instrument(level = "trace", ret)]
 fn save_pending_tables(fd: &DeviceFd) -> Result<()> {
     let init_gic_attr = kvm_bindings::kvm_device_attr {
         group: kvm_bindings::KVM_DEV_ARM_VGIC_GRP_CTRL,

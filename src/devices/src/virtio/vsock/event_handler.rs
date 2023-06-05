@@ -27,7 +27,8 @@
 use std::os::unix::io::AsRawFd;
 
 use event_manager::{EventOps, Events, MutEventSubscriber};
-use logger::{debug, error, warn, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
+use tracing::{debug, error, warn};
 use utils::epoll::EventSet;
 
 use super::device::{Vsock, EVQ_INDEX, RXQ_INDEX, TXQ_INDEX};
@@ -36,8 +37,9 @@ use crate::virtio::VirtioDevice;
 
 impl<B> Vsock<B>
 where
-    B: VsockBackend + 'static,
+    B: std::fmt::Debug + VsockBackend + 'static,
 {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn handle_rxq_event(&mut self, evset: EventSet) -> bool {
         debug!("vsock: RX queue event");
 
@@ -58,6 +60,7 @@ where
         raise_irq
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn handle_txq_event(&mut self, evset: EventSet) -> bool {
         debug!("vsock: TX queue event");
 
@@ -84,6 +87,7 @@ where
         raise_irq
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn handle_evq_event(&mut self, evset: EventSet) -> bool {
         debug!("vsock: event queue event");
 
@@ -100,6 +104,7 @@ where
         false
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn notify_backend(&mut self, evset: EventSet) -> bool {
         debug!("vsock: backend event");
 
@@ -151,7 +156,7 @@ where
 
 impl<B> MutEventSubscriber for Vsock<B>
 where
-    B: VsockBackend + 'static,
+    B: std::fmt::Debug + VsockBackend + 'static,
 {
     fn process(&mut self, event: Events, ops: &mut EventOps) {
         let source = event.fd();

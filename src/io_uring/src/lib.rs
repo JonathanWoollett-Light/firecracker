@@ -79,6 +79,7 @@ pub enum Error {
 
 impl Error {
     /// Return true if this error is caused by a full submission or completion queue.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn is_throttling_err(&self) -> bool {
         matches!(
             self,
@@ -88,6 +89,7 @@ impl Error {
 }
 
 /// Main object representing an io_uring instance.
+#[derive(Debug)]
 pub struct IoUring {
     registered_fds_count: u32,
     squeue: SubmissionQueue,
@@ -113,6 +115,7 @@ impl IoUring {
     /// * `files` - Files to be registered for IO.
     /// * `restrictions` - Vector of [`Restriction`](restriction/enum.Restriction.html)s
     /// * `eventfd` - Optional eventfd for receiving completion notifications.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(
         num_entries: u32,
         files: Vec<&File>,
@@ -173,7 +176,11 @@ impl IoUring {
     /// # Safety
     /// Unsafe because we pass a raw user_data pointer to the kernel.
     /// It's up to the caller to make sure that this value is ever freed (not leaked).
-    pub unsafe fn push<T>(&mut self, op: Operation<T>) -> std::result::Result<(), (Error, T)> {
+    #[tracing::instrument(level = "trace", ret)]
+    pub unsafe fn push<T: std::fmt::Debug>(
+        &mut self,
+        op: Operation<T>,
+    ) -> std::result::Result<(), (Error, T)> {
         // validate that we actually did register fds
         let fd = op.fd() as i32;
         match self.registered_fds_count {
@@ -206,7 +213,7 @@ impl IoUring {
     /// Unsafe because we reconstruct the `user_data` from a raw pointer passed by the kernel.
     /// It's up to the caller to make sure that `T` is the correct type of the `user_data`, that
     /// the raw pointer is valid and that we have full ownership of that address.
-    pub unsafe fn pop<T>(&mut self) -> Result<Option<Cqe<T>>> {
+    pub unsafe fn pop<T: std::fmt::Debug>(&mut self) -> Result<Option<Cqe<T>>> {
         self.cqueue
             .pop()
             .map(|maybe_cqe| {
@@ -225,22 +232,26 @@ impl IoUring {
     }
 
     /// Submit all operations but don't wait for any completions.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn submit(&mut self) -> Result<u32> {
         self.do_submit(0)
     }
 
     /// Submit all operations and wait for their completion.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn submit_and_wait_all(&mut self) -> Result<u32> {
         self.do_submit(self.num_ops)
     }
 
     /// Return the number of operations currently on the submission queue.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn pending_sqes(&self) -> Result<u32> {
         self.squeue.pending().map_err(Error::SQueue)
     }
 
     /// A total of the number of ops in the submission and completion queues, as well as the
     /// in-flight ops.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn num_ops(&self) -> u32 {
         self.num_ops
     }

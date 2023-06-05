@@ -12,7 +12,8 @@ use kvm_bindings::{
     kvm_xsave, CpuId, Msrs, KVM_MAX_CPUID_ENTRIES, KVM_MAX_MSR_ENTRIES,
 };
 use kvm_ioctls::{VcpuExit, VcpuFd};
-use logger::{error, warn, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
+use tracing::{error, warn};
 use utils::vm_memory::{Address, GuestAddress, GuestMemoryMmap};
 use versionize::{VersionMap, Versionize, VersionizeError, VersionizeResult};
 use versionize_derive::Versionize;
@@ -169,6 +170,7 @@ pub enum KvmVcpuConfigureError {
 }
 
 /// A wrapper around creating and using a kvm x86_64 vcpu.
+#[derive(Debug)]
 pub struct KvmVcpu {
     pub index: u8,
     pub fd: VcpuFd,
@@ -186,6 +188,7 @@ impl KvmVcpu {
     ///
     /// * `index` - Represents the 0-based CPU index between [0, max vcpus).
     /// * `vm` - The vm to which this vcpu will get attached.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(index: u8, vm: &Vm) -> Result<Self> {
         let kvm_vcpu = vm.fd().create_vcpu(index.into()).map_err(Error::VcpuFd)?;
 
@@ -206,6 +209,7 @@ impl KvmVcpu {
     /// * `kernel_start_addr` - Offset from `guest_mem` at which the kernel starts.
     /// * `vcpu_config` - The vCPU configuration.
     /// * `cpuid` - The capabilities exposed by this vCPU.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn configure(
         &mut self,
         guest_mem: &GuestMemoryMmap,
@@ -278,6 +282,7 @@ impl KvmVcpu {
     }
 
     /// Sets a Port Mapped IO bus for this vcpu.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_pio_bus(&mut self, pio_bus: devices::Bus) {
         self.pio_bus = Some(pio_bus);
     }
@@ -287,6 +292,7 @@ impl KvmVcpu {
     /// # Errors
     ///
     /// When [`kvm_ioctls::VcpuFd::get_tsc_khz`] errrors.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get_tsc_khz(&self) -> std::result::Result<u32, GetTscError> {
         let res = self.fd.get_tsc_khz()?;
         Ok(res)
@@ -364,6 +370,7 @@ impl KvmVcpu {
     /// # Errors
     ///
     /// * When `KvmVcpu::get_msr_chunks()` returns errors.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get_msrs(&self, msr_index_list: &[u32]) -> Result<HashMap<u32, u64>> {
         let mut msrs: HashMap<u32, u64> = HashMap::new();
         self.get_msr_chunks(msr_index_list)?
@@ -377,6 +384,7 @@ impl KvmVcpu {
     }
 
     /// Save the KVM internal state.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn save_state(&self) -> Result<VcpuState> {
         // Ordering requirements:
         //
@@ -438,6 +446,7 @@ impl KvmVcpu {
     ///
     /// Opposed to `save_state()`, this dumps all the supported and dumpable MSRs not limited to
     /// serializable ones.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn dump_cpu_config(&self) -> Result<CpuConfiguration> {
         let cpuid = cpuid::Cpuid::try_from(self.get_cpuid()?)?;
         let kvm = kvm_ioctls::Kvm::new().unwrap();
@@ -451,6 +460,7 @@ impl KvmVcpu {
     /// # Errors
     ///
     /// When
+    #[tracing::instrument(level = "trace", ret)]
     pub fn is_tsc_scaling_required(
         &self,
         state_tsc_freq: u32,
@@ -466,11 +476,13 @@ impl KvmVcpu {
     }
 
     // Scale the TSC frequency of this vCPU to the one provided as a parameter.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_tsc_khz(&self, tsc_freq: u32) -> std::result::Result<(), SetTscError> {
         self.fd.set_tsc_khz(tsc_freq).map_err(SetTscError)
     }
 
     /// Use provided state to populate KVM internal state.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn restore_state(&self, state: &VcpuState) -> Result<()> {
         // Ordering requirements:
         //
@@ -528,6 +540,7 @@ impl KvmVcpu {
     /// Runs the vCPU in KVM context and handles the kvm exit reason.
     ///
     /// Returns error or enum specifying whether emulation was handled or interrupted.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn run_arch_emulation(&self, exit: VcpuExit) -> super::Result<VcpuEmulation> {
         match exit {
             VcpuExit::IoIn(addr, data) => {
@@ -558,7 +571,7 @@ impl KvmVcpu {
     }
 }
 
-#[derive(Clone, Versionize)]
+#[derive(Debug, Clone, Versionize)]
 /// Structure holding VCPU kvm state.
 // NOTICE: Any changes to this structure require a snapshot version bump.
 pub struct VcpuState {

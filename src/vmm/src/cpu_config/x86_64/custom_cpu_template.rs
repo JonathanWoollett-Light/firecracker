@@ -4,6 +4,7 @@
 /// Guest config sub-module specifically useful for
 /// config templates.
 use std::borrow::Cow;
+use std::fmt::Debug;
 use std::result::Result;
 
 use serde::de::Error as SerdeError;
@@ -133,6 +134,7 @@ pub struct CustomCpuTemplate {
 
 impl CustomCpuTemplate {
     /// Get a list of MSR indices that are modified by the CPU template.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get_msr_index_list(&self) -> Vec<u32> {
         self.msr_modifiers
             .iter()
@@ -156,6 +158,7 @@ pub struct RegisterModifier {
     pub bitmap: RegisterValueFilter<u64>,
 }
 
+#[tracing::instrument(level = "trace", ret, skip(deserializer))]
 fn deserialize_kvm_cpuid_flags<'de, D>(deserializer: D) -> Result<KvmCpuidFlags, D::Error>
 where
     D: Deserializer<'de>,
@@ -164,6 +167,7 @@ where
     Ok(KvmCpuidFlags(flag))
 }
 
+#[tracing::instrument(level = "trace", ret, skip(deserializer))]
 fn deserialize_cpuid_register<'de, D>(deserializer: D) -> Result<CpuidRegister, D::Error>
 where
     D: Deserializer<'de>,
@@ -183,6 +187,7 @@ where
     })
 }
 
+#[tracing::instrument(level = "trace", skip(serializer))]
 fn serialize_cpuid_register<S>(cpuid_reg: &CpuidRegister, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,

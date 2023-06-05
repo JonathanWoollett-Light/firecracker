@@ -5,12 +5,14 @@ use io_uring::operation::{OpCode, Operation};
 use io_uring::{Error, IoUring, SQueueError};
 use utils::vm_memory::{MmapRegion, VolatileMemory};
 
+#[tracing::instrument(level = "trace", ret)]
 fn drain_cqueue(ring: &mut IoUring) {
     while let Some(entry) = unsafe { ring.pop::<usize>().unwrap() } {
         assert!(entry.result().is_ok());
     }
 }
 
+#[tracing::instrument(level = "trace", ret)]
 pub fn drive_submission_and_completion(
     ring: &mut IoUring,
     mem_region: &MmapRegion,

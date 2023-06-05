@@ -151,14 +151,16 @@ impl<'a> NetworkBytesMut for &'a mut [u8] {}
 // This struct is used as a convenience for any type which contains a generic member implementing
 // NetworkBytes with a lifetime, so we don't have to also add the PhantomData member each time. We
 // use pub(super) here because we only want this to be usable by the child modules of `pdu`.
+#[derive(Debug)]
 pub(super) struct InnerBytes<'a, T: 'a> {
     bytes: T,
     phantom: PhantomData<&'a T>,
 }
 
-impl<'a, T> InnerBytes<'a, T> {
+impl<'a, T: std::fmt::Debug> InnerBytes<'a, T> {
     /// Creates a new instance as a wrapper around `bytes`.
     #[inline]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(bytes: T) -> Self {
         InnerBytes {
             bytes,

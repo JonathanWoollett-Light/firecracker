@@ -46,6 +46,7 @@ pub struct CpuConfiguration {
 
 impl CpuConfiguration {
     /// Modifies provided config with changes from template
+    #[tracing::instrument(level = "trace", ret)]
     pub fn apply_template(self, template: &CustomCpuTemplate) -> Result<Self, Error> {
         let Self {
             mut cpuid,

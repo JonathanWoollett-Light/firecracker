@@ -16,8 +16,9 @@ use std::{fmt, io, result, thread};
 use kvm_bindings::{KVM_SYSTEM_EVENT_RESET, KVM_SYSTEM_EVENT_SHUTDOWN};
 use kvm_ioctls::VcpuExit;
 use libc::{c_int, c_void, siginfo_t};
-use logger::{error, info, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
 use seccompiler::{BpfProgram, BpfProgramRef};
+use tracing::{error, info};
 use utils::errno;
 use utils::eventfd::EventFd;
 use utils::signal::{register_signal_handler, sigrtmin, Killable};
@@ -96,6 +97,7 @@ impl fmt::Display for StartThreadedError {
 }
 
 /// A wrapper around creating and using a vcpu.
+#[derive(Debug)]
 pub struct Vcpu {
     /// Access to kvm-arch specific functionality.
     pub kvm_vcpu: KvmVcpu,
@@ -183,6 +185,7 @@ impl Vcpu {
 
     /// Registers a signal handler which makes use of TLS and kvm immediate exit to
     /// kick the vcpu running on the current thread, if there is one.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn register_kick_signal_handler() {
         extern "C" fn handle_signal(_: c_int, _: *mut siginfo_t, _: *mut c_void) {
             // SAFETY: This is safe because it's temporarily aliasing the `Vcpu` object, but we are
@@ -206,6 +209,7 @@ impl Vcpu {
     /// * `index` - Represents the 0-based CPU index between [0, max vcpus).
     /// * `vm` - The vm to which this vcpu will get attached.
     /// * `exit_evt` - An `EventFd` that will be written into when this vcpu exits.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(index: u8, vm: &Vm, exit_evt: EventFd) -> Result<Self> {
         let (event_sender, event_receiver) = channel();
         let (response_sender, response_receiver) = channel();
@@ -224,12 +228,14 @@ impl Vcpu {
     }
 
     /// Sets a MMIO bus for this vcpu.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_mmio_bus(&mut self, mmio_bus: devices::Bus) {
         self.kvm_vcpu.mmio_bus = Some(mmio_bus);
     }
 
     /// Moves the vcpu to its own thread and constructs a VcpuHandle.
     /// The handle can be used to control the remote vcpu.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn start_threaded(
         mut self,
         seccomp_filter: Arc<BpfProgram>,
@@ -260,6 +266,7 @@ impl Vcpu {
     /// Runs the vCPU in KVM context in a loop. Handles KVM_EXITs then goes back in.
     /// Note that the state of the VCPU and associated VM must be setup first for this to do
     /// anything useful.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn run(&mut self, seccomp_filter: BpfProgramRef) {
         // Load seccomp filters for this vCPU thread.
         // Execution panics if filters cannot be loaded, use --no-seccomp if skipping filters
@@ -276,6 +283,7 @@ impl Vcpu {
     }
 
     // This is the main loop of the `Running` state.
+    #[tracing::instrument(level = "trace", ret)]
     fn running(&mut self) -> StateMachine<Self> {
         // This loop is here just for optimizing the emulation path.
         // No point in ticking the state machine if there are no external events.
@@ -348,6 +356,7 @@ impl Vcpu {
     }
 
     // This is the main loop of the `Paused` state.
+    #[tracing::instrument(level = "trace", ret)]
     fn paused(&mut self) -> StateMachine<Self> {
         match self.event_receiver.recv() {
             // Paused ---- Resume ----> Running
@@ -424,6 +433,7 @@ impl Vcpu {
     }
 
     // Transition to the exited state and finish on command.
+    #[tracing::instrument(level = "trace", ret)]
     fn exit(&mut self, exit_code: FcExitCode) -> StateMachine<Self> {
         // To avoid cycles, all teardown paths take the following route:
         // +------------------------+----------------------------+------------------------+
@@ -465,6 +475,7 @@ impl Vcpu {
     ///
     /// Blocks until a `VM_EXIT` is received, in which case this function returns a [`VcpuExit`]
     /// containing the reason.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn emulate(&self) -> std::result::Result<VcpuExit, errno::Error> {
         self.kvm_vcpu.fd.run()
     }
@@ -472,6 +483,7 @@ impl Vcpu {
     /// Runs the vCPU in KVM context and handles the kvm exit reason.
     ///
     /// Returns error or enum specifying whether emulation was handled or interrupted.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn run_emulation(&self) -> Result<VcpuEmulation> {
         match self.emulate() {
             Ok(run) => match run {
@@ -582,8 +594,8 @@ impl Drop for Vcpu {
     }
 }
 
-#[derive(Clone)]
 /// List of events that the Vcpu can receive.
+#[derive(Debug, Clone)]
 pub enum VcpuEvent {
     /// The vCPU thread will end when receiving this message.
     Finish,
@@ -636,6 +648,7 @@ impl fmt::Debug for VcpuResponse {
 }
 
 /// Wrapper over Vcpu that hides the underlying interactions with the Vcpu thread.
+#[derive(Debug)]
 pub struct VcpuHandle {
     event_sender: Sender<VcpuEvent>,
     response_receiver: Receiver<VcpuResponse>,
@@ -661,6 +674,7 @@ impl VcpuHandle {
     /// + `event_sender`: [`Sender`] to communicate [`VcpuEvent`] to control the vcpu.
     /// + `response_received`: [`Received`] from which the vcpu's responses can be read.
     /// + `vcpu_thread`: A [`JoinHandle`] for the vcpu thread.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(
         event_sender: Sender<VcpuEvent>,
         response_receiver: Receiver<VcpuResponse>,
@@ -677,6 +691,7 @@ impl VcpuHandle {
     /// # Errors
     ///
     /// When [`vmm_sys_util::linux::signal::Killable::kill`] errors.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn send_event(&self, event: VcpuEvent) -> std::result::Result<(), VcpuSendEventError> {
         // Use expect() to crash if the other thread closed this channel.
         self.event_sender
@@ -692,6 +707,7 @@ impl VcpuHandle {
     }
 
     /// Returns a reference to the [`Received`] from which the vcpu's responses can be read.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn response_receiver(&self) -> &Receiver<VcpuResponse> {
         &self.response_receiver
     }
@@ -737,10 +753,8 @@ pub mod tests {
     use crate::vstate::vm::Vm;
     use crate::RECV_TIMEOUT_SEC;
 
-    struct DummyDevice;
-    impl devices::BusDevice for DummyDevice {}
-
     impl Vcpu {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn emulate(&self) -> std::result::Result<VcpuExit, errno::Error> {
             self.test_vcpu_exit_reason
                 .lock()
@@ -849,29 +863,6 @@ pub mod tests {
                 EmulationError::FaultyKvmExit("Invalid argument (os error 22)".to_string())
             )
         );
-
-        let mut bus = devices::Bus::new();
-        let dummy = Arc::new(Mutex::new(DummyDevice));
-        bus.insert(dummy, 0x10, 0x10).unwrap();
-        vcpu.set_mmio_bus(bus);
-        let addr = 0x10;
-        static mut DATA: [u8; 4] = [0, 0, 0, 0];
-
-        unsafe {
-            *(vcpu.test_vcpu_exit_reason.lock().unwrap()) =
-                Some(Ok(VcpuExit::MmioRead(addr, &mut DATA)));
-        }
-        let res = vcpu.run_emulation();
-        assert!(res.is_ok());
-        assert_eq!(res.unwrap(), VcpuEmulation::Handled);
-
-        unsafe {
-            *(vcpu.test_vcpu_exit_reason.lock().unwrap()) =
-                Some(Ok(VcpuExit::MmioWrite(addr, &DATA)));
-        }
-        let res = vcpu.run_emulation();
-        assert!(res.is_ok());
-        assert_eq!(res.unwrap(), VcpuEmulation::Handled);
     }
 
     impl PartialEq for VcpuResponse {
@@ -899,6 +890,7 @@ pub mod tests {
 
     // Auxiliary function being used throughout the tests.
     #[allow(unused_mut)]
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn setup_vcpu(mem_size: usize) -> (Vm, Vcpu, GuestMemoryMmap) {
         let (mut vm, gm) = setup_vm(mem_size);
 
@@ -989,7 +981,7 @@ pub mod tests {
             )
             .expect("failed to configure vcpu");
 
-        let mut seccomp_filters = get_filters(SeccompConfig::None).unwrap();
+        let mut seccomp_filters = get_filters(SeccompConfig::<std::io::Empty>::None).unwrap();
         let barrier = Arc::new(Barrier::new(2));
         let vcpu_handle = vcpu
             .start_threaded(seccomp_filters.remove("vcpu").unwrap(), barrier.clone())

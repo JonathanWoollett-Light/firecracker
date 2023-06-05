@@ -48,6 +48,7 @@ pub(crate) enum Error {
 }
 
 /// Deserializable object that represents the Json filter file.
+#[derive(Debug)]
 pub(crate) struct JsonFile(pub BTreeMap<String, Filter>);
 
 // Implement a custom deserializer, that returns an error for duplicate thread keys.
@@ -145,6 +146,7 @@ impl Filter {
 /// Object responsible for compiling [`Filter`](struct.Filter.html)s into
 /// [`BpfProgram`](../common/type.BpfProgram.html)s.
 /// Uses the [`SeccompFilter`](../backend/struct.SeccompFilter.html) interface as an IR language.
+#[derive(Debug)]
 pub(crate) struct Compiler {
     /// Target architecture. Can be different from the current `target_arch`.
     arch: TargetArch,
@@ -154,6 +156,7 @@ pub(crate) struct Compiler {
 
 impl Compiler {
     /// Create a new `Compiler` instance, for the given target architecture.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(arch: TargetArch) -> Self {
         Self {
             arch,
@@ -172,6 +175,7 @@ impl Compiler {
     }
 
     /// Main compilation function.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn compile_blob(
         &self,
         filters: BTreeMap<String, Filter>,
@@ -260,6 +264,7 @@ mod tests {
     };
 
     impl Filter {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn new(
             default_action: SeccompAction,
             filter_action: SeccompAction,
@@ -274,6 +279,7 @@ mod tests {
     }
 
     impl SyscallRule {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn new(syscall: String, conditions: Option<Vec<Cond>>) -> SyscallRule {
             SyscallRule {
                 syscall,

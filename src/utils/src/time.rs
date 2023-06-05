@@ -9,6 +9,7 @@ pub const NANOS_PER_SECOND: u64 = 1_000_000_000;
 pub const NANOS_PER_MILLISECOND: u64 = 1_000_000;
 
 /// Wrapper over `libc::clockid_t` to specify Linux Kernel clock source.
+#[derive(Debug)]
 pub enum ClockType {
     /// Equivalent to `libc::CLOCK_MONOTONIC`.
     Monotonic,
@@ -32,6 +33,7 @@ impl From<ClockType> for libc::clockid_t {
 }
 
 /// Structure representing the date in local time with nanosecond precision.
+#[derive(Debug)]
 pub struct LocalTime {
     /// Seconds in current minute.
     sec: i32,
@@ -51,6 +53,7 @@ pub struct LocalTime {
 
 impl LocalTime {
     /// Returns the [LocalTime](struct.LocalTime.html) structure for the calling moment.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn now() -> LocalTime {
         let mut timespec = libc::timespec {
             tv_sec: 0,
@@ -105,7 +108,7 @@ impl fmt::Display for LocalTime {
 }
 
 /// Holds a micro-second resolution timestamp with both the real time and cpu time.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct TimestampUs {
     /// Real time in microseconds.
     pub time_us: u64,
@@ -125,6 +128,7 @@ impl Default for TimestampUs {
 /// Returns a timestamp in nanoseconds from a monotonic clock.
 ///
 /// Uses `_rdstc` on `x86_64` and [`get_time`](fn.get_time.html) on other architectures.
+#[tracing::instrument(level = "trace", ret)]
 pub fn timestamp_cycles() -> u64 {
     #[cfg(target_arch = "x86_64")]
     // SAFETY: Safe because there's nothing that can go wrong with this call.
@@ -142,6 +146,7 @@ pub fn timestamp_cycles() -> u64 {
 /// # Arguments
 ///
 /// * `clock_type` - Identifier of the Linux Kernel clock on which to act.
+#[tracing::instrument(level = "trace", ret)]
 pub fn get_time_ns(clock_type: ClockType) -> u64 {
     let mut time_struct = libc::timespec {
         tv_sec: 0,
@@ -159,6 +164,7 @@ pub fn get_time_ns(clock_type: ClockType) -> u64 {
 /// # Arguments
 ///
 /// * `clock_type` - Identifier of the Linux Kernel clock on which to act.
+#[tracing::instrument(level = "trace", ret)]
 pub fn get_time_us(clock_type: ClockType) -> u64 {
     get_time_ns(clock_type) / 1000
 }
@@ -168,6 +174,7 @@ pub fn get_time_us(clock_type: ClockType) -> u64 {
 /// # Arguments
 ///
 /// * `clock_type` - Identifier of the Linux Kernel clock on which to act.
+#[tracing::instrument(level = "trace", ret)]
 pub fn get_time_ms(clock_type: ClockType) -> u64 {
     get_time_ns(clock_type) / NANOS_PER_MILLISECOND
 }
@@ -178,6 +185,7 @@ pub fn get_time_ms(clock_type: ClockType) -> u64 {
 /// # Arguments
 ///
 /// * `value` - Timestamp in seconds.
+#[tracing::instrument(level = "trace", ret)]
 pub fn seconds_to_nanoseconds(value: i64) -> Option<i64> {
     value.checked_mul(NANOS_PER_SECOND as i64)
 }

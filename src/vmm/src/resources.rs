@@ -5,7 +5,6 @@ use std::convert::From;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use logger::info;
 use mmds::data_store::{Mmds, MmdsVersion};
 use mmds::ns::MmdsNetworkStack;
 use serde::{Deserialize, Serialize};
@@ -19,7 +18,6 @@ use crate::vmm_config::boot_source::{
 };
 use crate::vmm_config::drive::*;
 use crate::vmm_config::instance_info::InstanceInfo;
-use crate::vmm_config::logger::{init_logger, LoggerConfig, LoggerConfigError};
 use crate::vmm_config::machine_config::{
     MachineConfig, MachineConfigUpdate, VmConfig, VmConfigError,
 };
@@ -27,6 +25,7 @@ use crate::vmm_config::metrics::{init_metrics, MetricsConfig, MetricsConfigError
 use crate::vmm_config::mmds::{MmdsConfig, MmdsConfigError};
 use crate::vmm_config::net::*;
 use crate::vmm_config::vsock::*;
+use crate::vmm_config::LoggerConfig;
 
 type Result<E> = std::result::Result<(), E>;
 
@@ -43,8 +42,6 @@ pub enum Error {
     File(std::io::Error),
     /// JSON is invalid.
     InvalidJson(serde_json::Error),
-    /// Logger configuration error.
-    Logger(LoggerConfigError),
     /// Metrics system configuration error.
     Metrics(MetricsConfigError),
     /// MMDS error.
@@ -67,7 +64,6 @@ impl std::fmt::Display for Error {
             Error::BootSource(err) => write!(f, "Boot source error: {}", err),
             Error::File(err) => write!(f, "File operation error: {}", err),
             Error::InvalidJson(err) => write!(f, "Invalid JSON: {}", err),
-            Error::Logger(err) => write!(f, "Logger error: {}", err),
             Error::Metrics(err) => write!(f, "Metrics error: {}", err),
             Error::Mmds(err) => write!(f, "MMDS error: {}", err),
             Error::MmdsConfig(err) => write!(f, "MMDS config error: {}", err),
@@ -105,7 +101,7 @@ pub struct VmmConfig {
 
 /// A data structure that encapsulates the device configurations
 /// held in the Vmm.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct VmResources {
     /// The vCpu and memory configuration for this microVM.
     pub vm_config: VmConfig,
@@ -131,6 +127,7 @@ pub struct VmResources {
 
 impl VmResources {
     /// Configures Vmm resources as described by the `config_json` param.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn from_json(
         config_json: &str,
         instance_info: &InstanceInfo,
@@ -140,7 +137,7 @@ impl VmResources {
         let vmm_config: VmmConfig = serde_json::from_slice::<VmmConfig>(config_json.as_bytes())?;
 
         if let Some(logger) = vmm_config.logger {
-            init_logger(logger, instance_info)?;
+            logger.init();
         }
 
         if let Some(metrics) = vmm_config.metrics {
@@ -185,7 +182,7 @@ impl VmResources {
             resources.locked_mmds_or_default().put_data(
                 serde_json::from_str(data).expect("MMDS error: metadata provided not valid json"),
             )?;
-            info!("Successfully added metadata to mmds from file");
+            tracing::info!("Successfully added metadata to mmds from file");
         }
 
         if let Some(mmds_config) = vmm_config.mmds_config {
@@ -196,6 +193,7 @@ impl VmResources {
     }
 
     /// If not initialised, create the mmds data store with the default config.
+    #[tracing::instrument(level = "trace")]
     pub fn mmds_or_default(&mut self) -> &Arc<Mutex<Mmds>> {
         self.mmds
             .get_or_insert(Arc::new(Mutex::new(Mmds::default_with_limit(
@@ -204,6 +202,7 @@ impl VmResources {
     }
 
     /// If not initialised, create the mmds data store with the default config.
+    #[tracing::instrument(level = "trace")]
     pub fn locked_mmds_or_default(&mut self) -> MutexGuard<'_, Mmds> {
         let mmds = self.mmds_or_default();
         mmds.lock().expect("Poisoned lock")
@@ -211,6 +210,7 @@ impl VmResources {
 
     /// Updates the resources from a restored device (used for configuring resources when
     /// restoring from a snapshot).
+    #[tracing::instrument(level = "trace", ret)]
     pub fn update_from_restored_device(&mut self, device: SharedDeviceType) {
         match device {
             SharedDeviceType::Block(block) => {
@@ -232,22 +232,26 @@ impl VmResources {
     }
 
     /// Returns whether dirty page tracking is enabled or not.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn track_dirty_pages(&self) -> bool {
         self.vm_config.track_dirty_pages
     }
 
     /// Configures the dirty page tracking functionality of the microVM.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_track_dirty_pages(&mut self, dirty_page_tracking: bool) {
         self.vm_config.track_dirty_pages = dirty_page_tracking;
     }
 
     /// Add a custom CPU template to the VM resources
     /// to configure vCPUs.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_custom_cpu_template(&mut self, cpu_template: CustomCpuTemplate) {
         self.vm_config.set_custom_cpu_template(cpu_template);
     }
 
     /// Updates the configuration of the microVM.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn update_vm_config(
         &mut self,
         update: &MachineConfigUpdate,
@@ -309,16 +313,19 @@ impl VmResources {
     }
 
     /// Gets a reference to the boot source configuration.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn boot_source_config(&self) -> &BootSourceConfig {
         &self.boot_source.config
     }
 
     /// Gets a reference to the boot source builder.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn boot_source_builder(&self) -> Option<&BootConfig> {
         self.boot_source.builder.as_ref()
     }
 
     /// Sets a balloon device to be attached when the VM starts.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_balloon_device(
         &mut self,
         config: BalloonDeviceConfig,
@@ -333,6 +340,7 @@ impl VmResources {
     }
 
     /// Obtains the boot source hooks (kernel fd, command line creation and validation).
+    #[tracing::instrument(level = "trace", ret)]
     pub fn build_boot_source(
         &mut self,
         boot_source_cfg: BootSourceConfig,
@@ -343,6 +351,7 @@ impl VmResources {
     }
 
     /// Set the boot source configuration (contains raw kernel config details).
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_boot_source_config(&mut self, boot_source_cfg: BootSourceConfig) {
         self.boot_source.config = boot_source_cfg;
     }
@@ -350,6 +359,7 @@ impl VmResources {
     /// Inserts a block to be attached when the VM starts.
     // Only call this function as part of user configuration.
     // If the drive_id does not exist, a new Block Device Config is added to the list.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_block_device(
         &mut self,
         block_device_config: BlockDeviceConfig,
@@ -358,6 +368,7 @@ impl VmResources {
     }
 
     /// Builds a network device to be attached when the VM starts.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn build_net_device(
         &mut self,
         body: NetworkInterfaceConfig,
@@ -367,11 +378,13 @@ impl VmResources {
     }
 
     /// Sets a vsock device to be attached when the VM starts.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_vsock_device(&mut self, config: VsockDeviceConfig) -> Result<VsockConfigError> {
         self.vsock.insert(config)
     }
 
     /// Setter for mmds config.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_mmds_config(
         &mut self,
         config: MmdsConfig,
@@ -384,6 +397,7 @@ impl VmResources {
     }
 
     /// Updates MMDS version.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_mmds_version(
         &mut self,
         version: MmdsVersion,
@@ -465,9 +479,9 @@ mod tests {
     use std::fs::File;
     use std::io::Write;
     use std::os::linux::fs::MetadataExt;
+    use std::str::FromStr;
 
     use devices::virtio::vsock::{VsockError, VSOCK_DEV_ID};
-    use logger::{LevelFilter, LOGGER};
     use serde_json::{Map, Value};
     use utils::net::mac::MacAddr;
     use utils::tempfile::TempFile;
@@ -496,7 +510,7 @@ mod tests {
                 .to_str()
                 .unwrap()
                 .to_string(),
-            guest_mac: Some(MacAddr::parse_str("01:23:45:67:89:0a").unwrap()),
+            guest_mac: Some(MacAddr::from_str("01:23:45:67:89:0a").unwrap()),
             rx_rate_limiter: Some(RateLimiterConfig::default()),
             tx_rate_limiter: Some(RateLimiterConfig::default()),
         }
@@ -839,18 +853,13 @@ mod tests {
             rootfs_file.as_path().to_str().unwrap()
         );
 
-        match VmResources::from_json(
+        VmResources::from_json(
             json.as_str(),
             &default_instance_info,
             HTTP_MAX_PAYLOAD_SIZE,
             None,
-        ) {
-            Err(Error::Logger(LoggerConfigError::InitializationFailure { .. })) => (),
-            _ => unreachable!(),
-        }
-
-        // The previous call enables the logger. We need to disable it.
-        LOGGER.set_max_level(LevelFilter::Off);
+        )
+        .unwrap();
 
         // Invalid path for metrics pipe.
         json = format!(
@@ -1508,7 +1517,7 @@ mod tests {
         // Clone the existing net config in order to obtain a new one.
         let mut new_net_device_cfg = default_net_cfg();
         new_net_device_cfg.iface_id = "new_net_if".to_string();
-        new_net_device_cfg.guest_mac = Some(MacAddr::parse_str("01:23:45:67:89:0c").unwrap());
+        new_net_device_cfg.guest_mac = Some(MacAddr::from_str("01:23:45:67:89:0c").unwrap());
         new_net_device_cfg.host_dev_name = "dummy_path2".to_string();
         assert_eq!(vm_resources.net_builder.len(), 1);
 
@@ -1565,18 +1574,6 @@ mod tests {
             format!(
                 "Invalid JSON: {}",
                 serde_json::Error::io(std::io::Error::from_raw_os_error(21))
-            )
-        );
-        assert_eq!(
-            format!(
-                "{}",
-                Error::Logger(LoggerConfigError::InitializationFailure(
-                    "error message".to_string()
-                ))
-            ),
-            format!(
-                "Logger error: {}",
-                LoggerConfigError::InitializationFailure("error message".to_string())
             )
         );
         assert_eq!(

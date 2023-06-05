@@ -27,6 +27,7 @@ mod common_types {
 }
 
 use std::borrow::Cow;
+use std::fmt::Debug;
 use std::num::ParseIntError;
 use std::result::Result;
 
@@ -87,6 +88,7 @@ impl From<&Option<CpuTemplateType>> for StaticCpuTemplate {
 pub struct RegisterValueFilter<V>
 where
     V: Copy
+        + Debug
         + std::ops::Not<Output = V>
         + std::ops::BitAnd<Output = V>
         + std::ops::BitOr<Output = V>,
@@ -100,12 +102,14 @@ where
 impl<V> RegisterValueFilter<V>
 where
     V: Copy
+        + Debug
         + std::ops::Not<Output = V>
         + std::ops::BitAnd<Output = V>
         + std::ops::BitOr<Output = V>,
 {
     /// Applies filter to the value
     #[inline]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn apply(&self, value: V) -> V {
         (value & !self.filter) | self.value
     }
@@ -144,6 +148,7 @@ impl_numeric!(u128);
 impl<V> Serialize for RegisterValueFilter<V>
 where
     V: Copy
+        + Debug
         + std::ops::Not<Output = V>
         + std::ops::BitAnd<Output = V>
         + std::ops::BitOr<Output = V>
@@ -180,6 +185,7 @@ where
 impl<'de, V> Deserialize<'de> for RegisterValueFilter<V>
 where
     V: Copy
+        + Debug
         + std::ops::Not<Output = V>
         + std::ops::BitAnd<Output = V>
         + std::ops::BitOr<Output = V>

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use crate::utils::{ModifierMapKey, ModifierMapValue};
 
@@ -15,10 +16,11 @@ mod x86_64;
 #[cfg(target_arch = "x86_64")]
 pub use x86_64::strip;
 
+#[tracing::instrument(level = "trace", ret)]
 pub fn strip_common<K, V>(maps: &mut [HashMap<K, V>])
 where
-    K: ModifierMapKey,
-    V: ModifierMapValue,
+    K: ModifierMapKey + Debug,
+    V: ModifierMapValue + Debug,
 {
     // Get common items shared by all the sets.
     let mut common = maps[0].clone();

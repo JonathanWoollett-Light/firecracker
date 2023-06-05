@@ -14,10 +14,11 @@ use std::{cmp, mem, result};
 use dumbo::pdu::arp::ETH_IPV4_FRAME_LEN;
 use dumbo::pdu::ethernet::{EthernetFrame, PAYLOAD_OFFSET};
 use libc::EAGAIN;
-use logger::{error, warn, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
 use mmds::data_store::Mmds;
 use mmds::ns::MmdsNetworkStack;
 use rate_limiter::{BucketUpdate, RateLimiter, TokenType};
+use tracing::{error, warn};
 use utils::eventfd::EventFd;
 use utils::net::mac::MacAddr;
 use utils::vm_memory::{ByteValued, Bytes, GuestMemoryError, GuestMemoryMmap};
@@ -62,6 +63,7 @@ const fn frame_hdr_len() -> usize {
 
 // Frames being sent/received through the network device model have a VNET header. This
 // function returns a slice which holds the L2 frame bytes without this header.
+#[tracing::instrument(level = "trace", ret)]
 fn frame_bytes_from_buf(buf: &[u8]) -> Result<&[u8]> {
     if buf.len() < vnet_hdr_len() {
         Err(Error::VnetHeaderMissing)
@@ -70,6 +72,7 @@ fn frame_bytes_from_buf(buf: &[u8]) -> Result<&[u8]> {
     }
 }
 
+#[tracing::instrument(level = "trace")]
 fn frame_bytes_from_buf_mut(buf: &mut [u8]) -> Result<&mut [u8]> {
     if buf.len() < vnet_hdr_len() {
         Err(Error::VnetHeaderMissing)
@@ -79,6 +82,7 @@ fn frame_bytes_from_buf_mut(buf: &mut [u8]) -> Result<&mut [u8]> {
 }
 
 // This initializes to all 0 the VNET hdr part of a buf.
+#[tracing::instrument(level = "trace", ret)]
 fn init_vnet_hdr(buf: &mut [u8]) {
     // The buffer should be larger than vnet_hdr_len.
     buf[0..vnet_hdr_len()].fill(0);
@@ -92,6 +96,7 @@ pub struct ConfigSpace {
 // SAFETY: `ConfigSpace` contains only PODs.
 unsafe impl ByteValued for ConfigSpace {}
 
+#[derive(Debug)]
 pub struct Net {
     pub(crate) id: String,
 
@@ -125,6 +130,7 @@ pub struct Net {
 }
 
 impl Net {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new_with_tap(
         id: String,
         tap: Tap,
@@ -179,6 +185,7 @@ impl Net {
     }
 
     /// Create a new virtio network device with the given TAP interface.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(
         id: String,
         tap_if_name: &str,
@@ -202,27 +209,32 @@ impl Net {
     }
 
     /// Provides the ID of this net device.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn id(&self) -> &String {
         &self.id
     }
 
     /// Provides the MAC of this net device.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn guest_mac(&self) -> Option<&MacAddr> {
         self.guest_mac.as_ref()
     }
 
     /// Provides the host IFACE name of this net device.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn iface_name(&self) -> String {
         self.tap.if_name_as_str().to_string()
     }
 
     /// Provides the MmdsNetworkStack of this net device.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn mmds_ns(&self) -> Option<&MmdsNetworkStack> {
         self.mmds_ns.as_ref()
     }
 
     /// Configures the `MmdsNetworkStack` to allow device to forward MMDS requests.
     /// If the device already supports MMDS, updates the IPv4 address.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn configure_mmds_network_stack(&mut self, ipv4_addr: Ipv4Addr, mmds: Arc<Mutex<Mmds>>) {
         if let Some(mmds_ns) = self.mmds_ns.as_mut() {
             mmds_ns.set_ipv4_addr(ipv4_addr);
@@ -232,16 +244,19 @@ impl Net {
     }
 
     /// Disables the `MmdsNetworkStack` to prevent device to forward MMDS requests.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn disable_mmds_network_stack(&mut self) {
         self.mmds_ns = None
     }
 
     /// Provides a reference to the configured RX rate limiter.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn rx_rate_limiter(&self) -> &RateLimiter {
         &self.rx_rate_limiter
     }
 
     /// Provides a reference to the configured TX rate limiter.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn tx_rate_limiter(&self) -> &RateLimiter {
         &self.tx_rate_limiter
     }
@@ -614,6 +629,7 @@ impl Net {
     }
 
     /// Updates the parameters for the rate limiters
+    #[tracing::instrument(level = "trace", ret)]
     pub fn patch_rate_limiters(
         &mut self,
         rx_bytes: BucketUpdate,
@@ -635,6 +651,7 @@ impl Net {
         tap.write_iovec(buf)
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn process_rx_queue_event(&mut self) {
         METRICS.net.rx_queue_event_count.inc();
 
@@ -650,6 +667,7 @@ impl Net {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn process_tap_rx_event(&mut self) {
         // This is safe since we checked in the event handler that the device is activated.
         let mem = self.device_state.mem().unwrap();
@@ -681,6 +699,7 @@ impl Net {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn process_tx_queue_event(&mut self) {
         METRICS.net.tx_queue_event_count.inc();
         if let Err(err) = self.queue_evts[TX_INDEX].read() {
@@ -695,6 +714,7 @@ impl Net {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn process_rx_rate_limiter_event(&mut self) {
         METRICS.net.rx_event_rate_limiter_count.inc();
         // Upon rate limiter event, call the rate limiter handler
@@ -712,6 +732,7 @@ impl Net {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn process_tx_rate_limiter_event(&mut self) {
         METRICS.net.tx_rate_limiter_event_count.inc();
         // Upon rate limiter event, call the rate limiter handler
@@ -729,6 +750,7 @@ impl Net {
     }
 
     /// Process device virtio queue(s).
+    #[tracing::instrument(level = "trace", ret)]
     pub fn process_virtio_queues(&mut self) {
         let _ = self.resume_rx();
         let _ = self.process_tx();
@@ -829,6 +851,7 @@ impl VirtioDevice for Net {
 #[macro_use]
 pub mod tests {
     use std::net::Ipv4Addr;
+    use std::str::FromStr;
     use std::time::Duration;
     use std::{io, mem, thread};
 
@@ -860,6 +883,7 @@ pub mod tests {
     };
 
     impl Net {
+        #[tracing::instrument(level = "trace", ret)]
         pub(crate) fn read_tap(&mut self) -> io::Result<usize> {
             match &self.tap.mocks.read_tap {
                 ReadTapMock::MockFrame(frame) => {
@@ -874,6 +898,7 @@ pub mod tests {
             }
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub(crate) fn write_tap(tap: &mut Tap, buf: &IoVecBuffer) -> io::Result<usize> {
             match tap.mocks.write_tap {
                 WriteTapMock::Success => tap.write_iovec(buf),
@@ -915,14 +940,14 @@ pub mod tests {
     #[test]
     fn test_virtio_device_type() {
         let mut net = default_net();
-        set_mac(&mut net, MacAddr::parse_str("11:22:33:44:55:66").unwrap());
+        set_mac(&mut net, MacAddr::from_str("11:22:33:44:55:66").unwrap());
         assert_eq!(net.device_type(), TYPE_NET);
     }
 
     #[test]
     fn test_virtio_device_features() {
         let mut net = default_net();
-        set_mac(&mut net, MacAddr::parse_str("11:22:33:44:55:66").unwrap());
+        set_mac(&mut net, MacAddr::from_str("11:22:33:44:55:66").unwrap());
 
         // Test `features()` and `ack_features()`.
         let features = 1 << VIRTIO_NET_F_GUEST_CSUM
@@ -951,10 +976,10 @@ pub mod tests {
     #[test]
     fn test_virtio_device_read_config() {
         let mut net = default_net();
-        set_mac(&mut net, MacAddr::parse_str("11:22:33:44:55:66").unwrap());
+        set_mac(&mut net, MacAddr::from_str("11:22:33:44:55:66").unwrap());
 
         // Test `read_config()`. This also validates the MAC was properly configured.
-        let mac = MacAddr::parse_str("11:22:33:44:55:66").unwrap();
+        let mac = MacAddr::from_str("11:22:33:44:55:66").unwrap();
         let mut config_mac = [0u8; MAC_ADDR_LEN];
         net.read_config(0, &mut config_mac);
         assert_eq!(&config_mac, mac.get_bytes());
@@ -968,7 +993,7 @@ pub mod tests {
     #[test]
     fn test_virtio_device_rewrite_config() {
         let mut net = default_net();
-        set_mac(&mut net, MacAddr::parse_str("11:22:33:44:55:66").unwrap());
+        set_mac(&mut net, MacAddr::from_str("11:22:33:44:55:66").unwrap());
 
         let new_config: [u8; MAC_ADDR_LEN] = [0x66, 0x55, 0x44, 0x33, 0x22, 0x11];
         net.write_config(0, &new_config);
@@ -1446,9 +1471,9 @@ pub mod tests {
     fn test_mmds_detour_and_injection() {
         let mut net = default_net();
 
-        let src_mac = MacAddr::parse_str("11:11:11:11:11:11").unwrap();
+        let src_mac = MacAddr::from_str("11:11:11:11:11:11").unwrap();
         let src_ip = Ipv4Addr::new(10, 1, 2, 3);
-        let dst_mac = MacAddr::parse_str("22:22:22:22:22:22").unwrap();
+        let dst_mac = MacAddr::from_str("22:22:22:22:22:22").unwrap();
         let dst_ip = Ipv4Addr::new(169, 254, 169, 254);
 
         let (frame_buf, frame_len) = create_arp_request(src_mac, src_ip, dst_mac, dst_ip);
@@ -1485,10 +1510,10 @@ pub mod tests {
     fn test_mac_spoofing_detection() {
         let mut net = default_net();
 
-        let guest_mac = MacAddr::parse_str("11:11:11:11:11:11").unwrap();
-        let not_guest_mac = MacAddr::parse_str("33:33:33:33:33:33").unwrap();
+        let guest_mac = MacAddr::from_str("11:11:11:11:11:11").unwrap();
+        let not_guest_mac = MacAddr::from_str("33:33:33:33:33:33").unwrap();
         let guest_ip = Ipv4Addr::new(10, 1, 2, 3);
-        let dst_mac = MacAddr::parse_str("22:22:22:22:22:22").unwrap();
+        let dst_mac = MacAddr::from_str("22:22:22:22:22:22").unwrap();
         let dst_ip = Ipv4Addr::new(10, 1, 1, 1);
 
         let (frame_buf, frame_len) = create_arp_request(guest_mac, guest_ip, dst_mac, dst_ip);

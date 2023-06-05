@@ -50,6 +50,7 @@ type Result<T> = result::Result<T, Error>;
 pub type KvmVcpuConfigureError = Error;
 
 /// A wrapper around creating and using a kvm aarch64 vcpu.
+#[derive(Debug)]
 pub struct KvmVcpu {
     pub index: u8,
     pub fd: VcpuFd,
@@ -67,6 +68,7 @@ impl KvmVcpu {
     ///
     /// * `index` - Represents the 0-based CPU index between [0, max vcpus).
     /// * `vm` - The vm to which this vcpu will get attached.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(index: u8, vm: &Vm) -> Result<Self> {
         let kvm_vcpu = vm
             .fd()
@@ -83,6 +85,7 @@ impl KvmVcpu {
     }
 
     /// Gets the MPIDR register value.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get_mpidr(&self) -> u64 {
         self.mpidr
     }
@@ -94,6 +97,7 @@ impl KvmVcpu {
     /// * `guest_mem` - The guest memory used by this microvm.
     /// * `kernel_load_addr` - Offset from `guest_mem` at which the kernel is loaded.
     /// * `vcpu_config` - The vCPU configuration.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn configure(
         &mut self,
         guest_mem: &GuestMemoryMmap,
@@ -126,6 +130,7 @@ impl KvmVcpu {
     /// # Arguments
     ///
     /// * `vm_fd` - The kvm `VmFd` for this microvm.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn init(&self, vm_fd: &VmFd) -> Result<()> {
         let mut kvi: kvm_bindings::kvm_vcpu_init = kvm_bindings::kvm_vcpu_init::default();
 
@@ -143,6 +148,7 @@ impl KvmVcpu {
     }
 
     /// Save the KVM internal state.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn save_state(&self) -> Result<VcpuState> {
         let mut state = VcpuState {
             mp_state: get_mpstate(&self.fd).map_err(Error::SaveState)?,
@@ -162,6 +168,7 @@ impl KvmVcpu {
     }
 
     /// Use provided state to populate KVM internal state.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn restore_state(&self, state: &VcpuState) -> Result<()> {
         restore_registers(&self.fd, &state.regs).map_err(Error::RestoreState)?;
 
@@ -171,6 +178,7 @@ impl KvmVcpu {
     }
 
     /// Dumps CPU configuration.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn dump_cpu_config(&self) -> Result<CpuConfiguration> {
         let mut reg_list = self.get_reg_list().map_err(Error::DumpCpuConfig)?;
 
@@ -203,6 +211,7 @@ impl KvmVcpu {
     /// Runs the vCPU in KVM context and handles the kvm exit reason.
     ///
     /// Returns error or enum specifying whether emulation was handled or interrupted.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn run_arch_emulation(&self, exit: VcpuExit) -> super::Result<VcpuEmulation> {
         METRICS.vcpu.failures.inc();
         // TODO: Are we sure we want to finish running a vcpu upon
@@ -212,6 +221,7 @@ impl KvmVcpu {
     }
 
     /// Get the list of registers supported in KVM_GET_ONE_REG/KVM_SET_ONE_REG.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get_reg_list(&self) -> std::result::Result<Vec<u64>, ArchError> {
         // The max size of `kvm_bindings::RegList` is 500. See the following link.
         // https://github.com/rust-vmm/kvm-bindings/blob/main/src/arm64/fam_wrappers.rs
@@ -223,6 +233,7 @@ impl KvmVcpu {
     }
 
     /// Get registers for the given register IDs.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get_regs(
         &self,
         reg_list: &[u64],
@@ -240,7 +251,7 @@ impl KvmVcpu {
 }
 
 /// Structure holding VCPU kvm state.
-#[derive(Clone, Default, Versionize)]
+#[derive(Debug, Clone, Default, Versionize)]
 pub struct VcpuState {
     pub mp_state: kvm_bindings::kvm_mp_state,
     pub regs: Vec<Aarch64Register>,

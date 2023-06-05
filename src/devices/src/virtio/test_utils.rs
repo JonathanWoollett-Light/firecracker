@@ -22,6 +22,7 @@ macro_rules! check_metric_after_block {
 
 /// Creates a [`GuestMemoryMmap`] with a single region of the given size starting at guest physical
 /// address 0
+#[tracing::instrument(level = "trace", ret)]
 pub fn single_region_mem(region_size: usize) -> GuestMemoryMmap {
     utils::vm_memory::test_utils::create_anon_guest_memory(&[(GuestAddress(0), region_size)], false)
         .unwrap()
@@ -29,16 +30,19 @@ pub fn single_region_mem(region_size: usize) -> GuestMemoryMmap {
 
 /// Creates a [`GuestMemoryMmap`] with a single region  of size 65536 (= 0x10000 hex) starting at
 /// guest physical address 0
+#[tracing::instrument(level = "trace", ret)]
 pub fn default_mem() -> GuestMemoryMmap {
     single_region_mem(0x10000)
 }
 
+#[derive(Debug)]
 pub struct InputData {
     pub data: Vec<u8>,
     pub read_pos: AtomicUsize,
 }
 
 impl InputData {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get_slice(&self, len: usize) -> &[u8] {
         let old_pos = self.read_pos.fetch_add(len, Ordering::AcqRel);
         &self.data[old_pos..old_pos + len]
@@ -46,6 +50,7 @@ impl InputData {
 }
 
 // Represents a location in GuestMemoryMmap which holds a given type.
+#[derive(Debug)]
 pub struct SomeplaceInMemory<'a, T> {
     pub location: GuestAddress,
     mem: &'a GuestMemoryMmap,
@@ -55,7 +60,7 @@ pub struct SomeplaceInMemory<'a, T> {
 // The ByteValued trait is required to use mem.read_obj_from_addr and write_obj_at_addr.
 impl<'a, T> SomeplaceInMemory<'a, T>
 where
-    T: utils::vm_memory::ByteValued,
+    T: std::fmt::Debug + utils::vm_memory::ByteValued,
 {
     fn new(location: GuestAddress, mem: &'a GuestMemoryMmap) -> Self {
         SomeplaceInMemory {
@@ -66,11 +71,13 @@ where
     }
 
     // Reads from the actual memory location.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get(&self) -> T {
         self.mem.read_obj(self.location).unwrap()
     }
 
     // Writes to the actual memory location.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set(&self, val: T) {
         self.mem.write_obj(val, self.location).unwrap()
     }
@@ -99,6 +106,7 @@ where
 }
 
 // Represents a virtio descriptor in guest memory.
+#[derive(Debug)]
 pub struct VirtqDesc<'a> {
     pub addr: SomeplaceInMemory<'a, u64>,
     pub len: SomeplaceInMemory<'a, u32>,
@@ -133,6 +141,7 @@ impl<'a> VirtqDesc<'a> {
         self.next.end()
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set(&self, addr: u64, len: u32, flags: u16, next: u16) {
         self.addr.set(addr);
         self.len.set(len);
@@ -140,10 +149,12 @@ impl<'a> VirtqDesc<'a> {
         self.next.set(next);
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn memory(&self) -> &'a GuestMemoryMmap {
         self.addr.mem
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_data(&mut self, data: &[u8]) {
         assert!(self.len.get() as usize >= data.len());
         let mem = self.addr.mem;
@@ -152,6 +163,7 @@ impl<'a> VirtqDesc<'a> {
             .is_ok());
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn check_data(&self, expected_data: &[u8]) {
         assert!(self.len.get() as usize >= expected_data.len());
         let mem = self.addr.mem;
@@ -165,6 +177,7 @@ impl<'a> VirtqDesc<'a> {
 
 // Represents a virtio queue ring. The only difference between the used and available rings,
 // is the ring element type.
+#[derive(Debug)]
 pub struct VirtqRing<'a, T> {
     pub flags: SomeplaceInMemory<'a, u16>,
     pub idx: SomeplaceInMemory<'a, u16>,
@@ -174,7 +187,7 @@ pub struct VirtqRing<'a, T> {
 
 impl<'a, T> VirtqRing<'a, T>
 where
-    T: utils::vm_memory::ByteValued,
+    T: std::fmt::Debug + utils::vm_memory::ByteValued,
 {
     fn new(start: GuestAddress, mem: &'a GuestMemoryMmap, qsize: u16, alignment: usize) -> Self {
         assert_eq!(start.0 & (alignment as u64 - 1), 0);
@@ -205,13 +218,14 @@ where
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn end(&self) -> GuestAddress {
         self.event.end()
     }
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct VirtqUsedElem {
     pub id: u32,
     pub len: u32,
@@ -223,6 +237,7 @@ unsafe impl utils::vm_memory::ByteValued for VirtqUsedElem {}
 pub type VirtqAvail<'a> = VirtqRing<'a, u16>;
 pub type VirtqUsed<'a> = VirtqRing<'a, VirtqUsedElem>;
 
+#[derive(Debug)]
 pub struct VirtQueue<'a> {
     pub dtable: Vec<VirtqDesc<'a>>,
     pub avail: VirtqAvail<'a>,
@@ -231,6 +246,7 @@ pub struct VirtQueue<'a> {
 
 impl<'a> VirtQueue<'a> {
     // We try to make sure things are aligned properly :-s
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(start: GuestAddress, mem: &'a GuestMemoryMmap, qsize: u16) -> Self {
         // power of 2?
         assert!(qsize > 0 && qsize & (qsize - 1) == 0);
@@ -263,27 +279,33 @@ impl<'a> VirtQueue<'a> {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn memory(&self) -> &'a GuestMemoryMmap {
         self.used.flags.mem
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn size(&self) -> u16 {
         self.dtable.len() as u16
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn dtable_start(&self) -> GuestAddress {
         self.dtable.first().unwrap().start()
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn avail_start(&self) -> GuestAddress {
         self.avail.flags.location
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn used_start(&self) -> GuestAddress {
         self.used.flags.location
     }
 
     // Creates a new Queue, using the underlying memory regions represented by the VirtQueue.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn create_queue(&self) -> Queue {
         let mut q = Queue::new(self.size());
 
@@ -296,14 +318,17 @@ impl<'a> VirtQueue<'a> {
         q
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn start(&self) -> GuestAddress {
         self.dtable_start()
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn end(&self) -> GuestAddress {
         self.used.end()
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn check_used_elem(&self, used_index: u16, expected_id: u16, expected_len: u32) {
         let used_elem = self.used.ring[used_index as usize].get();
         assert_eq!(used_elem.id, u32::from(expected_id));

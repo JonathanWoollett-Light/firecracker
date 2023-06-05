@@ -69,11 +69,13 @@ pub const VENDOR_ID_AMD_STR: &str = unsafe { std::str::from_utf8_unchecked(VENDO
 pub const BRAND_STRING_LENGTH: usize = 3 * 4 * 4;
 
 /// Mimic of [`std::arch::x86_64::__cpuid`] that wraps [`cpuid_count`].
+#[tracing::instrument(level = "trace", ret)]
 fn cpuid(leaf: u32) -> std::arch::x86_64::CpuidResult {
     cpuid_count(leaf, 0)
 }
 
 /// Safe wrapper around [`std::arch::x86_64::__cpuid_count`].
+#[tracing::instrument(level = "trace", ret)]
 fn cpuid_count(leaf: u32, subleaf: u32) -> std::arch::x86_64::CpuidResult {
     // JUSTIFICATION: There is no safe alternative.
     // SAFETY: The `cfg(cpuid)` wrapping the `cpuid` module guarantees `CPUID` is supported.
@@ -94,6 +96,7 @@ fn cpuid_count(leaf: u32, subleaf: u32) -> std::arch::x86_64::CpuidResult {
 /// ```
 #[inline]
 #[must_use]
+#[tracing::instrument(level = "trace", ret)]
 pub fn host_brand_string() -> [u8; BRAND_STRING_LENGTH] {
     let leaf_a = cpuid(0x80000002);
     let leaf_b = cpuid(0x80000003);
@@ -326,6 +329,7 @@ impl Cpuid {
     /// Returns `Some(&mut IntelCpuid)` if `Self == Self::Intel(_)` else returns `None`.
     #[inline]
     #[must_use]
+    #[tracing::instrument(level = "trace")]
     pub fn intel_mut(&mut self) -> Option<&mut IntelCpuid> {
         match self {
             Self::Intel(intel) => Some(intel),
@@ -336,6 +340,7 @@ impl Cpuid {
     /// Returns `Some(&IntelCpuid)` if `Self == Self::Intel(_)` else returns `None`.
     #[inline]
     #[must_use]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn intel(&self) -> Option<&IntelCpuid> {
         match self {
             Self::Intel(intel) => Some(intel),
@@ -346,6 +351,7 @@ impl Cpuid {
     /// Returns `Some(&AmdCpuid)` if `Self == Self::Amd(_)` else returns `None`.
     #[inline]
     #[must_use]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn amd(&self) -> Option<&AmdCpuid> {
         match self {
             Self::Intel(_) => None,
@@ -356,6 +362,7 @@ impl Cpuid {
     /// Returns `Some(&mut AmdCpuid)` if `Self == Self::Amd(_)` else returns `None`.
     #[inline]
     #[must_use]
+    #[tracing::instrument(level = "trace")]
     pub fn amd_mut(&mut self) -> Option<&mut AmdCpuid> {
         match self {
             Self::Intel(_) => None,
@@ -366,6 +373,7 @@ impl Cpuid {
     /// Returns imumutable reference to inner BTreeMap<CpuidKey, CpuidEntry>.
     #[inline]
     #[must_use]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn inner(&self) -> &std::collections::BTreeMap<CpuidKey, CpuidEntry> {
         match self {
             Self::Intel(intel_cpuid) => &intel_cpuid.0,
@@ -376,6 +384,7 @@ impl Cpuid {
     /// Returns mutable reference to inner BTreeMap<CpuidKey, CpuidEntry>.
     #[inline]
     #[must_use]
+    #[tracing::instrument(level = "trace")]
     pub fn inner_mut(&mut self) -> &mut std::collections::BTreeMap<CpuidKey, CpuidEntry> {
         match self {
             Self::Intel(intel_cpuid) => &mut intel_cpuid.0,
@@ -457,6 +466,7 @@ impl CpuidKey {
     /// `CpuidKey { leaf, subleaf: 0 }`
     #[inline]
     #[must_use]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn leaf(leaf: u32) -> Self {
         Self { leaf, subleaf: 0 }
     }
@@ -464,6 +474,7 @@ impl CpuidKey {
     /// `CpuidKey { leaf, subleaf }`
     #[inline]
     #[must_use]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn subleaf(leaf: u32, subleaf: u32) -> Self {
         Self { leaf, subleaf }
     }

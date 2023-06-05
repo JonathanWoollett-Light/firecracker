@@ -8,7 +8,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
-use logger::{error, warn};
+use tracing::warn;
 use utils::eventfd::EventFd;
 use utils::vm_memory::GuestMemoryMmap;
 
@@ -17,6 +17,7 @@ use crate::virtio::{AsAny, VIRTIO_MMIO_INT_CONFIG, VIRTIO_MMIO_INT_VRING};
 
 /// Enum that indicates if a VirtioDevice is inactive or has been activated
 /// and memory attached to it.
+#[derive(Debug)]
 pub enum DeviceState {
     Inactive,
     Activated(GuestMemoryMmap),
@@ -24,6 +25,7 @@ pub enum DeviceState {
 
 impl DeviceState {
     /// Checks if the device is activated.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn is_activated(&self) -> bool {
         match self {
             DeviceState::Inactive => false,
@@ -32,6 +34,7 @@ impl DeviceState {
     }
 
     /// Gets the memory attached to the device if it is activated.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn mem(&self) -> Option<&GuestMemoryMmap> {
         match self {
             DeviceState::Activated(ref mem) => Some(mem),
@@ -40,18 +43,21 @@ impl DeviceState {
     }
 }
 
+#[derive(Debug)]
 pub enum IrqType {
     Config,
     Vring,
 }
 
 /// Helper struct that is responsible for triggering guest IRQs
+#[derive(Debug)]
 pub struct IrqTrigger {
     pub(crate) irq_status: Arc<AtomicUsize>,
     pub(crate) irq_evt: EventFd,
 }
 
 impl IrqTrigger {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new() -> std::io::Result<Self> {
         Ok(Self {
             irq_status: Arc::new(AtomicUsize::new(0)),
@@ -59,6 +65,7 @@ impl IrqTrigger {
         })
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn trigger_irq(&self, irq_type: IrqType) -> std::result::Result<(), std::io::Error> {
         let irq = match irq_type {
             IrqType::Config => VIRTIO_MMIO_INT_CONFIG,
@@ -67,7 +74,7 @@ impl IrqTrigger {
         self.irq_status.fetch_or(irq as usize, Ordering::SeqCst);
 
         self.irq_evt.write(1).map_err(|err| {
-            error!("Failed to send irq to the guest: {:?}", err);
+            tracing::error!("Failed to send irq to the guest: {:?}", err);
             err
         })?;
 
@@ -182,6 +189,7 @@ pub(crate) mod tests {
     use super::*;
 
     impl IrqTrigger {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn has_pending_irq(&self, irq_type: IrqType) -> bool {
             if let Ok(num_irqs) = self.irq_evt.read() {
                 if num_irqs == 0 {

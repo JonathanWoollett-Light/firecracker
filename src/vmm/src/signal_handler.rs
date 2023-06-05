@@ -4,7 +4,8 @@
 use libc::{
     c_int, c_void, siginfo_t, SIGBUS, SIGHUP, SIGILL, SIGPIPE, SIGSEGV, SIGSYS, SIGXCPU, SIGXFSZ,
 };
-use logger::{error, IncMetric, StoreMetric, METRICS};
+use logger::{IncMetric, StoreMetric, METRICS};
+use tracing::error;
 use utils::signal::register_signal_handler;
 
 use crate::FcExitCode;
@@ -19,6 +20,7 @@ const SI_OFF_SYSCALL: isize = 6;
 const SYS_SECCOMP_CODE: i32 = 1;
 
 #[inline]
+#[tracing::instrument(level = "trace", ret)]
 fn exit_with_code(exit_code: FcExitCode) {
     // Write the metrics before exiting.
     if let Err(err) = METRICS.write() {
@@ -58,6 +60,7 @@ macro_rules! generate_handler {
     };
 }
 
+#[tracing::instrument(level = "trace", ret)]
 fn log_sigsys_err(si_code: c_int, info: *mut siginfo_t) {
     if si_code != SYS_SECCOMP_CODE {
         // We received a SIGSYS for a reason other than `bad syscall`.
@@ -74,6 +77,7 @@ fn log_sigsys_err(si_code: c_int, info: *mut siginfo_t) {
     );
 }
 
+#[tracing::instrument(level = "trace", ret)]
 fn empty_fn(_si_code: c_int, _info: *mut siginfo_t) {}
 
 generate_handler!(
@@ -155,6 +159,7 @@ extern "C" fn sigpipe_handler(num: c_int, info: *mut siginfo_t, _unused: *mut c_
 ///
 /// Custom handlers are installed for: `SIGBUS`, `SIGSEGV`, `SIGSYS`
 /// `SIGXFSZ` `SIGXCPU` `SIGPIPE` `SIGHUP` and `SIGILL`.
+#[tracing::instrument(level = "trace", ret)]
 pub fn register_signal_handlers() -> utils::errno::Result<()> {
     // Call to unsafe register_signal_handler which is considered unsafe because it will
     // register a signal handler which will be called in the current thread and will interrupt

@@ -3,7 +3,6 @@
 
 use std::io;
 
-use logger::error;
 use utils::vm_memory::{GuestAddress, GuestMemory, GuestMemoryMmap, GuestMemoryRegion};
 
 use super::{RemoveRegionError, MAX_PAGE_COMPACT_BUFFER};
@@ -11,6 +10,7 @@ use super::{RemoveRegionError, MAX_PAGE_COMPACT_BUFFER};
 /// This takes a vector of page frame numbers, and compacts them
 /// into ranges of consecutive pages. The result is a vector
 /// of (start_page_frame_number, range_length) pairs.
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn compact_page_frame_numbers(v: &mut [u32]) -> Vec<(u32, u32)> {
     if v.is_empty() {
         return vec![];
@@ -36,7 +36,7 @@ pub(crate) fn compact_page_frame_numbers(v: &mut [u32]) -> Vec<(u32, u32)> {
         // Skip duplicate pages. This will ensure we only consider
         // distinct PFNs.
         if page_frame_number == v[pfn_index - 1] {
-            error!("Skipping duplicate PFN {}.", page_frame_number);
+            tracing::error!("Skipping duplicate PFN {}.", page_frame_number);
             continue;
         }
 
@@ -65,6 +65,7 @@ pub(crate) fn compact_page_frame_numbers(v: &mut [u32]) -> Vec<(u32, u32)> {
     result
 }
 
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn remove_range(
     guest_memory: &GuestMemoryMmap,
     range: (GuestAddress, u64),

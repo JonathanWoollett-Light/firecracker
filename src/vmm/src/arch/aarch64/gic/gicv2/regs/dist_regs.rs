@@ -116,10 +116,12 @@ impl VgicRegEngine for DistRegEngine {
     }
 }
 
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn get_dist_regs(fd: &DeviceFd) -> Result<Vec<GicRegState<u32>>> {
     DistRegEngine::get_regs_data(fd, Box::new(VGIC_DIST_REGS.iter()), 0)
 }
 
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn set_dist_regs(fd: &DeviceFd, state: &[GicRegState<u32>]) -> Result<()> {
     DistRegEngine::set_regs_data(fd, Box::new(VGIC_DIST_REGS.iter()), state, 0)
 }

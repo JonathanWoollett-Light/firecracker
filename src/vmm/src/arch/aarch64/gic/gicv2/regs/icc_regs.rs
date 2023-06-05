@@ -54,6 +54,7 @@ impl VgicRegEngine for VgicSysRegEngine {
     }
 }
 
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn get_icc_regs(fd: &DeviceFd, mpidr: u64) -> Result<VgicSysRegsState> {
     let main_icc_regs =
         VgicSysRegEngine::get_regs_data(fd, Box::new(MAIN_VGIC_ICC_REGS.iter()), mpidr)?;
@@ -64,6 +65,7 @@ pub(crate) fn get_icc_regs(fd: &DeviceFd, mpidr: u64) -> Result<VgicSysRegsState
     })
 }
 
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn set_icc_regs(fd: &DeviceFd, mpidr: u64, state: &VgicSysRegsState) -> Result<()> {
     VgicSysRegEngine::set_regs_data(
         fd,

@@ -37,6 +37,7 @@ const GUARD_PAGE_COUNT: usize = 1;
 /// This results in a border of `GUARD_PAGE_COUNT` pages on either side of the region, which
 /// acts as a safety net for accessing out-of-bounds addresses that are not allocated for the
 /// guest's memory.
+#[tracing::instrument(level = "trace", ret)]
 fn build_guarded_region(
     maybe_file_offset: Option<FileOffset>,
     size: usize,
@@ -110,6 +111,7 @@ fn build_guarded_region(
 }
 
 /// Helper for creating the guest memory.
+#[tracing::instrument(level = "trace", ret)]
 pub fn create_guest_memory(
     regions: &[(Option<FileOffset>, GuestAddress, usize)],
     track_dirty_pages: bool,
@@ -133,6 +135,7 @@ pub fn create_guest_memory(
     GuestMemoryMmap::from_regions(mmap_regions)
 }
 
+#[tracing::instrument(level = "trace", ret)]
 pub fn mark_dirty_mem(mem: &GuestMemoryMmap, addr: GuestAddress, len: usize) {
     let _ = mem.try_access(len, addr, |_total, count, caddr, region| {
         if let Some(bitmap) = region.bitmap() {
@@ -150,6 +153,7 @@ pub mod test_utils {
     /// uses MmapRegionBuilder::build_raw() for setting up the memory with guard pages, which would
     /// error if the size is not a multiple of the page size.
     /// There are unit tests which need a custom memory size, not a multiple of the page size.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn create_guest_memory_unguarded(
         regions: &[(GuestAddress, usize)],
         track_dirty_pages: bool,
@@ -179,6 +183,7 @@ pub mod test_utils {
 
     /// Test helper used to initialize the guest memory, without the option of file-backed mmap.
     /// It is just a little syntactic sugar that helps deduplicate test code.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn create_anon_guest_memory(
         regions: &[(GuestAddress, usize)],
         track_dirty_pages: bool,

@@ -56,6 +56,7 @@ const FOLDER_PERMISSIONS: u32 = 0o700;
 const PID_FILE_EXTENSION: &str = ".pid";
 
 // Helper function, since we'll use libc::dup2 a bunch of times for daemonization.
+#[tracing::instrument(level = "trace", ret)]
 fn dup2(old_fd: libc::c_int, new_fd: libc::c_int) -> Result<()> {
     // SAFETY: This is safe because we are using a library function with valid parameters.
     SyscallReturnCode(unsafe { libc::dup2(old_fd, new_fd) })
@@ -68,6 +69,7 @@ fn dup2(old_fd: libc::c_int, new_fd: libc::c_int) -> Result<()> {
 // not use the CLONE_VM flag, this will result with the original stack replicated, in a similar
 // manner to the fork syscall. The libc wrapper prevents use of a NULL stack pointer, so we will
 // call the syscall directly.
+#[tracing::instrument(level = "trace", ret)]
 fn clone(child_stack: *mut libc::c_void, flags: libc::c_int) -> Result<libc::c_int> {
     // Clone parameters order is different between x86_64 and aarch64.
     #[cfg(target_arch = "x86_64")]
@@ -103,7 +105,35 @@ pub struct Env {
     resource_limits: ResourceLimits,
 }
 
+impl std::fmt::Debug for Env {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Env")
+            .field("id", &self.id)
+            .field("chroot_dir", &self.chroot_dir)
+            .field("exec_file_path", &self.exec_file_path)
+            .field("uid", &self.uid)
+            .field("gid", &self.gid)
+            .field("netns", &self.netns)
+            .field("daemonize", &self.daemonize)
+            .field("new_pid_ns", &self.new_pid_ns)
+            .field("start_time_us", &self.start_time_us)
+            .field("jailer_cpu_time_us", &self.jailer_cpu_time_us)
+            .field("extra_args", &self.extra_args)
+            .field(
+                "cgroups",
+                &self
+                    .cgroups
+                    .iter()
+                    .map(|b| &*b as *const _)
+                    .collect::<Vec<_>>(),
+            )
+            .field("resource_limits", &self.resource_limits)
+            .finish()
+    }
+}
+
 impl Env {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(
         arguments: &arg_parser::Arguments,
         start_time_us: u64,
@@ -226,14 +256,17 @@ impl Env {
         })
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn chroot_dir(&self) -> &Path {
         self.chroot_dir.as_path()
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn gid(&self) -> u32 {
         self.gid
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn uid(&self) -> u32 {
         self.uid
     }
@@ -514,6 +547,7 @@ impl Env {
         Ok(())
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn run(mut self) -> Result<()> {
         let exec_file_name = self.copy_exec_to_chroot()?;
         let chroot_exec_file = PathBuf::from("/").join(exec_file_name);
@@ -621,7 +655,7 @@ mod tests {
 
     const PSEUDO_EXEC_FILE_PATH: &str = "/tmp/pseudo_firecracker_exec_file";
 
-    #[derive(Clone)]
+    #[derive(Debug, Clone)]
     struct ArgVals<'a> {
         pub id: &'a str,
         pub exec_file: &'a str,
@@ -637,6 +671,7 @@ mod tests {
     }
 
     impl ArgVals<'_> {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn new() -> ArgVals<'static> {
             File::create(PSEUDO_EXEC_FILE_PATH).unwrap();
             ArgVals {

@@ -8,6 +8,7 @@ license = "Apache-2.0"
 [dependencies]
 derive_more = { version = "0.99.17", default-features = false, features = ["from"] }
 libc = "0.2.117"
+tracing = { version = "0.1.37", features = ["attributes"] }
 
 utils = { path = "../utils" }
 

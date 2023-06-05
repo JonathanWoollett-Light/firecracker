@@ -1,10 +1,12 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use logger::{error, info};
+use std::fmt::Debug;
+
 use micro_http::{Body, Method, Request, Response, StatusCode, Version};
 use serde::ser::Serialize;
 use serde_json::Value;
+use tracing::{error, info};
 use vmm::rpc_interface::{VmmAction, VmmActionError};
 
 use super::VmmData;
@@ -26,19 +28,19 @@ use crate::request::version::parse_get_version;
 use crate::request::vsock::parse_put_vsock;
 use crate::ApiServer;
 
-#[cfg_attr(test, derive(Debug))]
+#[derive(Debug)]
 pub(crate) enum RequestAction {
     Sync(Box<VmmAction>),
     ShutdownInternal, // !!! not an API, used by shutdown to thread::join the API thread
 }
 
-#[derive(Default)]
-#[cfg_attr(test, derive(Debug, PartialEq))]
+#[derive(Debug, Default, PartialEq)]
 pub(crate) struct ParsingInfo {
     deprecation_message: Option<String>,
 }
 
 impl ParsingInfo {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn append_deprecation_message(&mut self, message: &str) {
         match self.deprecation_message.as_mut() {
             None => self.deprecation_message = Some(message.to_owned()),
@@ -46,18 +48,20 @@ impl ParsingInfo {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn take_deprecation_message(&mut self) -> Option<String> {
         self.deprecation_message.take()
     }
 }
 
-#[cfg_attr(test, derive(Debug))]
+#[derive(Debug)]
 pub(crate) struct ParsedRequest {
     action: RequestAction,
     parsing_info: ParsingInfo,
 }
 
 impl ParsedRequest {
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn new(action: RequestAction) -> Self {
         Self {
             action,
@@ -65,14 +69,17 @@ impl ParsedRequest {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn into_parts(self) -> (RequestAction, ParsingInfo) {
         (self.action, self.parsing_info)
     }
 
+    #[tracing::instrument(level = "trace")]
     pub(crate) fn parsing_info(&mut self) -> &mut ParsingInfo {
         &mut self.parsing_info
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn try_from_request(request: &Request) -> Result<ParsedRequest, Error> {
         let request_uri = request.uri().get_abs_path().to_string();
         log_received_api_request(describe(
@@ -137,9 +144,10 @@ impl ParsedRequest {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn success_response_with_data<T>(body_data: &T) -> Response
     where
-        T: ?Sized + Serialize,
+        T: ?Sized + Serialize + Debug,
     {
         info!("The request was executed successfully. Status code: 200 OK.");
         let mut response = Response::new(Version::Http11, StatusCode::OK);
@@ -147,6 +155,7 @@ impl ParsedRequest {
         response
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn success_response_with_mmds_value(body_data: &Value) -> Response {
         info!("The request was executed successfully. Status code: 200 OK.");
         let mut response = Response::new(Version::Http11, StatusCode::OK);
@@ -158,6 +167,7 @@ impl ParsedRequest {
         response
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn convert_to_response(
         request_outcome: &std::result::Result<VmmData, VmmActionError>,
     ) -> Response {
@@ -207,6 +217,7 @@ impl ParsedRequest {
     }
 
     /// Helper function to avoid boiler-plate code.
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn new_sync(vmm_action: VmmAction) -> ParsedRequest {
         ParsedRequest::new(RequestAction::Sync(Box::new(vmm_action)))
     }
@@ -216,6 +227,7 @@ impl ParsedRequest {
 ///
 /// The `info` macro is used for logging.
 #[inline]
+#[tracing::instrument(level = "trace", ret)]
 fn log_received_api_request(api_description: String) {
     info!("The API server received a {}.", api_description);
 }
@@ -227,6 +239,7 @@ fn log_received_api_request(api_description: String) {
 /// * `method` - one of `GET`, `PATCH`, `PUT`
 /// * `path` - path of the API request
 /// * `body` - body of the API request
+#[tracing::instrument(level = "trace", ret)]
 fn describe(method: Method, path: &str, body: Option<&Body>) -> String {
     match (path, body) {
         ("/mmds", Some(_)) | (_, None) => format!("{:?} request on {:?}", method, path),
@@ -242,6 +255,7 @@ fn describe(method: Method, path: &str, body: Option<&Body>) -> String {
 }
 
 /// Generates a `GenericError` for each request method.
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn method_to_error(method: Method) -> Result<ParsedRequest, Error> {
     match method {
         Method::Get => Err(Error::Generic(
@@ -293,6 +307,7 @@ impl From<Error> for Response {
 }
 
 // This function is supposed to do id validation for requests.
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn checked_id(id: &str) -> Result<&str, Error> {
     // todo: are there any checks we want to do on id's?
     // not allow them to be empty strings maybe?
@@ -339,6 +354,7 @@ pub mod tests {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn vmm_action_from_request(req: ParsedRequest) -> VmmAction {
         match req.action {
             RequestAction::Sync(vmm_action) => *vmm_action,
@@ -346,6 +362,7 @@ pub mod tests {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn depr_action_from_req(req: ParsedRequest, msg: Option<String>) -> VmmAction {
         let (action_req, mut parsing_info) = req.into_parts();
         match action_req {
@@ -738,7 +755,7 @@ pub mod tests {
     fn test_try_from_put_logger() {
         let (mut sender, receiver) = UnixStream::pair().unwrap();
         let mut connection = HttpConnection::new(receiver);
-        let body = "{ \"log_path\": \"string\", \"level\": \"Warning\", \"show_level\": false, \
+        let body = "{ \"log_path\": \"string\", \"level\": \"Warn\", \"show_level\": false, \
                     \"show_log_origin\": false }";
         sender
             .write_all(http_request("PUT", "/logger", Some(body)).as_bytes())

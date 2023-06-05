@@ -6,6 +6,7 @@ use vmm::cpu_config::templates::{CpuConfiguration, CustomCpuTemplate, RegisterVa
 
 use crate::utils::aarch64::reg_modifier;
 
+#[tracing::instrument(level = "trace", ret)]
 pub fn config_to_template(cpu_config: &CpuConfiguration) -> CustomCpuTemplate {
     let mut reg_modifiers: Vec<RegisterModifier> = cpu_config
         .regs

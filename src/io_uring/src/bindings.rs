@@ -21,10 +21,12 @@ impl<T> __IncompleteArrayField<T> {
         __IncompleteArrayField(::std::marker::PhantomData, [])
     }
     #[inline]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn as_ptr(&self) -> *const T {
         self as *const _ as *const T
     }
     #[inline]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn as_mut_ptr(&mut self) -> *mut T {
         self as *mut _ as *mut T
     }

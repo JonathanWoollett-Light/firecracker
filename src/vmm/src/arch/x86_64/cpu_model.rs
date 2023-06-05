@@ -21,6 +21,7 @@ pub struct CpuModel {
 
 impl CpuModel {
     /// Get CPU model from current machine.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get_cpu_model() -> Self {
         // SAFETY: This operation is safe as long as the processor implements this CPUID function.
         // 0x1 is the defined code for getting the processor version information.
@@ -29,6 +30,7 @@ impl CpuModel {
     }
 
     /// Check if the current CPU model is Intel Cascade Lake or later.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn is_at_least_cascade_lake(&self) -> bool {
         let cascade_lake = CpuModel {
             extended_family: 0,

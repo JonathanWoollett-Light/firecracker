@@ -8,6 +8,7 @@ use crate::template::strip::strip_common;
 use crate::utils::aarch64::RegModifierMap;
 
 #[allow(dead_code)]
+#[tracing::instrument(level = "trace", ret)]
 pub fn strip(templates: Vec<CustomCpuTemplate>) -> Vec<CustomCpuTemplate> {
     // Convert `Vec<CustomCpuTemplate>` to `Vec<HashMap<_>>`.
     let mut reg_modifiers_maps = templates

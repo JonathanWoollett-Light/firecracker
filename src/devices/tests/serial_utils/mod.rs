@@ -4,8 +4,6 @@
 use std::io;
 use std::os::unix::io::{AsRawFd, RawFd};
 
-use devices::legacy::ReadableFd;
-
 pub struct MockSerialInput(pub RawFd);
 
 impl io::Read for MockSerialInput {
@@ -24,5 +22,3 @@ impl AsRawFd for MockSerialInput {
         self.0
     }
 }
-
-impl ReadableFd for MockSerialInput {}

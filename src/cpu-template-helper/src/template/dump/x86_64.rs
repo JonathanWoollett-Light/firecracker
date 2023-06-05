@@ -12,6 +12,7 @@ use vmm::cpu_config::x86_64::custom_cpu_template::{
 use crate::utils::x86_64::{cpuid_leaf_modifier, cpuid_reg_modifier, msr_modifier};
 
 /// Convert `&CpuConfiguration` to `CustomCputemplate`.
+#[tracing::instrument(level = "trace", ret)]
 pub fn config_to_template(cpu_config: &CpuConfiguration) -> CustomCpuTemplate {
     CustomCpuTemplate {
         cpuid_modifiers: cpuid_to_modifiers(&cpu_config.cpuid),
@@ -19,6 +20,7 @@ pub fn config_to_template(cpu_config: &CpuConfiguration) -> CustomCpuTemplate {
     }
 }
 
+#[tracing::instrument(level = "trace", ret)]
 fn cpuid_to_modifiers(cpuid: &Cpuid) -> Vec<CpuidLeafModifier> {
     cpuid
         .inner()
@@ -39,6 +41,7 @@ fn cpuid_to_modifiers(cpuid: &Cpuid) -> Vec<CpuidLeafModifier> {
         .collect()
 }
 
+#[tracing::instrument(level = "trace", ret)]
 fn msrs_to_modifier(msrs: &HashMap<u32, u64>) -> Vec<RegisterModifier> {
     let mut msrs: Vec<RegisterModifier> = msrs
         .iter()
