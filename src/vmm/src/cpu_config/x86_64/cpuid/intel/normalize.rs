@@ -74,6 +74,7 @@ impl super::IntelCpuid {
     /// When attempting to access missing leaves or set fields within leaves to values that don't
     /// fit.
     #[inline]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn normalize(
         &mut self,
         // The index of the current logical CPU in the range [0..cpu_count].
@@ -259,6 +260,7 @@ pub enum DefaultBrandStringError {
     clippy::arithmetic_side_effects
 )]
 #[inline]
+#[tracing::instrument(level = "trace", ret)]
 fn default_brand_string(
     // Host brand string.
     // This should look like b"Intel(R) Xeon(R) Platinum 8275CL CPU @ 3.00GHz".

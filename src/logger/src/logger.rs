@@ -167,6 +167,7 @@ impl Logger {
     /// 2018-11-07T05:34:25.180751152 [MY-INSTANCE:WARN:logger/src/lib.rs:290] A warning log
     /// message with level included
     /// ```
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_include_level(&self, option: bool) -> &Self {
         self.show_level.store(option, Ordering::Relaxed);
         self
@@ -199,6 +200,7 @@ impl Logger {
     /// 2018-11-07T05:34:25.180751152 [MY-INSTANCE:WARN] A warning log message with log origin
     /// disabled
     /// ```
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_include_origin(&self, file_path: bool, line_numbers: bool) -> &Self {
         self.show_file_path.store(file_path, Ordering::Relaxed);
         // If the file path is not shown, do not show line numbers either.
@@ -208,6 +210,7 @@ impl Logger {
     }
 
     /// Sets the ID for this logger session.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_instance_id(&self, instance_id: String) -> &Self {
         let mut guard = extract_guard(self.instance_id.write());
         *guard = instance_id;
@@ -239,6 +242,7 @@ impl Logger {
     /// 2018-11-07T05:34:25.180751152 [MY-INSTANCE:INFO:logger/src/lib.rs:389] A test warning
     /// message
     /// ```
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_max_level(&self, level: LevelFilter) -> &Self {
         set_max_level(level);
         self
@@ -310,6 +314,7 @@ impl Logger {
     ///     .configure(Some("MY-INSTANCE".to_string()))
     ///     .unwrap();
     /// ```
+    #[tracing::instrument(level = "trace", ret)]
     pub fn configure(&self, instance_id: Option<String>) -> Result<()> {
         self.init
             .call_init(|| {
@@ -344,6 +349,7 @@ impl Logger {
     ///
     /// LOGGER.init("Running Firecracker v.x".to_string(), Box::new(logs));
     /// ```
+    #[tracing::instrument(level = "trace", ret)]
     pub fn init(&self, header: String, log_dest: Box<dyn Write + Send>) -> Result<()> {
         self.init
             .call_init(|| {

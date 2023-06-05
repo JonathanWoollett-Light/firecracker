@@ -1,6 +1,7 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 use std::fmt;
+use std::fmt::Debug;
 
 use serde::{de, Deserialize, Serialize};
 
@@ -114,6 +115,7 @@ impl MachineConfigUpdate {
     /// Checks if the update request contains any data.
     /// Returns `true` if all fields are set to `None` which means that there is nothing
     /// to be updated.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn is_empty(&self) -> bool {
         if self.vcpu_count.is_none()
             && self.mem_size_mib.is_none()
@@ -157,6 +159,7 @@ pub struct VmConfig {
 
 impl VmConfig {
     /// Sets cpu tempalte field to `CpuTemplateType::Custom(cpu_template)`.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_custom_cpu_template(&mut self, cpu_template: CustomCpuTemplate) {
         self.cpu_template = Some(CpuTemplateType::Custom(cpu_template));
     }
@@ -165,6 +168,7 @@ impl VmConfig {
     /// Mapping for cpu tempalte update:
     /// StaticCpuTemplate::None -> None
     /// StaticCpuTemplate::Other -> Some(CustomCpuTemplate::Static(Other))
+    #[tracing::instrument(level = "trace", ret)]
     pub fn update(&mut self, update: &MachineConfigUpdate) -> Result<(), VmConfigError> {
         let vcpu_count = update.vcpu_count.unwrap_or(self.vcpu_count);
 
@@ -234,10 +238,11 @@ impl From<&VmConfig> for MachineConfig {
 /// This is called only when `vcpu_num` is present in the JSON configuration.
 /// `T` can be either `u8` or `Option<u8>` which both support ordering if `vcpu_num` is
 /// present in the JSON.
+#[tracing::instrument(level = "trace", ret, skip(d))]
 fn deserialize_vcpu_num<'de, D, T>(d: D) -> std::result::Result<T, D::Error>
 where
     D: de::Deserializer<'de>,
-    T: Deserialize<'de> + PartialOrd + From<u8>,
+    T: Deserialize<'de> + PartialOrd + From<u8> + Debug,
 {
     let val = T::deserialize(d)?;
 
@@ -259,10 +264,11 @@ where
 
 /// Deserialization function for the `smt` field in `MachineConfig` and `MachineConfigUpdate`.
 /// This is called only when `smt` is present in the JSON configuration.
+#[tracing::instrument(level = "trace", ret, skip(d))]
 fn deserialize_smt<'de, D, T>(d: D) -> std::result::Result<T, D::Error>
 where
     D: de::Deserializer<'de>,
-    T: Deserialize<'de> + PartialEq + From<bool>,
+    T: Deserialize<'de> + PartialEq + From<bool> + Debug,
 {
     let val = T::deserialize(d)?;
 

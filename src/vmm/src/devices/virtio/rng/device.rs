@@ -6,8 +6,9 @@ use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
 
 use aws_lc_rs::rand;
-use logger::{debug, error, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
 use rate_limiter::{RateLimiter, TokenType};
+use tracing::{debug, error};
 use utils::eventfd::EventFd;
 use utils::vm_memory::{GuestMemoryError, GuestMemoryMmap};
 use virtio_gen::virtio_rng::VIRTIO_F_VERSION_1;
@@ -32,6 +33,7 @@ pub enum Error {
 
 type Result<T> = std::result::Result<T, Error>;
 
+#[derive(Debug)]
 pub struct Entropy {
     // VirtIO fields
     avail_features: u64,

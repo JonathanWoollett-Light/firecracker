@@ -99,7 +99,7 @@ pub struct BlockDeviceUpdateConfig {
 }
 
 /// Wrapper for the collection that holds all the Block Devices
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct BlockBuilder {
     /// The list of block devices.
     /// There can be at most one root block device and it would be the first in the list.
@@ -111,6 +111,7 @@ pub struct BlockBuilder {
 
 impl BlockBuilder {
     /// Constructor for BlockDevices. It initializes an empty LinkedList.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new() -> Self {
         Self {
             list: VecDeque::<Arc<Mutex<Block>>>::new(),
@@ -135,6 +136,7 @@ impl BlockBuilder {
     }
 
     /// Inserts an existing block device.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn add_device(&mut self, block_device: Arc<Mutex<Block>>) {
         if block_device.lock().expect("Poisoned lock").is_root_device() {
             self.list.push_front(block_device);
@@ -146,6 +148,7 @@ impl BlockBuilder {
     /// Inserts a `Block` in the block devices list using the specified configuration.
     /// If a block with the same id already exists, it will overwrite it.
     /// Inserting a secondary root block device will fail.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn insert(&mut self, config: BlockDeviceConfig) -> Result<()> {
         let is_root_device = config.is_root_device;
         let position = self.get_index_of_drive_id(&config.drive_id);
@@ -213,6 +216,7 @@ impl BlockBuilder {
     }
 
     /// Returns a vec with the structures used to configure the devices.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn configs(&self) -> Vec<BlockDeviceConfig> {
         let mut ret = vec![];
         for block in &self.list {

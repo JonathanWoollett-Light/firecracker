@@ -8,8 +8,9 @@
 use std::convert::From;
 use std::result;
 
-use logger::{error, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
 use rate_limiter::{RateLimiter, TokenType};
+use tracing::error;
 use utils::vm_memory::{ByteValued, Bytes, GuestAddress, GuestMemoryError, GuestMemoryMmap};
 pub use virtio_gen::virtio_blk::{
     VIRTIO_BLK_ID_BYTES, VIRTIO_BLK_S_IOERR, VIRTIO_BLK_S_OK, VIRTIO_BLK_S_UNSUPP,
@@ -49,12 +50,14 @@ impl From<u32> for RequestType {
     }
 }
 
+#[derive(Debug)]
 pub enum ProcessingResult {
     Submitted,
     Throttled,
     Executed(FinishedRequest),
 }
 
+#[derive(Debug)]
 pub struct FinishedRequest {
     pub num_bytes_to_mem: u32,
     pub desc_idx: u16,
@@ -86,6 +89,7 @@ impl Status {
     }
 }
 
+#[derive(Debug)]
 pub struct PendingRequest {
     r#type: RequestType,
     data_len: u32,
@@ -133,6 +137,7 @@ impl PendingRequest {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn finish(self, mem: &GuestMemoryMmap, res: Result<u32, IoErr>) -> FinishedRequest {
         let status = match (res, self.r#type) {
             (Ok(transferred_data_len), RequestType::In) => {
@@ -180,7 +185,7 @@ impl PendingRequest {
 ///
 /// The header simplifies reading the request from memory as all request follow
 /// the same memory layout.
-#[derive(Copy, Clone, Default)]
+#[derive(Debug, Copy, Clone, Default)]
 #[repr(C)]
 pub struct RequestHeader {
     request_type: u32,
@@ -192,6 +197,7 @@ pub struct RequestHeader {
 unsafe impl ByteValued for RequestHeader {}
 
 impl RequestHeader {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(request_type: u32, sector: u64) -> RequestHeader {
         RequestHeader {
             request_type,
@@ -214,7 +220,7 @@ impl RequestHeader {
     }
 }
 
-#[cfg_attr(test, derive(Debug, PartialEq, Eq))]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Request {
     pub r#type: RequestType,
     pub data_len: u32,
@@ -224,6 +230,7 @@ pub struct Request {
 }
 
 impl Request {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn parse(
         avail_desc: &DescriptorChain,
         mem: &GuestMemoryMmap,
@@ -313,6 +320,7 @@ impl Request {
         Ok(req)
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn rate_limit(&self, rate_limiter: &mut RateLimiter) -> bool {
         // If limiter.consume() fails it means there is no more TokenType::Ops
         // budget and rate limiting is in effect.
@@ -346,6 +354,7 @@ impl Request {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn process(
         self,
         disk: &mut DiskProperties,

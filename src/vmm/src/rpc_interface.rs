@@ -1,6 +1,7 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::fmt::Debug;
 use std::result;
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -13,6 +14,7 @@ use tests::{
     build_and_boot_microvm, create_snapshot, restore_from_snapshot, MockVmRes as VmResources,
     MockVmm as Vmm,
 };
+use tracing::{error, info, warn};
 
 use super::Error as VmmError;
 #[cfg(not(test))]
@@ -33,7 +35,6 @@ use crate::vmm_config::boot_source::{BootSourceConfig, BootSourceConfigError};
 use crate::vmm_config::drive::{BlockDeviceConfig, BlockDeviceUpdateConfig, DriveError};
 use crate::vmm_config::entropy::{EntropyDeviceConfig, EntropyDeviceError};
 use crate::vmm_config::instance_info::InstanceInfo;
-use crate::vmm_config::logger::{LoggerConfig, LoggerConfigError};
 use crate::vmm_config::machine_config::{MachineConfig, MachineConfigUpdate, VmConfigError};
 use crate::vmm_config::metrics::{MetricsConfig, MetricsConfigError};
 use crate::vmm_config::mmds::{MmdsConfig, MmdsConfigError};
@@ -42,7 +43,7 @@ use crate::vmm_config::net::{
 };
 use crate::vmm_config::snapshot::{CreateSnapshotParams, LoadSnapshotParams, SnapshotType};
 use crate::vmm_config::vsock::{VsockConfigError, VsockDeviceConfig};
-use crate::vmm_config::{self, RateLimiterUpdate};
+use crate::vmm_config::{self, LoggerConfig, RateLimiterUpdate};
 use crate::{EventManager, FcExitCode};
 
 /// This enum represents the public interface of the VMM. Each action contains various
@@ -159,9 +160,6 @@ pub enum VmmActionError {
     /// Loading a microVM snapshot failed.
     #[error("Load microVM snapshot error: {0}")]
     LoadSnapshot(LoadSnapshotError),
-    /// The action `ConfigureLogger` failed because of bad user input.
-    #[error("{0}")]
-    Logger(LoggerConfigError),
     /// One of the actions `GetVmConfiguration` or `UpdateVmConfiguration` failed because of bad
     /// input.
     #[error("{0}")]
@@ -275,6 +273,21 @@ pub struct PrebootApiController<'a> {
     fatal_error: Option<FcExitCode>,
 }
 
+// TODO Remove when `EventManager` implements `std::fmt::Debug`.
+impl<'a> std::fmt::Debug for PrebootApiController<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PrebootApiController")
+            .field("seccomp_filters", &self.seccomp_filters)
+            .field("instance_info", &self.instance_info)
+            .field("vm_resources", &self.vm_resources)
+            .field("event_manager", &"?")
+            .field("built_vmm", &self.built_vmm)
+            .field("boot_path", &self.boot_path)
+            .field("fatal_error", &self.fatal_error)
+            .finish()
+    }
+}
+
 impl MmdsRequestHandler for PrebootApiController<'_> {
     fn mmds(&mut self) -> MutexGuard<'_, Mmds> {
         self.vm_resources.locked_mmds_or_default()
@@ -297,13 +310,14 @@ pub enum LoadSnapshotError {
 
 impl<'a> PrebootApiController<'a> {
     /// Constructor for the PrebootApiController.
+    #[tracing::instrument(level = "trace", ret, skip(event_manager))]
     pub fn new(
         seccomp_filters: &'a BpfThreadMap,
         instance_info: InstanceInfo,
         vm_resources: &'a mut VmResources,
         event_manager: &'a mut EventManager,
-    ) -> PrebootApiController<'a> {
-        PrebootApiController {
+    ) -> Self {
+        Self {
             seccomp_filters,
             instance_info,
             vm_resources,
@@ -320,6 +334,7 @@ impl<'a> PrebootApiController<'a> {
     ///
     /// Returns a populated `VmResources` object and a running `Vmm` object.
     #[allow(clippy::too_many_arguments)]
+    #[tracing::instrument(level = "trace", ret, skip(event_manager, recv_req, respond))]
     pub fn build_microvm_from_requests<F, G>(
         seccomp_filters: &BpfThreadMap,
         event_manager: &mut EventManager,
@@ -385,6 +400,7 @@ impl<'a> PrebootApiController<'a> {
 
     /// Handles the incoming preboot request and provides a response for it.
     /// Returns a built/running `Vmm` after handling a successful `StartMicroVm` request.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn handle_preboot_request(&mut self, request: VmmAction) -> ActionResult {
         use self::VmmAction::*;
 
@@ -392,9 +408,8 @@ impl<'a> PrebootApiController<'a> {
             // Supported operations allowed pre-boot.
             ConfigureBootSource(config) => self.set_boot_source(config),
             ConfigureLogger(logger_cfg) => {
-                vmm_config::logger::init_logger(logger_cfg, &self.instance_info)
-                    .map(|()| VmmData::Empty)
-                    .map_err(VmmActionError::Logger)
+                logger_cfg.init();
+                Ok(VmmData::Empty)
             }
             ConfigureMetrics(metrics_cfg) => vmm_config::metrics::init_metrics(metrics_cfg)
                 .map(|()| VmmData::Empty)
@@ -599,6 +614,7 @@ impl<'a> PrebootApiController<'a> {
 }
 
 /// Enables RPC interaction with a running Firecracker VMM.
+#[derive(Debug)]
 pub struct RuntimeApiController {
     vmm: Arc<Mutex<Vmm>>,
     vm_resources: VmResources,
@@ -612,6 +628,7 @@ impl MmdsRequestHandler for RuntimeApiController {
 
 impl RuntimeApiController {
     /// Handles the incoming runtime `VmmAction` request and provides a response for it.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn handle_request(&mut self, request: VmmAction) -> ActionResult {
         use self::VmmAction::*;
         match request {
@@ -684,11 +701,13 @@ impl RuntimeApiController {
     }
 
     /// Creates a new `RuntimeApiController`.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(vm_resources: VmResources, vmm: Arc<Mutex<Vmm>>) -> Self {
         Self { vmm, vm_resources }
     }
 
     /// Pauses the microVM by pausing the vCPUs.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn pause(&mut self) -> ActionResult {
         let pause_start_us = utils::time::get_time_us(utils::time::ClockType::Monotonic);
 
@@ -702,6 +721,7 @@ impl RuntimeApiController {
     }
 
     /// Resumes the microVM by resuming the vCPUs.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn resume(&mut self) -> ActionResult {
         let resume_start_us = utils::time::get_time_us(utils::time::ClockType::Monotonic);
 
@@ -844,7 +864,6 @@ mod tests {
     use crate::devices::virtio::VsockError;
     use crate::vmm_config::balloon::BalloonBuilder;
     use crate::vmm_config::drive::{CacheType, FileEngineType};
-    use crate::vmm_config::logger::LoggerLevel;
     use crate::vmm_config::machine_config::VmConfig;
     use crate::vmm_config::snapshot::{MemBackendConfig, MemBackendType};
     use crate::vmm_config::vsock::VsockBuilder;
@@ -861,7 +880,6 @@ mod tests {
                     | (DriveConfig(_), DriveConfig(_))
                     | (InternalVmm(_), InternalVmm(_))
                     | (LoadSnapshot(_), LoadSnapshot(_))
-                    | (Logger(_), Logger(_))
                     | (MachineConfig(_), MachineConfig(_))
                     | (Metrics(_), Metrics(_))
                     | (Mmds(_), Mmds(_))
@@ -879,7 +897,7 @@ mod tests {
     }
 
     // Mock `VmResources` used for testing.
-    #[derive(Default)]
+    #[derive(Debug, Default)]
     pub struct MockVmRes {
         pub vm_config: VmConfig,
         pub balloon: BalloonBuilder,
@@ -900,6 +918,7 @@ mod tests {
     }
 
     impl MockVmRes {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn balloon_config(&mut self) -> Result<BalloonConfig, BalloonError> {
             if self.force_errors {
                 return Err(BalloonError::DeviceNotFound);
@@ -908,14 +927,17 @@ mod tests {
             Ok(BalloonConfig::default())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn track_dirty_pages(&self) -> bool {
             self.vm_config.track_dirty_pages
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn set_track_dirty_pages(&mut self, dirty_page_tracking: bool) {
             self.vm_config.track_dirty_pages = dirty_page_tracking;
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn update_vm_config(
             &mut self,
             update: &MachineConfigUpdate,
@@ -929,6 +951,7 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn set_balloon_device(
             &mut self,
             _: BalloonDeviceConfig,
@@ -940,6 +963,7 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn build_boot_source(
             &mut self,
             boot_source: BootSourceConfig,
@@ -954,10 +978,12 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn boot_source_config(&self) -> &BootSourceConfig {
             &self.boot_src
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn set_block_device(&mut self, _: BlockDeviceConfig) -> Result<(), DriveError> {
             if self.force_errors {
                 return Err(DriveError::RootBlockDeviceAlreadyAdded);
@@ -966,6 +992,7 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn build_net_device(
             &mut self,
             _: NetworkInterfaceConfig,
@@ -977,6 +1004,7 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn set_vsock_device(&mut self, _: VsockDeviceConfig) -> Result<(), VsockConfigError> {
             if self.force_errors {
                 return Err(VsockConfigError::CreateVsockDevice(
@@ -1016,6 +1044,7 @@ mod tests {
         }
 
         /// If not initialised, create the mmds data store with the default config.
+        #[tracing::instrument(level = "trace")]
         pub fn mmds_or_default(&mut self) -> &Arc<Mutex<Mmds>> {
             self.mmds
                 .get_or_insert(Arc::new(Mutex::new(Mmds::default_with_limit(
@@ -1024,12 +1053,14 @@ mod tests {
         }
 
         /// If not initialised, create the mmds data store with the default config.
+        #[tracing::instrument(level = "trace")]
         pub fn locked_mmds_or_default(&mut self) -> MutexGuard<'_, Mmds> {
             let mmds = self.mmds_or_default();
             mmds.lock().expect("Poisoned lock")
         }
 
         /// Update the CPU configuration for the guest.
+        #[tracing::instrument(level = "trace", ret)]
         pub fn set_custom_cpu_template(&mut self, cpu_template: CustomCpuTemplate) {
             self.vm_config.set_custom_cpu_template(cpu_template);
         }
@@ -1070,6 +1101,7 @@ mod tests {
     }
 
     impl MockVmm {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn resume_vm(&mut self) -> Result<(), VmmError> {
             if self.force_errors {
                 return Err(VmmError::VcpuResume);
@@ -1078,6 +1110,7 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn pause_vm(&mut self) -> Result<(), VmmError> {
             if self.force_errors {
                 return Err(VmmError::VcpuPause);
@@ -1087,6 +1120,7 @@ mod tests {
         }
 
         #[cfg(target_arch = "x86_64")]
+        #[tracing::instrument(level = "trace", ret)]
         pub fn send_ctrl_alt_del(&mut self) -> Result<(), VmmError> {
             if self.force_errors {
                 return Err(VmmError::I8042Error(
@@ -1097,6 +1131,7 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn balloon_config(&mut self) -> Result<BalloonConfig, BalloonError> {
             if self.force_errors {
                 return Err(BalloonError::DeviceNotFound);
@@ -1105,6 +1140,7 @@ mod tests {
             Ok(BalloonConfig::default())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn latest_balloon_stats(&mut self) -> Result<BalloonStats, BalloonError> {
             if self.force_errors {
                 return Err(BalloonError::DeviceNotFound);
@@ -1113,6 +1149,7 @@ mod tests {
             Ok(BalloonStats::default())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn update_balloon_config(&mut self, _: u32) -> Result<(), BalloonError> {
             if self.force_errors {
                 return Err(BalloonError::DeviceNotFound);
@@ -1121,6 +1158,7 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn update_balloon_stats_config(&mut self, _: u16) -> Result<(), BalloonError> {
             if self.force_errors {
                 return Err(BalloonError::DeviceNotFound);
@@ -1129,6 +1167,7 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn update_block_device_path(&mut self, _: &str, _: String) -> Result<(), VmmError> {
             if self.force_errors {
                 return Err(VmmError::DeviceManager(
@@ -1139,6 +1178,7 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn update_block_rate_limiter(
             &mut self,
             _: &str,
@@ -1148,6 +1188,7 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn update_net_rate_limiters(
             &mut self,
             _: &str,
@@ -1165,10 +1206,12 @@ mod tests {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn instance_info(&self) -> InstanceInfo {
             InstanceInfo::default()
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn version(&self) -> String {
             String::default()
         }
@@ -1176,6 +1219,7 @@ mod tests {
 
     // Need to redefine this since the non-test one uses real VmResources
     // and real Vmm instead of our mocks.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn build_and_boot_microvm(
         _: &InstanceInfo,
         _: &VmResources,
@@ -1187,6 +1231,7 @@ mod tests {
 
     // Need to redefine this since the non-test one uses real Vmm
     // instead of our mocks.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn create_snapshot(
         _: &mut Vmm,
         _: &VmInfo,
@@ -1198,6 +1243,7 @@ mod tests {
 
     // Need to redefine this since the non-test one uses real Vmm
     // instead of our mocks.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn restore_from_snapshot(
         _: &InstanceInfo,
         _: &mut EventManager,
@@ -2057,10 +2103,11 @@ mod tests {
         );
         check_runtime_request_err(
             VmmAction::ConfigureLogger(LoggerConfig {
-                log_path: PathBuf::new(),
-                level: LoggerLevel::Debug,
-                show_level: false,
-                show_log_origin: false,
+                log_path: Some(PathBuf::new()),
+                level: Some(log::Level::Debug),
+                show_level: Some(false),
+                show_log_origin: Some(false),
+                profile_file: None,
             }),
             VmmActionError::OperationNotSupportedPostBoot,
         );

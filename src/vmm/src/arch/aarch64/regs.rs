@@ -164,6 +164,7 @@ arm64_sys_reg!(KVM_REG_ARM_TIMER_CNT, 3, 3, 14, 3, 2);
 ///
 /// * `state` - Array slice of [`Aarch64Register`] structures, representing the registers of a VCPU
 ///   state.
+#[tracing::instrument(level = "trace", ret)]
 pub fn get_manufacturer_id_from_state(regs: &[Aarch64Register]) -> Result<u32, Error> {
     let midr_el1 = regs.iter().find(|reg| reg.id == MIDR_EL1);
     match midr_el1 {
@@ -176,6 +177,7 @@ pub fn get_manufacturer_id_from_state(regs: &[Aarch64Register]) -> Result<u32, E
 
 /// Extract the Manufacturer ID from the host.
 /// The ID is found between bits 24-31 of MIDR_EL1 register.
+#[tracing::instrument(level = "trace", ret)]
 pub fn get_manufacturer_id_from_host() -> Result<u32, Error> {
     let midr_el1_path =
         &PathBuf::from("/sys/devices/system/cpu/cpu0/regs/identification/midr_el1".to_string());
@@ -197,6 +199,7 @@ pub fn get_manufacturer_id_from_host() -> Result<u32, Error> {
 /// * `cpu_id` - Index of current vcpu.
 /// * `boot_ip` - Starting instruction pointer.
 /// * `mem` - Reserved DRAM for current VM.
+#[tracing::instrument(level = "trace", ret)]
 pub fn setup_boot_regs(
     vcpufd: &VcpuFd,
     cpu_id: u8,

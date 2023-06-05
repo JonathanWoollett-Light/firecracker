@@ -15,7 +15,7 @@ pub(crate) const FSIZE_ARG: &str = "fsize";
 // Number of files resource argument name.
 pub(crate) const NO_FILE_ARG: &str = "no-file";
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Resource {
     // Size of created files.
     RlimitFsize,
@@ -67,6 +67,7 @@ impl Default for ResourceLimits {
 }
 
 impl ResourceLimits {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn install(self) -> Result<()> {
         if let Some(file_size) = self.file_size {
             // Set file size limit.
@@ -91,10 +92,12 @@ impl ResourceLimits {
             .map_err(|_| Error::Setrlimit(resource.to_string()))
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_file_size(&mut self, file_size: u64) {
         self.file_size = Some(file_size);
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_no_file(&mut self, no_file: u64) {
         self.no_file = no_file;
     }

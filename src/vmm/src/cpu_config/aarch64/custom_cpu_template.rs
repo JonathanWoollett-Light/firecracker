@@ -41,6 +41,7 @@ pub struct CustomCpuTemplate {
 
 impl CustomCpuTemplate {
     /// Get a list of register IDs that are modified by the CPU template.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn reg_list(&self) -> Vec<u64> {
         self.reg_modifiers
             .iter()

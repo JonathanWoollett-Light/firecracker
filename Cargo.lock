@@ -97,6 +97,7 @@ name = "api_server"
 version = "0.1.0"
 dependencies = [
  "libc",
+ "log",
  "logger",
  "micro_http",
  "mmds",
@@ -105,6 +106,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "thiserror",
+ "tracing",
  "utils",
  "vmm",
 ]
@@ -347,6 +349,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+ "tracing",
  "utils",
  "vmm",
 ]
@@ -445,6 +448,7 @@ dependencies = [
  "logger",
  "micro_http",
  "serde_json",
+ "tracing",
  "utils",
 ]
 
@@ -497,8 +501,10 @@ version = "1.5.0-dev"
 dependencies = [
  "api_server",
  "cargo_toml",
+ "devices",
  "event-manager",
  "libc",
+ "log",
  "logger",
  "mmds",
  "regex",
@@ -506,6 +512,8 @@ dependencies = [
  "serde_json",
  "snapshot",
  "timerfd",
+ "tracing",
+ "tracing-subscriber",
  "utils",
  "vmm",
 ]
@@ -636,6 +644,7 @@ dependencies = [
  "nix",
  "regex",
  "thiserror",
+ "tracing",
  "utils",
 ]
 
@@ -725,6 +734,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+ "tracing",
  "utils",
  "vm-superio",
 ]
@@ -780,6 +790,7 @@ dependencies = [
  "serde_json",
  "snapshot",
  "thiserror",
+ "tracing",
  "utils",
  "versionize",
  "versionize_derive",
@@ -811,6 +822,16 @@ checksum = "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a"
 dependencies = [
  "memchr",
  "minimal-lexical",
+]
+
+[[package]]
+name = "nu-ansi-term"
+version = "0.46.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77a8165726e8236064dbb45459242600304b42a5ea24ee2948e18e023bf7ba84"
+dependencies = [
+ "overload",
+ "winapi",
 ]
 
 [[package]]
@@ -848,10 +869,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f746c4065a8fa3fe23974dd82f15431cc8d40779821001404d10d2e79ca7d79"
 
 [[package]]
+name = "overload"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
+
+[[package]]
 name = "peeking_take_while"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "19b17cddbe7ec3f8bc800887bab5e717348c95ea2ca0b1bf0837fb964dc67099"
+
+[[package]]
+name = "pin-project-lite"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0a7ae3ac2f1173085d398531c705756c94a4c56843785df85a60c1a0afac116"
 
 [[package]]
 name = "pin-utils"
@@ -968,6 +1001,7 @@ dependencies = [
  "logger",
  "snapshot",
  "timerfd",
+ "tracing",
  "utils",
  "versionize",
  "versionize_derive",
@@ -978,6 +1012,7 @@ name = "rebase-snap"
 version = "1.5.0-dev"
 dependencies = [
  "libc",
+ "tracing",
  "utils",
 ]
 
@@ -1046,6 +1081,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+ "tracing",
  "utils",
 ]
 
@@ -1096,12 +1132,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43b2853a4d09f215c24cc5489c992ce46052d359b5109343cbafbf26bc62f8a3"
 
 [[package]]
+name = "smallvec"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
+
+[[package]]
 name = "snapshot"
 version = "0.1.0"
 dependencies = [
  "criterion",
  "libc",
  "thiserror",
+ "tracing",
  "versionize",
  "versionize_derive",
 ]
@@ -1164,6 +1207,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.16",
+]
+
+[[package]]
+name = "thread_local"
+version = "1.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3fdd6f064ccff2d6567adcb3873ca630700f00b5ad3f060c25b5dcfd9a4ce152"
+dependencies = [
+ "cfg-if",
+ "once_cell",
 ]
 
 [[package]]
@@ -1294,11 +1347,18 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+ "tracing",
  "versionize",
  "versionize_derive",
  "vm-memory",
  "vmm-sys-util",
 ]
+
+[[package]]
+name = "valuable"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "830b7e5d4d90034032940e4ace0d9a9a057e7a45cd94e6c007832e39edb82f6d"
 
 [[package]]
 name = "version_check"

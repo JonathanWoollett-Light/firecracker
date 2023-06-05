@@ -268,6 +268,7 @@ pub(crate) struct SeccompFilter {
 
 impl SeccompCondition {
     /// Validates the SeccompCondition data
+    #[tracing::instrument(level = "trace", ret)]
     pub fn validate(&self) -> Result<()> {
         // Checks that the given argument number is valid.
         if self.arg_number > ARG_NUMBER_MAX {
@@ -538,6 +539,7 @@ impl SeccompRule {
     ///
     /// [`SeccompCondition`]: struct.SeccompCondition.html
     /// [`SeccompAction`]: struct.SeccompAction.html
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(conditions: Vec<SeccompCondition>, action: SeccompAction) -> Self {
         Self { conditions, action }
     }
@@ -638,6 +640,7 @@ impl SeccompFilter {
     /// * `rules` - Map of syscall numbers and the rules that will be applied to each of them.
     /// * `default_action` - Action taken for all syscalls that do not match any rule.
     /// * `target_arch` - Target architecture of the generated BPF filter.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(
         rules: SeccompRuleMap,
         default_action: SeccompAction,
@@ -807,6 +810,7 @@ impl TryInto<BpfProgram> for SeccompFilter {
 /// * `k` - The operand.
 #[allow(non_snake_case)]
 #[inline(always)]
+#[tracing::instrument(level = "trace", ret)]
 fn BPF_JUMP(code: u16, k: u32, jt: u8, jf: u8) -> sock_filter {
     sock_filter { code, jt, jf, k }
 }
@@ -819,6 +823,7 @@ fn BPF_JUMP(code: u16, k: u32, jt: u8, jf: u8) -> sock_filter {
 /// * `k` - The operand.
 #[allow(non_snake_case)]
 #[inline(always)]
+#[tracing::instrument(level = "trace", ret)]
 fn BPF_STMT(code: u16, k: u32) -> sock_filter {
     sock_filter {
         code,
@@ -831,6 +836,7 @@ fn BPF_STMT(code: u16, k: u32) -> sock_filter {
 /// Builds a sequence of BPF instructions that validate the underlying architecture.
 #[allow(non_snake_case)]
 #[inline(always)]
+#[tracing::instrument(level = "trace", ret)]
 fn VALIDATE_ARCHITECTURE(target_arch: TargetArch) -> Vec<sock_filter> {
     let audit_arch_value = target_arch.get_audit_value();
     vec![
@@ -843,6 +849,7 @@ fn VALIDATE_ARCHITECTURE(target_arch: TargetArch) -> Vec<sock_filter> {
 /// Builds a sequence of BPF instructions that are followed by syscall examination.
 #[allow(non_snake_case)]
 #[inline(always)]
+#[tracing::instrument(level = "trace", ret)]
 fn EXAMINE_SYSCALL() -> Vec<sock_filter> {
     vec![BPF_STMT(
         BPF_LD + BPF_W + BPF_ABS,
@@ -874,6 +881,7 @@ mod tests {
 
     impl SeccompCondition {
         // Creates a new `SeccompCondition`.
+        #[tracing::instrument(level = "trace", ret)]
         pub fn new(
             arg_number: u8,
             arg_len: SeccompCmpArgLen,

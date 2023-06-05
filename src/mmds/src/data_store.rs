@@ -10,6 +10,7 @@ use serde_json::{to_vec, Value};
 use crate::token::{Error as TokenError, TokenAuthority};
 
 /// The Mmds is the Microvm Metadata Service represented as an untyped json.
+#[derive(Debug)]
 pub struct Mmds {
     data_store: Value,
     // None when MMDS V1 is configured, Some for MMDS V2.
@@ -36,6 +37,7 @@ impl Display for MmdsVersion {
 }
 
 /// MMDS possible outputs.
+#[derive(Debug)]
 pub enum OutputFormat {
     Json,
     Imds,
@@ -63,6 +65,7 @@ impl Default for Mmds {
 }
 
 impl Mmds {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn default_with_limit(data_store_limit: usize) -> Self {
         Mmds {
             data_store: Value::default(),
@@ -84,6 +87,7 @@ impl Mmds {
     }
 
     /// Set the MMDS version.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_version(&mut self, version: MmdsVersion) -> Result<(), Error> {
         match version {
             MmdsVersion::V1 => {
@@ -100,6 +104,7 @@ impl Mmds {
     }
 
     /// Return the MMDS version by checking the token authority field.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn version(&self) -> MmdsVersion {
         if self.token_authority.is_none() {
             MmdsVersion::V1
@@ -110,6 +115,7 @@ impl Mmds {
 
     /// Sets the Additional Authenticated Data to be used for encryption and
     /// decryption of the session token when MMDS version 2 is enabled.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_aad(&mut self, instance_id: &str) {
         if let Some(ta) = self.token_authority.as_mut() {
             ta.set_aad(instance_id);
@@ -117,6 +123,7 @@ impl Mmds {
     }
 
     /// Checks if the provided token has not expired.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn is_valid_token(&self, token: &str) -> Result<bool, TokenError> {
         self.token_authority
             .as_ref()
@@ -125,6 +132,7 @@ impl Mmds {
     }
 
     /// Generate a new Mmds token using the token authority.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn generate_token(&mut self, ttl_seconds: u32) -> Result<String, TokenError> {
         self.token_authority
             .as_mut()
@@ -132,10 +140,12 @@ impl Mmds {
             .and_then(|ta| ta.generate_token_secret(ttl_seconds))
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_data_store_limit(&mut self, data_store_limit: usize) {
         self.data_store_limit = data_store_limit;
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn put_data(&mut self, data: Value) -> Result<(), Error> {
         // It is safe to unwrap because any map keys are all strings and
         // we are using default serializer which does not return error.
@@ -149,6 +159,7 @@ impl Mmds {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn patch_data(&mut self, patch_data: Value) -> Result<(), Error> {
         self.check_data_store_initialized()?;
         let mut data_store_clone = self.data_store.clone();
@@ -166,6 +177,7 @@ impl Mmds {
     // We do not check size of data_store before returning a result because due
     // to limit from put/patch the data_store can not be bigger than the limit
     // imposed by the server.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn data_store_value(&self) -> Value {
         self.data_store.clone()
     }
@@ -240,6 +252,7 @@ impl Mmds {
 
     /// Returns the subtree located at path. When the path corresponds to a leaf, it returns the
     /// value. Returns Error::NotFound when the path is invalid.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get_value(&self, path: String, format: OutputFormat) -> Result<String, Error> {
         // The pointer function splits the input by "/". With a trailing "/", pointer does not
         // know how to get the object.
@@ -265,6 +278,7 @@ mod tests {
     use super::*;
 
     impl Mmds {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn get_data_str(&self) -> String {
             if self.data_store.is_null() {
                 return String::from("{}");

@@ -18,14 +18,14 @@ use crate::devices::virtio::balloon::device::{BalloonStats, ConfigSpace};
 use crate::devices::virtio::persist::VirtioDeviceState;
 use crate::devices::virtio::{DeviceState, TYPE_BALLOON};
 
-#[derive(Clone, Versionize)]
+#[derive(Debug, Clone, Versionize)]
 // NOTICE: Any changes to this structure require a snapshot version bump.
 pub struct BalloonConfigSpaceState {
     num_pages: u32,
     actual_pages: u32,
 }
 
-#[derive(Clone, Versionize)]
+#[derive(Debug, Clone, Versionize)]
 // NOTICE: Any changes to this structure require a snapshot version bump.
 pub struct BalloonStatsState {
     swap_in: Option<u64>,
@@ -76,7 +76,7 @@ impl BalloonStatsState {
     }
 }
 
-#[derive(Clone, Versionize)]
+#[derive(Debug, Clone, Versionize)]
 // NOTICE: Any changes to this structure require a snapshot version bump.
 pub struct BalloonState {
     stats_polling_interval_s: u16,
@@ -86,6 +86,7 @@ pub struct BalloonState {
     virtio_state: VirtioDeviceState,
 }
 
+#[derive(Debug)]
 pub struct BalloonConstructorArgs {
     pub mem: GuestMemoryMmap,
 }

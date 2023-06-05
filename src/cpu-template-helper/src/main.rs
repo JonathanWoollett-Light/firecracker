@@ -37,14 +37,14 @@ enum Error {
 
 type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Parser)]
+#[derive(Debug, Parser)]
 #[command(version = format!("v{}", crate::utils::CPU_TEMPLATE_HELPER_VERSION))]
 struct Cli {
     #[command(subcommand)]
     command: Command,
 }
 
-#[derive(Subcommand)]
+#[derive(Debug, Subcommand)]
 enum Command {
     /// Template-related operations
     #[command(subcommand)]
@@ -54,7 +54,7 @@ enum Command {
     Fingerprint(FingerprintOperation),
 }
 
-#[derive(Subcommand)]
+#[derive(Debug, Subcommand)]
 enum TemplateOperation {
     /// Dump guest CPU configuration in the custom CPU template format.
     Dump {
@@ -82,7 +82,7 @@ enum TemplateOperation {
     },
 }
 
-#[derive(Subcommand)]
+#[derive(Debug, Subcommand)]
 enum FingerprintOperation {
     /// Dump fingerprint consisting of host-related information and guest CPU config.
     Dump {
@@ -113,6 +113,7 @@ enum FingerprintOperation {
     },
 }
 
+#[tracing::instrument(level = "trace", ret)]
 fn run(cli: Cli) -> Result<()> {
     match cli.command {
         Command::Template(op) => match op {
@@ -200,6 +201,7 @@ mod tests {
 
     use super::*;
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn generate_config(kernel_image_path: &str, rootfs_path: &str) -> String {
         format!(
             r#"{{
@@ -219,6 +221,7 @@ mod tests {
         )
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn generate_config_with_template(
         kernel_image_path: &str,
         rootfs_path: &str,

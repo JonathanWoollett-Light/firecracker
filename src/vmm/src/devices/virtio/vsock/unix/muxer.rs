@@ -35,7 +35,8 @@ use std::io::Read;
 use std::os::unix::io::{AsRawFd, RawFd};
 use std::os::unix::net::{UnixListener, UnixStream};
 
-use logger::{debug, error, info, warn, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
+use tracing::{debug, error, info, warn};
 use utils::epoll::{ControlOperation, Epoll, EpollEvent, EventSet};
 use utils::vm_memory::GuestMemoryMmap;
 
@@ -67,6 +68,7 @@ pub enum MuxerRx {
 }
 
 /// An epoll listener, registered under the muxer's nested epoll FD.
+#[derive(Debug)]
 enum EpollListener {
     /// The listener is a `MuxerConnection`, identified by `key`, and interested in the events
     /// in `evset`. Since `MuxerConnection` implements `VsockEpollListener`, notifications will
@@ -80,6 +82,7 @@ enum EpollListener {
 }
 
 /// The vsock connection multiplexer.
+#[derive(Debug)]
 pub struct VsockMuxer {
     /// Guest CID.
     cid: u64,
@@ -302,6 +305,7 @@ impl VsockBackend for VsockMuxer {}
 
 impl VsockMuxer {
     /// Muxer constructor.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(cid: u64, host_sock_path: String) -> Result<Self> {
         // Open/bind on the host Unix socket, so we can accept host-initiated
         // connections.
@@ -327,6 +331,7 @@ impl VsockMuxer {
         Ok(muxer)
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn host_sock_path(&self) -> &str {
         &self.host_sock_path
     }

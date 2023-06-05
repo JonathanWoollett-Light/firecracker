@@ -5,8 +5,9 @@ use std::os::unix::io::AsRawFd;
 use std::time::Duration;
 
 use event_manager::{EventOps, Events, MutEventSubscriber};
-use logger::{error, warn, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
 use timerfd::{ClockId, SetTimeFlags, TimerFd, TimerState};
+use tracing::{error, warn};
 use utils::epoll::EventSet;
 
 /// Metrics reporting period.
@@ -19,8 +20,18 @@ pub(crate) struct PeriodicMetrics {
     flush_counter: u64,
 }
 
+// TODO Derive debug when https://github.com/main--/rust-timerfd/pull/12 is merged (or we which to a different crate)
+impl std::fmt::Debug for PeriodicMetrics {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PeriodicMetrics")
+            .field("write_metrics_event_fd", &"?")
+            .finish()
+    }
+}
+
 impl PeriodicMetrics {
     /// PeriodicMetrics constructor. Can panic on `TimerFd` creation failure.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new() -> Self {
         let write_metrics_event_fd = TimerFd::new_custom(ClockId::Monotonic, true, true)
             .expect("Cannot create the metrics timer fd.");
@@ -32,6 +43,7 @@ impl PeriodicMetrics {
     }
 
     /// Start the periodic metrics engine which will flush metrics every `interval_ms` millisecs.
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn start(&mut self, interval_ms: u64) {
         // Arm the log write timer.
         let timer_state = TimerState::Periodic {

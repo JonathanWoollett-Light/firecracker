@@ -11,8 +11,16 @@ unsafe impl ByteValued for io_uring_sqe {}
 /// Newtype wrapper over a raw sqe.
 pub(crate) struct Sqe(pub(crate) io_uring_sqe);
 
+// TODO Investigate getting a `std::fmt::Debug` implementation on `crate::bindings::io_uring_sqe`.
+impl std::fmt::Debug for Sqe {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Sqe").finish()
+    }
+}
+
 impl Sqe {
     /// Construct a new sqe.
+    #[tracing::instrument(level = "trace", ret, skip(inner))]
     pub(crate) fn new(inner: io_uring_sqe) -> Self {
         Self(inner)
     }

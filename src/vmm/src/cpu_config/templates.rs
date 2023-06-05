@@ -27,6 +27,7 @@ mod common_types {
 }
 
 use std::borrow::Cow;
+use std::fmt::Debug;
 use std::result::Result;
 
 pub use common_types::*;
@@ -95,10 +96,11 @@ where
 
 impl<V> RegisterValueFilter<V>
 where
-    V: Numeric,
+    V: Numeric + Debug,
 {
     /// Applies filter to the value
     #[inline]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn apply(&self, value: V) -> V {
         (value & !self.filter) | self.value
     }

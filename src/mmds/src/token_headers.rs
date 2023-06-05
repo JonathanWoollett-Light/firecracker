@@ -37,6 +37,7 @@ impl TokenHeaders {
     const X_METADATA_TOKEN_TTL_SECONDS: &'static str = "X-metadata-token-ttl-seconds";
 
     /// Return `TokenHeaders` from headers map.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn try_from(map: &HashMap<String, String>) -> Result<TokenHeaders, RequestError> {
         let mut headers = Self::default();
         let lowercased_headers: HashMap<String, String> = map
@@ -69,21 +70,25 @@ impl TokenHeaders {
     }
 
     /// Returns the `XMetadataToken` token.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn x_metadata_token(&self) -> Option<&String> {
         self.x_metadata_token.as_ref()
     }
 
     /// Returns the `XMetadataTokenTtlSeconds` token.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn x_metadata_token_ttl_seconds(&self) -> Option<u32> {
         self.x_metadata_token_ttl_seconds
     }
 
     /// Sets the `XMetadataToken` token.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_x_metadata_token(&mut self, token: String) {
         self.x_metadata_token = Some(token)
     }
 
     /// Sets the `XMetadataTokenTtlSeconds` token.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_x_metadata_token_ttl_seconds(&mut self, ttl: u32) {
         self.x_metadata_token_ttl_seconds = Some(ttl);
     }

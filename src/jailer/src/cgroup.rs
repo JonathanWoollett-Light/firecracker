@@ -19,12 +19,14 @@ const PROC_MOUNTS: &str = if cfg!(test) {
 };
 
 // Holds information on a cgroup mount point discovered on the system
+#[derive(Debug)]
 struct CgroupMountPoint {
     dir: String,
     options: String,
 }
 
 // Allows creation of cgroups on the system for both versions
+#[derive(Debug)]
 pub struct CgroupBuilder {
     version: u8,
     hierarchies: HashMap<String, PathBuf>,
@@ -36,6 +38,7 @@ impl CgroupBuilder {
     // It will discover cgroup mount points and hierarchies configured
     // on the system and cache the info required to create cgroups later
     // within this hierarchies
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(ver: u8) -> Result<Self> {
         if ver != 1 && ver != 2 {
             return Err(Error::CgroupInvalidVersion(ver.to_string()));
@@ -100,6 +103,7 @@ impl CgroupBuilder {
     }
 
     // Creates a new cggroup and returns it
+    #[tracing::instrument(level = "trace")]
     pub fn new_cgroup(
         &mut self,
         file: String,
@@ -158,16 +162,20 @@ impl CgroupBuilder {
     }
 }
 
+#[derive(Debug)]
 struct CgroupBase {
     file: String,      // file representing the cgroup (e.g cpuset.mems).
     value: String,     // value that will be written into the file.
     location: PathBuf, // microVM cgroup location for the specific controller.
 }
 
+#[derive(Debug)]
 pub struct CgroupV1 {
     base: CgroupBase,
     cg_parent_depth: u16, // depth of the nested cgroup hierarchy
 }
+
+#[derive(Debug)]
 pub struct CgroupV2(CgroupBase);
 
 pub trait Cgroup {
@@ -208,6 +216,7 @@ pub trait Cgroup {
 // writing to /A/<parent_cgroup>/file, but we can still continue, because step 4) only cares about
 // the file no longer being empty, regardless of who actually got to populated its contents.
 
+#[tracing::instrument(level = "trace", ret)]
 fn inherit_from_parent_aux(path: &mut PathBuf, file_name: &str, retry_depth: u16) -> Result<()> {
     // The function with_file_name() replaces the last component of a path with the given name.
     let parent_file = path.with_file_name(file_name);
@@ -245,12 +254,14 @@ fn inherit_from_parent_aux(path: &mut PathBuf, file_name: &str, retry_depth: u16
 
 // The path reference is &mut here because we do a push to get the destination file name. However,
 // a pop follows shortly after (see fn inherit_from_parent_aux), reverting to the original value.
+#[tracing::instrument(level = "trace", ret)]
 fn inherit_from_parent(path: &mut PathBuf, file_name: &str, depth: u16) -> Result<()> {
     inherit_from_parent_aux(path, file_name, depth)
 }
 
 // Extract the controller name from the cgroup file. The cgroup file must follow
 // this format: <cgroup_controller>.<cgroup_property>.
+#[tracing::instrument(level = "trace", ret)]
 fn get_controller_from_filename(file: &str) -> Result<&str> {
     let v: Vec<&str> = file.split('.').collect();
 
@@ -264,6 +275,7 @@ fn get_controller_from_filename(file: &str) -> Result<&str> {
 
 impl CgroupV1 {
     // Create a new cgroupsv1 controller
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(
         file: String,
         value: String,
@@ -363,6 +375,7 @@ impl CgroupV2 {
     }
 
     // Create a new cgroupsv2 controller
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(
         file: String,
         value: String,
@@ -419,12 +432,14 @@ impl Cgroup for CgroupV2 {
 
 #[cfg(test)]
 pub mod test_util {
+    use std::fmt::Debug;
     use std::fs::{self, File, OpenOptions};
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
     use super::PROC_MOUNTS;
 
+    #[derive(Debug)]
     pub struct MockCgroupFs {
         mounts_file: File,
     }
@@ -436,13 +451,11 @@ pub mod test_util {
         const MOCK_PROCDIR: &'static str = "/tmp/firecracker/test/jailer/proc";
         pub const MOCK_SYS_CGROUPS_DIR: &'static str = "/tmp/firecracker/test/jailer/sys_cgroup";
 
-        pub fn create_file_with_contents<P>(
+        #[tracing::instrument(level = "trace", ret)]
+        pub fn create_file_with_contents<P: AsRef<Path> + Debug>(
             filename: P,
             contents: &str,
-        ) -> std::result::Result<(), std::io::Error>
-        where
-            P: AsRef<Path>,
-        {
+        ) -> std::result::Result<(), std::io::Error> {
             let mut file = OpenOptions::new()
                 .read(true)
                 .write(true)
@@ -454,6 +467,7 @@ pub mod test_util {
             Ok(())
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn new() -> std::result::Result<MockCgroupFs, std::io::Error> {
             // create a mock /proc/mounts file in a temporary directory
             fs::create_dir_all(Self::MOCK_PROCDIR)?;
@@ -469,6 +483,7 @@ pub mod test_util {
 
         // Populate the mocked proc/mounts file with cgroupv2 entries
         // Also create a directory structure that simulates cgroupsv2 layout
+        #[tracing::instrument(level = "trace", ret)]
         pub fn add_v2_mounts(&mut self) -> std::result::Result<(), std::io::Error> {
             writeln!(
                 self.mounts_file,
@@ -486,6 +501,7 @@ pub mod test_util {
         }
 
         // Populate the mocked proc/mounts file with cgroupv1 entries
+        #[tracing::instrument(level = "trace", ret)]
         pub fn add_v1_mounts(&mut self) -> std::result::Result<(), std::io::Error> {
             let controllers = vec![
                 "memory",

@@ -83,13 +83,14 @@ pub enum NetworkInterfaceError {
 type Result<T> = result::Result<T, NetworkInterfaceError>;
 
 /// Builder for a list of network devices.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct NetBuilder {
     net_devices: Vec<Arc<Mutex<Net>>>,
 }
 
 impl NetBuilder {
     /// Creates an empty list of Network Devices.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new() -> Self {
         NetBuilder {
             /// List of built network devices.
@@ -98,22 +99,26 @@ impl NetBuilder {
     }
 
     /// Returns a immutable iterator over the network devices.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn iter(&self) -> ::std::slice::Iter<Arc<Mutex<Net>>> {
         self.net_devices.iter()
     }
 
     /// Returns a mutable iterator over the network devices.
+    #[tracing::instrument(level = "trace")]
     pub fn iter_mut(&mut self) -> ::std::slice::IterMut<Arc<Mutex<Net>>> {
         self.net_devices.iter_mut()
     }
 
     /// Adds an existing network device in the builder.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn add_device(&mut self, device: Arc<Mutex<Net>>) {
         self.net_devices.push(device);
     }
 
     /// Builds a network device based on a network interface config. Keeps a device reference
     /// in the builder's internal list.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn build(&mut self, netif_config: NetworkInterfaceConfig) -> Result<Arc<Mutex<Net>>> {
         let mac_conflict = |net: &Arc<Mutex<Net>>| {
             let net = net.lock().expect("Poisoned lock");
@@ -148,6 +153,7 @@ impl NetBuilder {
     }
 
     /// Creates a Net device from a NetworkInterfaceConfig.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn create_net(cfg: NetworkInterfaceConfig) -> Result<Net> {
         let rx_rate_limiter = cfg
             .rx_rate_limiter
@@ -172,6 +178,7 @@ impl NetBuilder {
     }
 
     /// Returns a vec with the structures used to configure the net devices.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn configs(&self) -> Vec<NetworkInterfaceConfig> {
         let mut ret = vec![];
         for net in &self.net_devices {
@@ -183,17 +190,19 @@ impl NetBuilder {
 
 #[cfg(test)]
 mod tests {
-    use std::str;
+    use std::str::FromStr;
 
     use rate_limiter::RateLimiter;
 
     use super::*;
 
     impl NetBuilder {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn len(&self) -> usize {
             self.net_devices.len()
         }
 
+        #[tracing::instrument(level = "trace", ret)]
         pub fn is_empty(&self) -> bool {
             self.net_devices.len() == 0
         }
@@ -203,7 +212,7 @@ mod tests {
         NetworkInterfaceConfig {
             iface_id: String::from(id),
             host_dev_name: String::from(name),
-            guest_mac: Some(MacAddr::parse_str(mac).unwrap()),
+            guest_mac: Some(MacAddr::from_str(mac).unwrap()),
             rx_rate_limiter: RateLimiterConfig::default().into_option(),
             tx_rate_limiter: RateLimiterConfig::default().into_option(),
         }
@@ -324,7 +333,7 @@ mod tests {
         let net_if_cfg = create_netif(net_id, host_dev_name, guest_mac);
         assert_eq!(
             net_if_cfg.guest_mac.unwrap(),
-            MacAddr::parse_str(guest_mac).unwrap()
+            MacAddr::from_str(guest_mac).unwrap()
         );
 
         let mut net_builder = NetBuilder::new();
@@ -346,7 +355,7 @@ mod tests {
         let net = Net::new(
             net_id.to_string(),
             host_dev_name,
-            Some(MacAddr::parse_str(guest_mac).unwrap()),
+            Some(MacAddr::from_str(guest_mac).unwrap()),
             RateLimiter::default(),
             RateLimiter::default(),
         )

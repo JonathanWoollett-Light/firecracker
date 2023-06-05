@@ -15,9 +15,10 @@ use std::sync::Arc;
 use std::{cmp, result};
 
 use block_io::FileEngine;
-use logger::{error, warn, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
 use rate_limiter::{BucketUpdate, RateLimiter};
 use serde::{Deserialize, Serialize};
+use tracing::{error, warn};
 use utils::eventfd::EventFd;
 use utils::kernel_version::{min_kernel_version_for_io_uring, KernelVersion};
 use utils::vm_memory::GuestMemoryMmap;
@@ -63,6 +64,7 @@ impl Default for FileEngineType {
 }
 
 impl FileEngineType {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn is_supported(&self) -> result::Result<bool, utils::kernel_version::Error> {
         match self {
             Self::Async if KernelVersion::get()? < min_kernel_version_for_io_uring() => Ok(false),
@@ -72,6 +74,7 @@ impl FileEngineType {
 }
 
 /// Helper object for setting up all `Block` fields derived from its backing file.
+#[derive(Debug)]
 pub(crate) struct DiskProperties {
     cache_type: CacheType,
     file_path: String,
@@ -81,6 +84,7 @@ pub(crate) struct DiskProperties {
 }
 
 impl DiskProperties {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(
         disk_image_path: String,
         is_disk_read_only: bool,
@@ -116,23 +120,28 @@ impl DiskProperties {
         })
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn file_engine(&self) -> &FileEngine<PendingRequest> {
         &self.file_engine
     }
 
+    #[tracing::instrument(level = "trace")]
     pub fn file_engine_mut(&mut self) -> &mut FileEngine<PendingRequest> {
         &mut self.file_engine
     }
 
     #[cfg(test)]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn file(&self) -> &File {
         self.file_engine.file()
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn nsectors(&self) -> u64 {
         self.nsectors
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn image_id(&self) -> &[u8] {
         &self.image_id
     }
@@ -167,6 +176,7 @@ impl DiskProperties {
     }
 
     /// Backing file path.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn file_path(&self) -> &String {
         &self.file_path
     }
@@ -174,6 +184,7 @@ impl DiskProperties {
     /// Provides vec containing the virtio block configuration space
     /// buffer. The config space is populated with the disk size based
     /// on the backing file size.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn virtio_block_config_space(&self) -> Vec<u8> {
         // The config space is little endian.
         let mut config = Vec::with_capacity(BLOCK_CONFIG_SPACE_SIZE);
@@ -183,12 +194,14 @@ impl DiskProperties {
         config
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn cache_type(&self) -> CacheType {
         self.cache_type
     }
 }
 
 /// Virtio device for exposing block level read/write operations on a host file.
+#[derive(Debug)]
 pub struct Block {
     // Host file and properties.
     pub(crate) disk: DiskProperties,
@@ -230,6 +243,7 @@ impl Block {
     ///
     /// The given file must be seekable and sizable.
     #[allow(clippy::too_many_arguments)]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(
         id: String,
         partuuid: Option<String>,
@@ -279,6 +293,7 @@ impl Block {
         })
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn process_queue_event(&mut self) {
         METRICS.block.queue_event_count.inc();
         if let Err(err) = self.queue_evts[0].read() {
@@ -294,10 +309,12 @@ impl Block {
     }
 
     /// Process device virtio queue(s).
+    #[tracing::instrument(level = "trace", ret)]
     pub fn process_virtio_queues(&mut self) {
         self.process_queue(0);
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn process_rate_limiter_event(&mut self) {
         METRICS.block.rate_limiter_event_count.inc();
         // Upon rate limiter event, call the rate limiter handler
@@ -325,6 +342,7 @@ impl Block {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn process_queue(&mut self, queue_index: usize) {
         // This is safe since we checked in the event handler that the device is activated.
         let mem = self.device_state.mem().unwrap();
@@ -427,6 +445,7 @@ impl Block {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn process_async_completion_event(&mut self) {
         let engine = unwrap_async_file_engine_or_return!(&mut self.disk.file_engine);
 
@@ -461,45 +480,54 @@ impl Block {
     }
 
     /// Updates the parameters for the rate limiter
+    #[tracing::instrument(level = "trace", ret)]
     pub fn update_rate_limiter(&mut self, bytes: BucketUpdate, ops: BucketUpdate) {
         self.rate_limiter.update_buckets(bytes, ops);
     }
 
     /// Provides the ID of this block device.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn id(&self) -> &String {
         &self.id
     }
 
     /// Provides backing file path of this block device.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn file_path(&self) -> &String {
         self.disk.file_path()
     }
 
     /// Provides the PARTUUID of this block device.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn partuuid(&self) -> Option<&String> {
         self.partuuid.as_ref()
     }
 
     /// Specifies if this block device is read only.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn is_read_only(&self) -> bool {
         self.avail_features & (1u64 << VIRTIO_BLK_F_RO) != 0
     }
 
     /// Specifies if this block device is read only.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn is_root_device(&self) -> bool {
         self.root_device
     }
 
     /// Specifies block device cache type.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn cache_type(&self) -> CacheType {
         self.disk.cache_type()
     }
 
     /// Provides non-mutable reference to this device's rate limiter.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn rate_limiter(&self) -> &RateLimiter {
         &self.rate_limiter
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn file_engine_type(&self) -> FileEngineType {
         match self.disk.file_engine() {
             FileEngine::Sync(_) => FileEngineType::Sync,
@@ -513,6 +541,7 @@ impl Block {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn prepare_save(&mut self) {
         if !self.is_activated() {
             return;

@@ -28,6 +28,7 @@ pub enum Error {
     Submit(IOError),
 }
 
+#[derive(Debug)]
 pub(crate) struct SubmissionQueue {
     io_uring_fd: RawFd,
 
@@ -50,6 +51,7 @@ pub(crate) struct SubmissionQueue {
 }
 
 impl SubmissionQueue {
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn new(
         io_uring_fd: RawFd,
         params: &bindings::io_uring_params,
@@ -120,6 +122,7 @@ impl SubmissionQueue {
         Ok(())
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn submit(&mut self, min_complete: u32) -> Result<u32, Error> {
         if self.to_submit == 0 && min_complete == 0 {
             // Nothing to submit and nothing to wait for.
@@ -181,6 +184,7 @@ impl SubmissionQueue {
         Ok((sqe_ring, sqes))
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn pending(&self) -> Result<u32, Error> {
         let ring_slice = self.ring.as_volatile_slice();
         // get the sqe head

@@ -102,18 +102,21 @@ pub struct BalloonUpdateStatsConfig {
 
 /// A builder for `Balloon` devices from 'BalloonDeviceConfig'.
 #[cfg_attr(not(test), derive(Default))]
+#[derive(Debug)]
 pub struct BalloonBuilder {
     inner: Option<MutexBalloon>,
 }
 
 impl BalloonBuilder {
     /// Creates an empty Balloon Store.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new() -> Self {
         Self { inner: None }
     }
 
     /// Inserts a Balloon device in the store.
     /// If an entry already exists, it will overwrite it.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set(&mut self, cfg: BalloonDeviceConfig) -> Result<()> {
         self.inner = Some(Arc::new(Mutex::new(Balloon::new(
             cfg.amount_mib,
@@ -128,16 +131,19 @@ impl BalloonBuilder {
     }
 
     /// Inserts an existing balloon device.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_device(&mut self, balloon: MutexBalloon) {
         self.inner = Some(balloon);
     }
 
     /// Provides a reference to the Balloon if present.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get(&self) -> Option<&MutexBalloon> {
         self.inner.as_ref()
     }
 
     /// Returns the same structure that was used to configure the device.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn get_config(&self) -> Result<BalloonDeviceConfig> {
         self.get()
             .ok_or(BalloonConfigError::DeviceNotFound)
@@ -150,6 +156,7 @@ impl BalloonBuilder {
 pub(crate) mod tests {
     use super::*;
 
+    #[tracing::instrument(level = "trace", ret)]
     pub(crate) fn default_config() -> BalloonDeviceConfig {
         BalloonDeviceConfig {
             amount_mib: 0,

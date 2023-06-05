@@ -185,6 +185,7 @@ impl CacheType {
     }
 
     // The below are auxiliary functions used for constructing the FDT.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn of_cache_size(&self) -> &str {
         match self {
             Self::Instruction => "i-cache-size",
@@ -193,6 +194,7 @@ impl CacheType {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn of_cache_line_size(&self) -> &str {
         match self {
             Self::Instruction => "i-cache-line-size",
@@ -201,6 +203,7 @@ impl CacheType {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn of_cache_type(&self) -> Option<&'static str> {
         match self {
             Self::Instruction => None,
@@ -209,6 +212,7 @@ impl CacheType {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn of_cache_sets(&self) -> &str {
         match self {
             Self::Instruction => "i-cache-sets",
@@ -218,11 +222,13 @@ impl CacheType {
     }
 }
 
+#[tracing::instrument(level = "trace", ret)]
 fn readln_special<T: AsRef<Path>>(file_path: &T) -> Result<String> {
     let line = fs::read_to_string(file_path)?;
     Ok(line.trim_end().to_string())
 }
 
+#[tracing::instrument(level = "trace", ret)]
 fn to_bytes(cache_size_pretty: &mut String) -> Result<usize> {
     match cache_size_pretty.pop() {
         Some('K') => Ok(cache_size_pretty
@@ -253,6 +259,7 @@ fn to_bytes(cache_size_pretty: &mut String) -> Result<usize> {
 // Expected input is a list of 32-bit comma separated hex values,
 // without the 0x prefix.
 //
+#[tracing::instrument(level = "trace", ret)]
 fn mask_str2bit_count(mask_str: &str) -> Result<u16> {
     let split_mask_iter = mask_str.split(',');
     let mut bit_count: u16 = 0;
@@ -275,6 +282,7 @@ fn mask_str2bit_count(mask_str: &str) -> Result<u16> {
     Ok(bit_count)
 }
 
+#[tracing::instrument(level = "trace", ret)]
 fn append_cache_level(
     cache_l1: &mut Vec<CacheEntry>,
     cache_non_l1: &mut Vec<CacheEntry>,
@@ -287,6 +295,7 @@ fn append_cache_level(
     }
 }
 
+#[tracing::instrument(level = "trace", ret)]
 pub(crate) fn read_cache_config(
     cache_l1: &mut Vec<CacheEntry>,
     cache_non_l1: &mut Vec<CacheEntry>,

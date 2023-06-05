@@ -114,6 +114,7 @@ impl super::AmdCpuid {
     /// When attempting to access missing leaves or set fields within leaves to values that don't
     /// fit.
     #[inline]
+    #[tracing::instrument(level = "trace", ret)]
     pub fn normalize(
         &mut self,
         // The index of the current logical CPU in the range [0..cpu_count].

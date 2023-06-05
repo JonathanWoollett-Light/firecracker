@@ -25,6 +25,7 @@ enum Error {
     Metadata(std::io::Error),
 }
 
+#[tracing::instrument(level = "trace", ret)]
 fn build_arg_parser<'a>() -> ArgParser<'a> {
     let arg_parser = ArgParser::new()
         .arg(
@@ -43,6 +44,7 @@ fn build_arg_parser<'a>() -> ArgParser<'a> {
     arg_parser
 }
 
+#[tracing::instrument(level = "trace")]
 fn extract_args<'a>(arg_parser: &'a mut ArgParser<'a>) -> &'a Arguments<'a> {
     arg_parser.parse_from_cmdline().unwrap_or_else(|err| {
         panic!(
@@ -67,6 +69,7 @@ fn extract_args<'a>(arg_parser: &'a mut ArgParser<'a>) -> &'a Arguments<'a> {
     arg_parser.arguments()
 }
 
+#[tracing::instrument(level = "trace")]
 fn parse_args(args: &Arguments) -> Result<(File, File), Error> {
     // Safe to unwrap since the required arguments are checked as part of
     // `arg_parser.parse_from_cmdline()`
@@ -86,6 +89,7 @@ fn parse_args(args: &Arguments) -> Result<(File, File), Error> {
     Ok((base_file, diff_file))
 }
 
+#[tracing::instrument(level = "trace", ret)]
 fn rebase(base_file: &mut File, diff_file: &mut File) -> Result<(), Error> {
     let mut cursor: u64 = 0;
     while let Some(block_start) = diff_file.seek_data(cursor).map_err(Error::SeekData)? {

@@ -8,6 +8,7 @@ use std::convert::From;
 use std::net::Ipv4Addr;
 use std::num::NonZeroUsize;
 use std::result::Result;
+use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
 use dumbo::pdu::arp::{
@@ -52,6 +53,7 @@ enum WritePacketError {
     WriteNext(WriteNextError),
 }
 
+#[derive(Debug)]
 pub struct MmdsNetworkStack {
     // Network interface MAC address used by frames/packets heading to MMDS server.
     remote_mac_addr: MacAddr,
@@ -70,6 +72,7 @@ pub struct MmdsNetworkStack {
 }
 
 impl MmdsNetworkStack {
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new(
         mac_addr: MacAddr,
         ipv4_addr: Ipv4Addr,
@@ -93,9 +96,10 @@ impl MmdsNetworkStack {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn new_with_defaults(mmds_ipv4_addr: Option<Ipv4Addr>, mmds: Arc<Mutex<Mmds>>) -> Self {
         // The unwrap is safe if parse_str() is implemented properly.
-        let mac_addr = MacAddr::parse_str(DEFAULT_MAC_ADDR).unwrap();
+        let mac_addr = MacAddr::from_str(DEFAULT_MAC_ADDR).unwrap();
         let ipv4_addr = mmds_ipv4_addr.unwrap_or_else(|| Ipv4Addr::from(DEFAULT_IPV4_ADDR));
 
         // The unwrap()s are safe because the given literals are greater than 0.
@@ -109,15 +113,18 @@ impl MmdsNetworkStack {
         )
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn set_ipv4_addr(&mut self, ipv4_addr: Ipv4Addr) {
         self.ipv4_addr = ipv4_addr;
         self.tcp_handler.set_local_ipv4_addr(ipv4_addr);
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn ipv4_addr(&self) -> Ipv4Addr {
         self.ipv4_addr
     }
 
+    #[tracing::instrument(level = "trace", ret)]
     pub fn default_ipv4_addr() -> Ipv4Addr {
         Ipv4Addr::from(DEFAULT_IPV4_ADDR)
     }
@@ -126,6 +133,7 @@ impl MmdsNetworkStack {
     ///
     /// This returns `true` if the frame is an ARP or IPv4 frame destined for
     /// the `mmds` service, or `false` otherwise. It does not consume the frame.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn is_mmds_frame(&self, src: &[u8]) -> bool {
         if let Ok(eth) = EthernetFrame::from_bytes(src) {
             match eth.ethertype() {
@@ -146,6 +154,7 @@ impl MmdsNetworkStack {
     /// # Returns
     ///
     /// `true` if the frame was consumed by `mmds` or `false` if an error occured
+    #[tracing::instrument(level = "trace", ret)]
     pub fn detour_frame(&mut self, src: &[u8]) -> bool {
         if let Ok(eth) = EthernetFrame::from_bytes(src) {
             match eth.ethertype() {
@@ -217,6 +226,7 @@ impl MmdsNetworkStack {
     // - None, if the MMDS network stack has no frame to send at this point. The buffer can be
     // used for something else by the device model.
     // - Some(len), if a frame of the given length has been written to the specified buffer.
+    #[tracing::instrument(level = "trace", ret)]
     pub fn write_next_frame(&mut self, buf: &mut [u8]) -> Option<NonZeroUsize> {
         // We try to send ARP replies first.
         if self.pending_arp_reply_dest.is_some() {
@@ -344,7 +354,7 @@ mod tests {
 
             // Set the operation to REQUEST.
             arp.set_operation(1);
-            arp.set_sha(MacAddr::parse_str(REMOTE_MAC_STR).unwrap());
+            arp.set_sha(MacAddr::from_str(REMOTE_MAC_STR).unwrap());
             arp.set_spa(REMOTE_ADDR);
 
             // The tpa remains REMOTE_ADDR otherwise, and is thus invalid for the MMDS.
@@ -400,14 +410,14 @@ mod tests {
     #[test]
     fn test_ns_new_with_defaults() {
         let ns = MmdsNetworkStack::new_with_defaults(None, Arc::new(Mutex::new(Mmds::default())));
-        assert_eq!(ns.mac_addr, MacAddr::parse_str(DEFAULT_MAC_ADDR).unwrap());
+        assert_eq!(ns.mac_addr, MacAddr::from_str(DEFAULT_MAC_ADDR).unwrap());
         assert_eq!(ns.ipv4_addr, Ipv4Addr::from(DEFAULT_IPV4_ADDR));
 
         let ns = MmdsNetworkStack::new_with_defaults(
             Some(Ipv4Addr::LOCALHOST),
             Arc::new(Mutex::new(Mmds::default())),
         );
-        assert_eq!(ns.mac_addr, MacAddr::parse_str(DEFAULT_MAC_ADDR).unwrap());
+        assert_eq!(ns.mac_addr, MacAddr::from_str(DEFAULT_MAC_ADDR).unwrap());
         assert_eq!(ns.ipv4_addr, Ipv4Addr::LOCALHOST);
     }
 
@@ -419,7 +429,7 @@ mod tests {
         let mut buf = [0u8; 2000];
         let mut bad_buf = [0u8; 1];
 
-        let remote_mac = MacAddr::parse_str(REMOTE_MAC_STR).unwrap();
+        let remote_mac = MacAddr::from_str(REMOTE_MAC_STR).unwrap();
         let mmds_addr = ns.ipv4_addr;
         let bad_mmds_addr = Ipv4Addr::from_str("1.2.3.4").unwrap();
 
