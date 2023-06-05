@@ -17,6 +17,7 @@
 
 - Updated deserialization of `bitmap` for custom CPU templates to allow usage
   of '_' as a separator.
+- Upgraded Rust toolchain from 1.66.1 to 1.70.0.
 
 ### Fixed
 
