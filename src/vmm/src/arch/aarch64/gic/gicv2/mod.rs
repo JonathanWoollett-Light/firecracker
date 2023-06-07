@@ -123,3 +123,4 @@ impl GICDevice for GICv2 {
         Ok(())
     }
 }
+

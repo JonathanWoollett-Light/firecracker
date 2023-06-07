@@ -38,3 +38,4 @@ impl CpuConfiguration {
         self.regs.iter().map(|reg| reg.id).collect()
     }
 }
+

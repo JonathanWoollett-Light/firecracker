@@ -100,7 +100,7 @@ pub fn build_microvm_from_config(config: &str) -> Result<(Arc<Mutex<Vmm>>, VmRes
     let vm_resources = VmResources::from_json(config, &instance_info, HTTP_MAX_PAYLOAD_SIZE, None)
         .map_err(Error::CreateVmResources)?;
     let mut event_manager = EventManager::new().unwrap();
-    let seccomp_filters = get_filters(SeccompConfig::None).unwrap();
+    let seccomp_filters = get_filters(SeccompConfig::<std::io::Empty>::None).unwrap();
 
     // Build a microVM.
     let vmm = build_microvm_for_boot(
@@ -235,3 +235,4 @@ pub mod tests {
         assert_eq!(add_suffix(&path, SUFFIX), expected);
     }
 }
+

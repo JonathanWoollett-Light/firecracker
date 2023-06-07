@@ -145,3 +145,4 @@ mod tests {
         assert_eq!(get_fdt_addr(&mem), 0x1000 + layout::DRAM_MEM_START);
     }
 }
+

@@ -110,3 +110,4 @@ mod tests {
         assert!(CASCADE_LAKE > SKYLAKE);
     }
 }
+

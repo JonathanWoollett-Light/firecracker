@@ -19,7 +19,8 @@
 
 use std::collections::BTreeMap;
 use std::convert::{Into, TryInto};
-use std::{fmt, result};
+use std::fmt::{self, Debug};
+use std::result;
 
 use serde::de::{self, Error as _, MapAccess, Visitor};
 use serde::Deserialize;
@@ -48,6 +49,7 @@ pub(crate) enum Error {
 }
 
 /// Deserializable object that represents the Json filter file.
+#[derive(Debug)]
 pub(crate) struct JsonFile(pub BTreeMap<String, Filter>);
 
 // Implement a custom deserializer, that returns an error for duplicate thread keys.
@@ -56,6 +58,7 @@ impl<'de> Deserialize<'de> for JsonFile {
     where
         D: de::Deserializer<'de>,
     {
+        #[derive(Debug)]
         struct JsonFileVisitor;
 
         impl<'d> Visitor<'d> for JsonFileVisitor {
@@ -145,6 +148,7 @@ impl Filter {
 /// Object responsible for compiling [`Filter`](struct.Filter.html)s into
 /// [`BpfProgram`](../common/type.BpfProgram.html)s.
 /// Uses the [`SeccompFilter`](../backend/struct.SeccompFilter.html) interface as an IR language.
+#[derive(Debug)]
 pub(crate) struct Compiler {
     /// Target architecture. Can be different from the current `target_arch`.
     arch: TargetArch,
@@ -540,3 +544,4 @@ mod tests {
         );
     }
 }
+

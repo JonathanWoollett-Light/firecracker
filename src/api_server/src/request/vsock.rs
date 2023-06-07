@@ -73,3 +73,4 @@ mod tests {
         assert!(parsing_info.take_deprecation_message().is_none());
     }
 }
+

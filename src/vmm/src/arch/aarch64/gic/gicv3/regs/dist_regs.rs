@@ -172,3 +172,4 @@ mod tests {
         assert_eq!(shared_dist_reg.range(), Range { start: 24, end: 48 });
     }
 }
+

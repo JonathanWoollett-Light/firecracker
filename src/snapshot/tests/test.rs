@@ -226,3 +226,4 @@ fn test_invalid_data_version() {
     expected_err = Error::InvalidDataVersion(0);
     assert_eq!(result.unwrap_err(), expected_err);
 }
+

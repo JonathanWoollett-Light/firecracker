@@ -220,3 +220,4 @@ mod tests {
         assert!(sys_reg3 == SimpleReg::new(50761, 8));
     }
 }
+

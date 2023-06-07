@@ -64,7 +64,7 @@ pub struct LoadSnapshotParams {
 }
 
 /// Stores the configuration for loading a snapshot that is provided by the user.
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct LoadSnapshotConfig {
     /// Path to the file that contains the microVM state to be loaded.
@@ -111,3 +111,4 @@ pub struct Vm {
     /// The microVM state, which can be `paused` or `resumed`.
     pub state: VmState,
 }
+

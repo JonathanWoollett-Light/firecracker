@@ -47,3 +47,4 @@ pub struct InstanceInfo {
     /// The name of the application that runs the microVM.
     pub app_name: String,
 }
+

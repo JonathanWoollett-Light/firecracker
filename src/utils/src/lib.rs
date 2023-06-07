@@ -31,3 +31,4 @@ pub fn get_page_size() -> Result<usize, errno::Error> {
         ps => Ok(usize::try_from(ps).unwrap()),
     }
 }
+

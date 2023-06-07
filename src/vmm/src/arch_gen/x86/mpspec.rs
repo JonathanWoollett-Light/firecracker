@@ -1188,3 +1188,4 @@ pub const mp_bustype_MP_BUS_ISA: mp_bustype = 1;
 pub const mp_bustype_MP_BUS_EISA: mp_bustype = 2;
 pub const mp_bustype_MP_BUS_PCI: mp_bustype = 3;
 pub type mp_bustype = ::std::os::raw::c_uint;
+

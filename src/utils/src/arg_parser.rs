@@ -32,10 +32,18 @@ pub enum Error {
 }
 
 /// Keep information about the argument parser.
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ArgParser<'a> {
     arguments: Arguments<'a>,
 }
+// // Deriving `Debug` does not work for generic lifetimes.
+// impl<'a> std::fmt::Debug for ArgParser<'a> {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         f.debug_struct("ArgParser")
+//          .field("arguments", &self.arguments)
+//          .finish()
+//     }
+// }
 
 impl<'a> ArgParser<'a> {
     /// Create a new ArgParser instance.
@@ -110,7 +118,7 @@ impl<'a> ArgParser<'a> {
 }
 
 /// Stores the characteristics of the `name` command line argument.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Argument<'a> {
     name: &'a str,
     required: bool,
@@ -122,6 +130,21 @@ pub struct Argument<'a> {
     help: Option<&'a str>,
     user_value: Option<Value>,
 }
+// // Deriving `Debug` does not work for generic lifetimes.
+// impl<'a> std::fmt::Debug for Argument<'a> {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         f.debug_struct("Argument")
+//          .field("name", &self.name)
+//          .field("required", &self.required)
+//          .field("forbids", &self.forbids)
+//          .field("takes_vlaue", &self.takes_value)
+//          .field("allow_multiple", &self.allow_multiple)
+//          .field("default_value", &self.default_value)
+//          .field("help",&self.help)
+//          .field("user_value",&self.user_value)
+//          .finish()
+//     }
+// }
 
 impl<'a> Argument<'a> {
     /// Create a new `Argument` that keeps the necessary information for an argument.
@@ -260,7 +283,7 @@ impl fmt::Display for Value {
 }
 
 /// Stores the arguments of the parser.
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Arguments<'a> {
     // A BTreeMap in which the key is an argument and the value is its associated `Argument`.
     args: BTreeMap<&'a str, Argument<'a>>,
@@ -1046,3 +1069,4 @@ mod tests {
         );
     }
 }
+

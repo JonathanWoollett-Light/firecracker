@@ -186,3 +186,4 @@ criterion_group! {
 criterion_main! {
     snapshot_benches
 }
+

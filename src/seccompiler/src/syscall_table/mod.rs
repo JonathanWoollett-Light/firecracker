@@ -63,3 +63,4 @@ mod tests {
         assert!(instance_aarch64.get_syscall_nr("nosyscall").is_none());
     }
 }
+

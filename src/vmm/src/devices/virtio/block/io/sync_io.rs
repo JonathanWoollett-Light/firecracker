@@ -17,6 +17,7 @@ pub enum Error {
     Transfer(GuestMemoryError),
 }
 
+#[derive(Debug)]
 pub struct SyncFileEngine {
     file: File,
 }
@@ -73,3 +74,4 @@ impl SyncFileEngine {
         self.file.sync_all().map_err(Error::SyncAll)
     }
 }
+

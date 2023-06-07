@@ -4,6 +4,7 @@
 #![cfg(test)]
 #![doc(hidden)]
 
+use std::fmt::Debug;
 use std::os::unix::io::{AsRawFd, RawFd};
 
 use utils::epoll::EventSet;
@@ -20,6 +21,7 @@ use crate::devices::virtio::{
 
 type Result<T> = std::result::Result<T, VsockError>;
 
+#[derive(Debug)]
 pub struct TestBackend {
     pub evfd: EventFd,
     pub rx_err: Option<VsockError>,
@@ -111,6 +113,7 @@ impl VsockEpollListener for TestBackend {
 }
 impl VsockBackend for TestBackend {}
 
+#[derive(Debug)]
 pub struct TestContext {
     pub cid: u64,
     pub mem: GuestMemoryMmap,
@@ -175,6 +178,7 @@ impl Default for TestContext {
     }
 }
 
+#[derive(Debug)]
 pub struct EventHandlerContext<'a> {
     pub device: Vsock<TestBackend>,
     pub guest_rxvq: GuestQ<'a>,
@@ -208,7 +212,7 @@ pub fn read_packet_data(pkt: &VsockPacket, mem: &GuestMemoryMmap, how_much: usiz
 
 impl<B> Vsock<B>
 where
-    B: VsockBackend,
+    B: VsockBackend + Debug,
 {
     pub fn write_element_in_queue(vsock: &Vsock<B>, idx: usize, val: u64) {
         if idx > vsock.queue_events.len() - 1 {
@@ -226,3 +230,4 @@ where
         }
     }
 }
+

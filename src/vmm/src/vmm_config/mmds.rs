@@ -57,3 +57,4 @@ pub enum MmdsConfigError {
     #[error("The MMDS could not be configured to version {0}: {1}")]
     MmdsVersion(MmdsVersion, data_store::Error),
 }
+

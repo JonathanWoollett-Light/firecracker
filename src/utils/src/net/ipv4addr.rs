@@ -61,3 +61,4 @@ mod tests {
         assert!(is_link_local_valid(ipv4_addr));
     }
 }
+

@@ -44,6 +44,7 @@ pub enum Error {
 pub type KvmVcpuConfigureError = Error;
 
 /// A wrapper around creating and using a kvm aarch64 vcpu.
+#[derive(Debug)]
 pub struct KvmVcpu {
     pub index: u8,
     pub fd: VcpuFd,
@@ -370,3 +371,4 @@ mod tests {
         assert!(get_registers(&vcpu.fd, &reg_list, &mut vec![]).is_err());
     }
 }
+

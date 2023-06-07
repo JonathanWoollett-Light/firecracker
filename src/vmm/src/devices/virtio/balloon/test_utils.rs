@@ -44,3 +44,4 @@ pub fn check_request_completion(queue: &VirtQueue, idx: usize) {
     // The length of the completed request is 0.
     assert_eq!(queue.used.ring[idx].get().len, 0);
 }
+

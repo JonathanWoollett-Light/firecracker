@@ -28,3 +28,4 @@ pub(crate) fn mmap(size: usize, fd: RawFd, offset: i64) -> Result<MmapRegion, Er
         MmapRegion::build_raw(ptr.cast::<u8>(), size, prot, flags).map_err(Error::BuildMmapRegion)
     }
 }
+

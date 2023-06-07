@@ -113,6 +113,7 @@ pub fn simulate_queue_and_async_completion_events(b: &mut Block, expected_irq: b
 }
 
 /// Structure encapsulating the virtq descriptors of a single request to the block device
+#[derive(Debug)]
 pub struct RequestDescriptorChain<'a, 'b> {
     pub driver_queue: &'b VirtQueue<'a>,
 
@@ -199,3 +200,4 @@ pub fn read_blk_req_descriptors(vq: &VirtQueue) {
     // Mark the next available descriptor.
     vq.avail.idx.set(1);
 }
+

@@ -52,3 +52,4 @@ criterion_group! {
 criterion_main! {
     cpu_template_benches
 }
+

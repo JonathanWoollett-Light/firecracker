@@ -15,9 +15,10 @@ use std::sync::Arc;
 use std::{cmp, result};
 
 use block_io::FileEngine;
-use logger::{error, warn, IncMetric, METRICS};
+use logger::{IncMetric, METRICS};
 use rate_limiter::{BucketUpdate, RateLimiter};
 use serde::{Deserialize, Serialize};
+use tracing::{error, warn};
 use utils::eventfd::EventFd;
 use utils::kernel_version::{min_kernel_version_for_io_uring, KernelVersion};
 use utils::vm_memory::GuestMemoryMmap;
@@ -72,6 +73,7 @@ impl FileEngineType {
 }
 
 /// Helper object for setting up all `Block` fields derived from its backing file.
+#[derive(Debug)]
 pub(crate) struct DiskProperties {
     cache_type: CacheType,
     file_path: String,
@@ -189,6 +191,7 @@ impl DiskProperties {
 }
 
 /// Virtio device for exposing block level read/write operations on a host file.
+#[derive(Debug)]
 pub struct Block {
     // Host file and properties.
     pub(crate) disk: DiskProperties,
@@ -1666,3 +1669,4 @@ mod tests {
         assert_eq!(block.disk.image_id, id.as_slice());
     }
 }
+

@@ -27,6 +27,7 @@ mod common_types {
 }
 
 use std::borrow::Cow;
+use std::fmt::Debug;
 use std::result::Result;
 
 pub use common_types::*;
@@ -95,7 +96,7 @@ where
 
 impl<V> RegisterValueFilter<V>
 where
-    V: Numeric,
+    V: Numeric + Debug,
 {
     /// Applies filter to the value
     #[inline]
@@ -151,7 +152,7 @@ impl_numeric!(u128);
 
 impl<V> Serialize for RegisterValueFilter<V>
 where
-    V: Numeric,
+    V: Numeric + Debug,
 {
     /// Serialize combination of value and filter into a single tri state string
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -182,7 +183,7 @@ where
 
 impl<'de, V> Deserialize<'de> for RegisterValueFilter<V>
 where
-    V: Numeric,
+    V: Numeric + Debug,
 {
     /// Deserialize a composite bitmap string into a value pair
     /// input string: "010x"
@@ -255,3 +256,4 @@ mod tests {
         assert!(deserialized.is_err());
     }
 }
+

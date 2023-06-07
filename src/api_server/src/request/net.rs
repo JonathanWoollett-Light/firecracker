@@ -159,3 +159,4 @@ mod tests {
         assert!(parse_patch_net(&Body::new(body), Some(&"foo")).is_err());
     }
 }
+

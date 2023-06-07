@@ -31,3 +31,4 @@ mod tests {
         assert!(parse_put_entropy(&Body::new(body)).is_ok());
     }
 }
+

@@ -362,3 +362,4 @@ pub(crate) fn make_syscall_table(map: &mut HashMap<String, i64>) {
     map.insert("write".to_string(), 1);
     map.insert("writev".to_string(), 20);
 }
+

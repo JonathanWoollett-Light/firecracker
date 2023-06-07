@@ -15,7 +15,7 @@ use super::ns::MmdsNetworkStack;
 use crate::Mmds;
 
 /// State of a MmdsNetworkStack.
-#[derive(Clone, Versionize)]
+#[derive(Debug, Clone, Versionize)]
 // NOTICE: Any changes to this structure require a snapshot version bump.
 pub struct MmdsNetworkStackState {
     mac_addr: [u8; MAC_ADDR_LEN],
@@ -95,3 +95,4 @@ mod tests {
         );
     }
 }
+

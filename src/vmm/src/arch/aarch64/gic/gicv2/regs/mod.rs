@@ -92,3 +92,4 @@ mod tests {
         assert!(restore_state(gic_fd, &mpidr, &vm_state).is_ok());
     }
 }
+

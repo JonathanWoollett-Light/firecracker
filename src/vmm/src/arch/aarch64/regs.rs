@@ -419,3 +419,4 @@ mod tests {
         assert_eq!(res.unwrap_err(), Error::SetMp(kvm_ioctls::Error::new(9)));
     }
 }
+

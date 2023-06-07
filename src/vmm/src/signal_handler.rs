@@ -4,7 +4,8 @@
 use libc::{
     c_int, c_void, siginfo_t, SIGBUS, SIGHUP, SIGILL, SIGPIPE, SIGSEGV, SIGSYS, SIGXCPU, SIGXFSZ,
 };
-use logger::{error, IncMetric, StoreMetric, METRICS};
+use logger::{IncMetric, StoreMetric, METRICS};
+use tracing::error;
 use utils::signal::register_signal_handler;
 
 use crate::FcExitCode;
@@ -385,3 +386,4 @@ mod tests {
         bpf_filter
     }
 }
+

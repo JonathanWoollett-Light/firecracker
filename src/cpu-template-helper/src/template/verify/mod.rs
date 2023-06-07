@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use crate::utils::{ModifierMapKey, ModifierMapValue};
 
@@ -31,8 +32,8 @@ pub enum Error {
 /// respectively before calling this arch-agnostic function.
 pub fn verify_common<K, V>(template: HashMap<K, V>, config: HashMap<K, V>) -> Result<(), Error>
 where
-    K: ModifierMapKey,
-    V: ModifierMapValue,
+    K: ModifierMapKey + Debug,
+    V: ModifierMapValue + Debug,
 {
     for (key, template_value_filter) in template {
         let config_value_filter = config
@@ -103,3 +104,4 @@ mod tests {
         verify_common(cpu_template_map, cpu_config_map).unwrap();
     }
 }
+

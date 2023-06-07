@@ -43,3 +43,4 @@ mod tests {
         assert!(parsed_req == ParsedRequest::new_sync(VmmAction::ConfigureBootSource(same_body)));
     }
 }
+

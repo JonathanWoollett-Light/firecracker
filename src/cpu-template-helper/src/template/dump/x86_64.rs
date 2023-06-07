@@ -151,3 +151,4 @@ mod tests {
         assert_eq!(config_to_template(&cpu_config), cpu_template);
     }
 }
+

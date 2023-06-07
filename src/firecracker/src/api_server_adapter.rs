@@ -11,8 +11,9 @@ use std::thread;
 
 use api_server::{ApiRequest, ApiResponse, ApiServer, ServerError};
 use event_manager::{EventOps, Events, MutEventSubscriber, SubscriberOps};
-use logger::{error, warn, ProcessTimeReporter};
+use logger::ProcessTimeReporter;
 use seccompiler::BpfThreadMap;
+use tracing::{error, warn};
 use utils::epoll::EventSet;
 use utils::eventfd::EventFd;
 use vmm::resources::VmResources;
@@ -20,6 +21,7 @@ use vmm::rpc_interface::{PrebootApiController, RuntimeApiController, VmmAction};
 use vmm::vmm_config::instance_info::InstanceInfo;
 use vmm::{EventManager, FcExitCode, Vmm};
 
+#[derive(Debug)]
 struct ApiServerAdapter {
     api_event_fd: EventFd,
     from_api: Receiver<ApiRequest>,
@@ -260,3 +262,4 @@ pub(crate) fn run_with_api(
     api_thread.join().unwrap();
     exit_code
 }
+

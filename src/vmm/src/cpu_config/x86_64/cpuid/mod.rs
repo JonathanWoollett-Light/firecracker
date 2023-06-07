@@ -794,3 +794,4 @@ mod tests {
         assert_eq!(cpuid, Err(CpuidTryFromKvmCpuid::UnsupportedVendor([0; 12])));
     }
 }
+

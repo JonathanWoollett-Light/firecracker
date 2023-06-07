@@ -46,3 +46,4 @@ mod tests {
         assert!(parse_put_metrics(&Body::new(invalid_body)).is_err());
     }
 }
+

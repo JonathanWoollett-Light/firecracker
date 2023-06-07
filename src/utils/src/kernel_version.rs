@@ -14,8 +14,7 @@ pub enum Error {
     InvalidInt(std::num::ParseIntError),
 }
 
-#[derive(PartialEq, Eq, PartialOrd)]
-#[cfg_attr(test, derive(Debug))]
+#[derive(Debug, PartialEq, Eq, PartialOrd)]
 pub struct KernelVersion {
     major: u16,
     minor: u16,
@@ -164,3 +163,4 @@ mod tests {
         assert_eq!(format!("{}", KernelVersion::new(5, 8, 80)), "5.8.80");
     }
 }
+

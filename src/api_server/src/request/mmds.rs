@@ -175,3 +175,4 @@ mod tests {
         assert!(METRICS.patch_api_requests.mmds_fails.count() > 0);
     }
 }
+

@@ -344,3 +344,4 @@ mod tests {
         assert_eq!(Vec::<RegisterModifier>::from(modifier_map), modifier_vec);
     }
 }
+

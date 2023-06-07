@@ -188,3 +188,4 @@ impl MmioReg for SimpleReg {
         self.offset..self.offset + u64::from(self.size)
     }
 }
+

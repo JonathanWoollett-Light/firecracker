@@ -428,3 +428,4 @@ fn test_read() {
     // Verify the result.
     assert_eq!(buf, &init_contents[..]);
 }
+

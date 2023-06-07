@@ -1,6 +1,7 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::fmt::Debug;
 use std::result;
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -13,6 +14,7 @@ use tests::{
     build_and_boot_microvm, create_snapshot, restore_from_snapshot, MockVmRes as VmResources,
     MockVmm as Vmm,
 };
+use tracing::{error, info, warn};
 
 use super::Error as VmmError;
 #[cfg(not(test))]
@@ -33,7 +35,6 @@ use crate::vmm_config::boot_source::{BootSourceConfig, BootSourceConfigError};
 use crate::vmm_config::drive::{BlockDeviceConfig, BlockDeviceUpdateConfig, DriveError};
 use crate::vmm_config::entropy::{EntropyDeviceConfig, EntropyDeviceError};
 use crate::vmm_config::instance_info::InstanceInfo;
-use crate::vmm_config::logger::{LoggerConfig, LoggerConfigError};
 use crate::vmm_config::machine_config::{MachineConfig, MachineConfigUpdate, VmConfigError};
 use crate::vmm_config::metrics::{MetricsConfig, MetricsConfigError};
 use crate::vmm_config::mmds::{MmdsConfig, MmdsConfigError};
@@ -42,7 +43,7 @@ use crate::vmm_config::net::{
 };
 use crate::vmm_config::snapshot::{CreateSnapshotParams, LoadSnapshotParams, SnapshotType};
 use crate::vmm_config::vsock::{VsockConfigError, VsockDeviceConfig};
-use crate::vmm_config::{self, RateLimiterUpdate};
+use crate::vmm_config::{self, LoggerConfig, RateLimiterUpdate};
 use crate::{EventManager, FcExitCode};
 
 /// This enum represents the public interface of the VMM. Each action contains various
@@ -159,9 +160,6 @@ pub enum VmmActionError {
     /// Loading a microVM snapshot failed.
     #[error("Load microVM snapshot error: {0}")]
     LoadSnapshot(LoadSnapshotError),
-    /// The action `ConfigureLogger` failed because of bad user input.
-    #[error("{0}")]
-    Logger(LoggerConfigError),
     /// One of the actions `GetVmConfiguration` or `UpdateVmConfiguration` failed because of bad
     /// input.
     #[error("{0}")]
@@ -202,6 +200,7 @@ pub enum VmmActionError {
 
 /// The enum represents the response sent by the VMM in case of success. The response is either
 /// empty, when no data needs to be sent, or an internal VMM structure.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, PartialEq, Eq)]
 pub enum VmmData {
     /// The balloon device configuration.
@@ -275,6 +274,21 @@ pub struct PrebootApiController<'a> {
     fatal_error: Option<FcExitCode>,
 }
 
+// TODO Remove when `EventManager` implements `std::fmt::Debug`.
+impl<'a> std::fmt::Debug for PrebootApiController<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PrebootApiController")
+            .field("seccomp_filters", &self.seccomp_filters)
+            .field("instance_info", &self.instance_info)
+            .field("vm_resources", &self.vm_resources)
+            .field("event_manager", &"?")
+            .field("built_vmm", &self.built_vmm)
+            .field("boot_path", &self.boot_path)
+            .field("fatal_error", &self.fatal_error)
+            .finish()
+    }
+}
+
 impl MmdsRequestHandler for PrebootApiController<'_> {
     fn mmds(&mut self) -> MutexGuard<'_, Mmds> {
         self.vm_resources.locked_mmds_or_default()
@@ -302,8 +316,8 @@ impl<'a> PrebootApiController<'a> {
         instance_info: InstanceInfo,
         vm_resources: &'a mut VmResources,
         event_manager: &'a mut EventManager,
-    ) -> PrebootApiController<'a> {
-        PrebootApiController {
+    ) -> Self {
+        Self {
             seccomp_filters,
             instance_info,
             vm_resources,
@@ -392,9 +406,8 @@ impl<'a> PrebootApiController<'a> {
             // Supported operations allowed pre-boot.
             ConfigureBootSource(config) => self.set_boot_source(config),
             ConfigureLogger(logger_cfg) => {
-                vmm_config::logger::init_logger(logger_cfg, &self.instance_info)
-                    .map(|()| VmmData::Empty)
-                    .map_err(VmmActionError::Logger)
+                logger_cfg.init();
+                Ok(VmmData::Empty)
             }
             ConfigureMetrics(metrics_cfg) => vmm_config::metrics::init_metrics(metrics_cfg)
                 .map(|()| VmmData::Empty)
@@ -599,6 +612,7 @@ impl<'a> PrebootApiController<'a> {
 }
 
 /// Enables RPC interaction with a running Firecracker VMM.
+#[derive(Debug)]
 pub struct RuntimeApiController {
     vmm: Arc<Mutex<Vmm>>,
     vm_resources: VmResources,
@@ -844,7 +858,6 @@ mod tests {
     use crate::devices::virtio::VsockError;
     use crate::vmm_config::balloon::BalloonBuilder;
     use crate::vmm_config::drive::{CacheType, FileEngineType};
-    use crate::vmm_config::logger::LoggerLevel;
     use crate::vmm_config::machine_config::VmConfig;
     use crate::vmm_config::snapshot::{MemBackendConfig, MemBackendType};
     use crate::vmm_config::vsock::VsockBuilder;
@@ -861,7 +874,6 @@ mod tests {
                     | (DriveConfig(_), DriveConfig(_))
                     | (InternalVmm(_), InternalVmm(_))
                     | (LoadSnapshot(_), LoadSnapshot(_))
-                    | (Logger(_), Logger(_))
                     | (MachineConfig(_), MachineConfig(_))
                     | (Metrics(_), Metrics(_))
                     | (Mmds(_), Mmds(_))
@@ -879,7 +891,7 @@ mod tests {
     }
 
     // Mock `VmResources` used for testing.
-    #[derive(Default)]
+    #[derive(Debug, Default)]
     pub struct MockVmRes {
         pub vm_config: VmConfig,
         pub balloon: BalloonBuilder,
@@ -2057,10 +2069,11 @@ mod tests {
         );
         check_runtime_request_err(
             VmmAction::ConfigureLogger(LoggerConfig {
-                log_path: PathBuf::new(),
-                level: LoggerLevel::Debug,
-                show_level: false,
-                show_log_origin: false,
+                log_path: Some(PathBuf::new()),
+                level: Some(log::Level::Debug),
+                show_level: Some(false),
+                show_log_origin: Some(false),
+                profile_file: None,
             }),
             VmmActionError::OperationNotSupportedPostBoot,
         );
@@ -2221,3 +2234,4 @@ mod tests {
         verify_load_snap_disallowed_after_boot_resources(req, "SetMmdsConfiguration");
     }
 }
+

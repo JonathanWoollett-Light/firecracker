@@ -382,3 +382,4 @@ mod tests {
         assert!(parse_patch_vm_state(&Body::new(invalid_body)).is_err());
     }
 }
+

@@ -51,3 +51,4 @@ mod tests {
         assert!(dump(vmm).is_ok());
     }
 }
+

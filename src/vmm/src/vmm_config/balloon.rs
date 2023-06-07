@@ -102,6 +102,7 @@ pub struct BalloonUpdateStatsConfig {
 
 /// A builder for `Balloon` devices from 'BalloonDeviceConfig'.
 #[cfg_attr(not(test), derive(Default))]
+#[derive(Debug)]
 pub struct BalloonBuilder {
     inner: Option<MutexBalloon>,
 }
@@ -239,3 +240,4 @@ pub(crate) mod tests {
         assert!(builder.inner.is_some());
     }
 }
+

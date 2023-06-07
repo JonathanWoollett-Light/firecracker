@@ -95,3 +95,4 @@ mod tests {
         assert!(restore_state(gic_fd, &[1, 2], &vm_state).is_err());
     }
 }
+

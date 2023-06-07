@@ -90,3 +90,4 @@ mod tests {
         assert!(matches!(invalid_put_result, Err(Error::SerdeJson(_))));
     }
 }
+

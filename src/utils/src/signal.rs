@@ -18,3 +18,4 @@ pub fn sigrtmax() -> c_int {
     // SAFETY: Function has no invariants that can be broken.
     unsafe { __libc_current_sigrtmax() }
 }
+

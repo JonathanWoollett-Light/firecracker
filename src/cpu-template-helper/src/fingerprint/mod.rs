@@ -9,7 +9,7 @@ pub mod dump;
 
 macro_rules! declare_fingerprint_struct_and_enum {
     ($($field_name:ident : $field_type:ty),+) => {
-        #[derive(Serialize, Deserialize)]
+        #[derive(Debug, Serialize, Deserialize)]
         pub struct Fingerprint {
             $(pub $field_name: $field_type),+
         }
@@ -55,3 +55,4 @@ declare_fingerprint_struct_and_enum!(
     bios_revision: String,
     guest_cpu_config: CustomCpuTemplate
 );
+

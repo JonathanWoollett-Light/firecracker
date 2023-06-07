@@ -199,3 +199,4 @@ mod tests {
         assert!(create_gic(&vm, 1, None).is_ok());
     }
 }
+

@@ -7,13 +7,13 @@ use std::io;
 use std::sync::atomic::AtomicUsize;
 use std::sync::{Arc, Mutex};
 
-use logger::warn;
 use mmds::data_store::Mmds;
 use mmds::ns::MmdsNetworkStack;
 use mmds::persist::MmdsNetworkStackState;
 use rate_limiter::persist::RateLimiterState;
 use rate_limiter::RateLimiter;
 use snapshot::Persist;
+use tracing::warn;
 use utils::net::mac::{MacAddr, MAC_ADDR_LEN};
 use utils::vm_memory::GuestMemoryMmap;
 use versionize::{VersionMap, Versionize, VersionizeResult};
@@ -59,7 +59,7 @@ impl NetConfigSpaceState {
     }
 }
 
-#[derive(Clone, Versionize)]
+#[derive(Debug, Clone, Versionize)]
 // NOTICE: Any changes to this structure require a snapshot version bump.
 pub struct NetState {
     id: String,
@@ -71,6 +71,7 @@ pub struct NetState {
     virtio_state: VirtioDeviceState,
 }
 
+#[derive(Debug)]
 pub struct NetConstructorArgs {
     pub mem: GuestMemoryMmap,
     pub mmds: Option<Arc<Mutex<Mmds>>>,
@@ -241,3 +242,4 @@ mod tests {
         validate_save_and_restore(default_net(), None);
     }
 }
+

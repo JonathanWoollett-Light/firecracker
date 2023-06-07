@@ -537,3 +537,4 @@ pub const MSR_IA32_VMX_MISC_PREEMPTION_TIMER_SCALE: u32 = 0x1f;
 pub const MSR_VM_CR: u32 = 0xc0010114;
 pub const MSR_VM_IGNNE: u32 = 0xc0010115;
 pub const MSR_VM_HSAVE_PA: u32 = 0xc0010117;
+

@@ -3,6 +3,7 @@
 
 macro_rules! generate_read_fn {
     ($fn_name: ident, $data_type: ty, $byte_type: ty, $type_size: expr, $endian_type: ident) => {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn $fn_name(input: &[$byte_type]) -> $data_type {
             assert!($type_size == std::mem::size_of::<$data_type>());
             let mut array = [0u8; $type_size];
@@ -16,6 +17,7 @@ macro_rules! generate_read_fn {
 
 macro_rules! generate_write_fn {
     ($fn_name: ident, $data_type: ty, $byte_type: ty, $endian_type: ident) => {
+        #[tracing::instrument(level = "trace", ret)]
         pub fn $fn_name(buf: &mut [$byte_type], n: $data_type) {
             for (byte, read) in buf
                 .iter_mut()
@@ -108,3 +110,4 @@ mod tests {
     byte_order_test_read_write!(test_be_u16, write_be_u16, read_be_u16, true, u16);
     byte_order_test_read_write!(test_be_u32, write_be_u32, read_be_u32, true, u32);
 }
+

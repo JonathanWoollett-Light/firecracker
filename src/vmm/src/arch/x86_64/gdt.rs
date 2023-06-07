@@ -113,3 +113,4 @@ mod tests {
         assert_eq!(0x0, seg.unusable);
     }
 }
+

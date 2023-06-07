@@ -3,6 +3,7 @@
 
 //! Defines functionality for creating guest memory snapshots.
 
+use std::fmt::Debug;
 use std::fs::File;
 use std::io::SeekFrom;
 
@@ -371,3 +372,4 @@ mod tests {
         }
     }
 }
+

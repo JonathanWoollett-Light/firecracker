@@ -22,6 +22,7 @@ use super::muxer::{ConnMapKey, MuxerRx};
 use super::{defs, MuxerConnection};
 
 /// The muxer RX queue.
+#[derive(Debug)]
 pub struct MuxerRxQ {
     /// The RX queue data.
     q: VecDeque<MuxerRx>,
@@ -131,3 +132,4 @@ impl MuxerRxQ {
         self.len() == Self::SIZE
     }
 }
+

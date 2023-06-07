@@ -106,3 +106,4 @@ pub fn chroot(path: &Path) -> Result<()> {
         .into_empty_result()
         .map_err(Error::RmOldRootDir)
 }
+

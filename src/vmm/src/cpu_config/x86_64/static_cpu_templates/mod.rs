@@ -50,3 +50,4 @@ impl StaticCpuTemplate {
         self == &StaticCpuTemplate::None
     }
 }
+
