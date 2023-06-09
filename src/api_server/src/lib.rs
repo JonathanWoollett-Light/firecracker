@@ -227,7 +227,7 @@ impl ApiServer {
         request: &Request,
         request_processing_start_us: u64,
     ) -> Response {
-        match ParsedRequest::try_from_request(request).map(|r| r.into_parts()) {
+        match ParsedRequest::try_from(request).map(|r| r.into_parts()) {
             Ok((req_action, mut parsing_info)) => {
                 let mut response = match req_action {
                     RequestAction::Sync(vmm_action) => {
