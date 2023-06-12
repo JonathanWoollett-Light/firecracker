@@ -3,7 +3,7 @@
 use std::fmt;
 use std::fmt::Debug;
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::BufReader;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -18,7 +18,7 @@ const THREAD_CATEGORIES: [&str; 3] = ["vmm", "api", "vcpu"];
 const DESERIALIZATION_BYTES_LIMIT: Option<u64> = Some(100_000);
 
 /// Error retrieving seccomp filters.
-#[derive(fmt::Debug)]
+#[derive(Debug)]
 pub enum FilterError {
     /// Invalid SeccompConfig.
     SeccompConfig(String),
@@ -57,17 +57,16 @@ impl fmt::Display for FilterError {
 
 /// Seccomp filter configuration.
 #[derive(Debug)]
-pub enum SeccompConfig<T: Read> {
+pub enum SeccompConfig {
     /// Seccomp filtering disabled.
     None,
     /// Default, advanced filters.
     Advanced,
-    // TODO Can we use a generic here to avoid dynamic dispatch?
     /// Custom, user-provided filters.
-    Custom(T),
+    Custom(File),
 }
 
-impl SeccompConfig<File> {
+impl SeccompConfig {
     /// Given the relevant command line args, return the appropriate config type.
     pub fn from_args<T: AsRef<Path> + Debug>(
         no_seccomp: bool,
@@ -87,7 +86,7 @@ impl SeccompConfig<File> {
 }
 
 /// Retrieve the appropriate filters, based on the SeccompConfig.
-pub fn get_filters<T: Read + Debug>(config: SeccompConfig<T>) -> Result<BpfThreadMap, FilterError> {
+pub fn get_filters(config: SeccompConfig) -> Result<BpfThreadMap, FilterError> {
     match config {
         // Retrieve empty seccomp filters.
         SeccompConfig::None => {
@@ -153,13 +152,13 @@ mod tests {
 
     #[test]
     fn test_get_filters() {
-        let mut filters = get_filters(SeccompConfig::<std::io::Empty>::Advanced).unwrap();
+        let mut filters = get_filters(SeccompConfig::Advanced).unwrap();
         assert_eq!(filters.len(), 3);
         assert!(filters.remove("vmm").is_some());
         assert!(filters.remove("api").is_some());
         assert!(filters.remove("vcpu").is_some());
 
-        let mut filters = get_filters(SeccompConfig::<std::io::Empty>::None).unwrap();
+        let mut filters = get_filters(SeccompConfig::None).unwrap();
         assert_eq!(filters.len(), 3);
         assert_eq!(filters.remove("vmm").unwrap().len(), 0);
         assert_eq!(filters.remove("api").unwrap().len(), 0);

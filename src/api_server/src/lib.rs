@@ -115,7 +115,7 @@ impl ApiServer {
     /// let (api_request_sender, _from_api) = channel();
     /// let (to_api, vmm_response_receiver) = channel();
     /// let time_reporter = ProcessTimeReporter::new(Some(1), Some(1), Some(1));
-    /// let seccomp_filters = get_filters(SeccompConfig::<std::io::Empty>::None).unwrap();
+    /// let seccomp_filters = get_filters(SeccompConfig::None).unwrap();
     /// let payload_limit = HTTP_MAX_PAYLOAD_SIZE;
     /// let (socket_ready_sender, socket_ready_receiver): (Sender<bool>, Receiver<bool>) = channel();
     ///
@@ -445,7 +445,7 @@ mod tests {
         let to_vmm_fd = EventFd::new(libc::EFD_NONBLOCK).unwrap();
         let (api_request_sender, _from_api) = channel();
         let (to_api, vmm_response_receiver) = channel();
-        let seccomp_filters = get_filters(SeccompConfig::<std::io::Empty>::Advanced).unwrap();
+        let seccomp_filters = get_filters(SeccompConfig::Advanced).unwrap();
         let (socket_ready_sender, socket_ready_receiver) = channel();
 
         thread::Builder::new()
@@ -493,7 +493,7 @@ mod tests {
         let to_vmm_fd = EventFd::new(libc::EFD_NONBLOCK).unwrap();
         let (api_request_sender, _from_api) = channel();
         let (_to_api, vmm_response_receiver) = channel();
-        let seccomp_filters = get_filters(SeccompConfig::<std::io::Empty>::Advanced).unwrap();
+        let seccomp_filters = get_filters(SeccompConfig::Advanced).unwrap();
         let (socket_ready_sender, socket_ready_receiver) = channel();
 
         thread::Builder::new()

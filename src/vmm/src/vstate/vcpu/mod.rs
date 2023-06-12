@@ -966,7 +966,7 @@ pub mod tests {
             )
             .expect("failed to configure vcpu");
 
-        let mut seccomp_filters = get_filters(SeccompConfig::<std::io::Empty>::None).unwrap();
+        let mut seccomp_filters = get_filters(SeccompConfig::None).unwrap();
         let barrier = Arc::new(Barrier::new(2));
         let vcpu_handle = vcpu
             .start_threaded(seccomp_filters.remove("vcpu").unwrap(), barrier.clone())

@@ -18,7 +18,7 @@ pub fn create_vmm(
     boot_microvm: bool,
 ) -> (Arc<Mutex<Vmm>>, EventManager) {
     let mut event_manager = EventManager::new().unwrap();
-    let empty_seccomp_filters = get_filters(SeccompConfig::<std::io::Empty>::None).unwrap();
+    let empty_seccomp_filters = get_filters(SeccompConfig::None).unwrap();
 
     let boot_source_cfg = MockBootSourceConfig::new().with_default_boot_args();
     #[cfg(target_arch = "aarch64")]
