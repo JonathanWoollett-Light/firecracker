@@ -19,6 +19,15 @@ pub(crate) struct PeriodicMetrics {
     flush_counter: u64,
 }
 
+// TODO Derive debug when https://github.com/main--/rust-timerfd/pull/12 is merged (or we which to a different crate)
+impl std::fmt::Debug for PeriodicMetrics {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PeriodicMetrics")
+            .field("write_metrics_event_fd", &"?")
+            .finish()
+    }
+}
+
 impl PeriodicMetrics {
     /// PeriodicMetrics constructor. Can panic on `TimerFd` creation failure.
     pub fn new() -> Self {

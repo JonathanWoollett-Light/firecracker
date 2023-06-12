@@ -119,6 +119,19 @@ pub struct Logger {
     instance_id: RwLock<String>,
 }
 
+impl std::fmt::Debug for Logger {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Logger")
+            .field("init", &self.init)
+            .field("log_buf", &"?")
+            .field("show_level", &self.show_level)
+            .field("show_file_path", &self.show_file_path)
+            .field("show_line_numbers", &self.show_line_numbers)
+            .field("instance_id", &self.instance_id)
+            .finish()
+    }
+}
+
 impl Logger {
     /// Creates a new instance of the current logger.
     fn new() -> Logger {
