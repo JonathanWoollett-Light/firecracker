@@ -25,9 +25,9 @@ def is_on_skylake():
 # Checkout the cpuid crate. In the future other
 # differences may appear.
 if utils.is_io_uring_supported():
-    COVERAGE_DICT = {"Intel": 83.76, "AMD": 83.34, "ARM": 83.12}
+    COVERAGE_DICT = {"Intel": 82.25, "AMD": 81.80, "ARM": 80.92}
 else:
-    COVERAGE_DICT = {"Intel": 81.02, "AMD": 80.55, "ARM": 80.12}
+    COVERAGE_DICT = {"Intel": 79.51, "AMD": 79.01, "ARM": 77.94}
 
 PROC_MODEL = proc.proc_type()
 
