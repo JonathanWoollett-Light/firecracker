@@ -3,10 +3,10 @@
 
 use std::fmt::Debug;
 
-use logger::{error, info};
 use micro_http::{Body, Method, Request, Response, StatusCode, Version};
 use serde::ser::Serialize;
 use serde_json::Value;
+use tracing::{error, info};
 use vmm::rpc_interface::{VmmAction, VmmActionError};
 
 use super::VmmData;
@@ -746,7 +746,7 @@ pub mod tests {
     fn test_try_from_put_logger() {
         let (mut sender, receiver) = UnixStream::pair().unwrap();
         let mut connection = HttpConnection::new(receiver);
-        let body = "{ \"log_path\": \"string\", \"level\": \"Warning\", \"show_level\": false, \
+        let body = "{ \"log_path\": \"string\", \"level\": \"Warn\", \"show_level\": false, \
                     \"show_log_origin\": false }";
         sender
             .write_all(http_request("PUT", "/logger", Some(body)).as_bytes())

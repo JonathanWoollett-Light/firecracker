@@ -481,7 +481,15 @@ class Microvm:
         if "no-api" not in self.jailer.extra_args:
             self._wait_create()
         if create_logger:
-            self.check_log_message("Running Firecracker")
+            assert log_level in (
+                "Error",
+                "Warn",
+                "Info",
+                "Debug",
+                "Trace",
+            ), f"Unknown log level {log_level}"
+            if log_level in ("Info", "Debug", "Trace"):
+                self.check_log_message("Running Firecracker")
 
     @retry(delay=0.2, tries=5)
     def _wait_create(self):
@@ -491,7 +499,9 @@ class Microvm:
     @retry(delay=0.1, tries=5)
     def check_log_message(self, message):
         """Wait until `message` appears in logging output."""
-        assert message in self.log_data
+        assert (
+            message in self.log_data
+        ), f'Message ("{message}") not found in log data ("{self.log_data}").'
 
     @retry(delay=0.1, tries=5)
     def check_any_log_message(self, messages):
