@@ -30,7 +30,7 @@ vm-allocator = "0.1.0"
 vm-fdt = "0.2.0"
 vm-superio = "0.7.0"
 tracing = { git = "https://github.com/tokio-rs/tracing", rev = "27f688efb72316a26f3ec1f952c82626692c08ff", features = ["attributes"] }
-tracing-subscriber = { git = "https://github.com/tokio-rs/tracing", rev = "27f688efb72316a26f3ec1f952c82626692c08ff" }
+tracing-subscriber = { git = "https://github.com/tokio-rs/tracing", rev = "27f688efb72316a26f3ec1f952c82626692c08ff", features = ["env-filter"] }
 tracing-flame = { git = "https://github.com/tokio-rs/tracing", rev = "27f688efb72316a26f3ec1f952c82626692c08ff" }
 log = { version = "0.4.17", features = ["serde"] }
 
