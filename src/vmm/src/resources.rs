@@ -863,7 +863,7 @@ mod tests {
                 HTTP_MAX_PAYLOAD_SIZE,
                 None,
             ),
-            Err(Error::Logger(LoggerConfigError::File(_))),
+            Err(ResourcesError::Logger(LoggerConfigError::File(_))),
         ));
 
         // Invalid path for metrics pipe.
