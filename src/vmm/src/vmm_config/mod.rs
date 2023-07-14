@@ -8,17 +8,24 @@ use std::io::{self, BufWriter, LineWriter, Write};
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::SeqCst;
 use std::sync::Mutex;
 
 use libc::O_NONBLOCK;
 use rate_limiter::{BucketUpdate, RateLimiter, TokenBucket};
 use serde::{Deserialize, Serialize};
-use tracing_core::{Event, Subscriber};
-use tracing_flame::FlameLayer;
+use tracing::{Collect, Event};
+use tracing_flame::FlameSubscriber;
+use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::fmt::format::{self, FormatEvent, FormatFields};
-use tracing_subscriber::fmt::{FmtContext, Layer};
-use tracing_subscriber::prelude::*;
-use tracing_subscriber::registry::LookupSpan;
+use tracing_subscriber::fmt::writer::BoxMakeWriter;
+use tracing_subscriber::fmt::FmtContext;
+use tracing_subscriber::registry::{LookupSpan, Registry};
+use tracing_subscriber::reload::Handle;
+use tracing_subscriber::subscribe::{CollectExt, Layered};
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::FmtSubscriber;
 
 /// Wrapper for configuring the balloon device.
 pub mod balloon;
@@ -136,7 +143,6 @@ impl From<Option<RateLimiterConfig>> for RateLimiterUpdate {
 
 impl TryInto<RateLimiter> for RateLimiterConfig {
     type Error = io::Error;
-
     fn try_into(self) -> Result<RateLimiter, Self::Error> {
         let bw = self.bandwidth.unwrap_or_default();
         let ops = self.ops.unwrap_or_default();
@@ -268,14 +274,15 @@ impl FromStr for Level {
 #[serde(deny_unknown_fields)]
 pub struct LoggerConfig {
     /// Named pipe or file used as output for logs.
-    pub log_path: PathBuf,
+    pub log_path: Option<PathBuf>,
     /// The level of the Logger.
     pub level: Option<Level>,
     /// When enabled, the logger will append to the output the severity of the log entry.
     pub show_level: Option<bool>,
     /// When enabled, the logger will append the origin of the log entry.
     pub show_log_origin: Option<bool>,
-    /// Use the new logger format.
+    /// When enabled, the logger will use the default [`tracing_subscriber::fmt::format::Format`]
+    /// formatter.
     pub new_format: Option<bool>,
     /// The profile file to output.
     pub profile_file: Option<PathBuf>,
@@ -293,52 +300,111 @@ pub enum LoggerConfigError {
     /// Failed to write initialization message.
     #[error("Failed to write initialization message: {0}")]
     Write(std::io::Error),
+    /// Failed to initialize flame layer.
+    #[error("Failed to   flame layer.")]
+    Flame,
 }
 
-macro_rules! registry {
-    ($($x:expr),*) => {
-        {
-            tracing_subscriber::registry()
-            $(
-                .with($x)
-            )*
+type FmtInner = Layered<tracing_subscriber::reload::Subscriber<LevelFilter>, Registry>;
+type FmtType = FmtSubscriber<FmtInner, format::DefaultFields, LoggerFormatter, BoxMakeWriter>;
+type FlameInner = Layered<tracing_subscriber::reload::Subscriber<FmtType>, FmtInner>;
+type FlameType = FlameSubscriber<FlameInner, FlameWriter>;
+
+// TODO Remove `C` as a generic.
+/// Handles that allow re-configuring the logger.
+#[derive(Debug)]
+pub struct LoggerHandles {
+    filter: Handle<LevelFilter>,
+    fmt: Handle<FmtType>,
+    flame: Handle<FlameType>,
+}
+
+#[derive(Debug)]
+enum FlameWriter {
+    Sink(std::io::Sink),
+    File(BufWriter<std::fs::File>),
+}
+impl Write for FlameWriter {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        match self {
+            Self::Sink(sink) => sink.write(buf),
+            Self::File(file) => file.write(buf),
+        }
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+        match self {
+            Self::Sink(sink) => sink.flush(),
+            Self::File(file) => file.flush(),
         }
     }
 }
 
 impl LoggerConfig {
-    const INIT_MESSAGE: &str = concat!("Running Firecracker v", env!("FIRECRACKER_VERSION"), "\n");
-
     /// Initializes the logger.
-    pub fn init(&self) -> std::result::Result<(), LoggerConfigError> {
-        let level = tracing::Level::from(self.level.unwrap_or_default());
-        let filter = tracing_subscriber::filter::LevelFilter::from_level(level);
+    ///
+    /// Returns handles that can be used to dynamically re-configure the logger.
+    pub fn init(&self) -> Result<LoggerHandles, LoggerConfigError> {
+        // Setup filter
+        let (filter, filter_handle) = {
+            let level = tracing::Level::from(self.level.unwrap_or_default());
+            let filter_subscriber = LevelFilter::from_level(level);
+            tracing_subscriber::reload::Subscriber::new(filter_subscriber)
+        };
 
-        // In case we open a FIFO, in order to not block the instance if nobody is consuming the
-        // message that is flushed to the two pipes, we are opening it with `O_NONBLOCK` flag.
-        // In this case, writing to a pipe will start failing when reaching 64K of unconsumed
-        // content.
-        let mut file = std::fs::OpenOptions::new()
-            .custom_flags(libc::O_NONBLOCK)
-            .read(true)
-            .write(true)
-            .open(&self.log_path)
-            .map_err(LoggerConfigError::File)?;
+        // Setup fmt layer
+        let (fmt, fmt_handle) = {
+            let fmt_writer = match &self.log_path {
+                Some(path) => {
+                    // TODO Can we add `.create(true)` so the user doesn't need to pre-create the
+                    // log file? In case we open a FIFO, in order to not block
+                    // the instance if nobody is consuming the message that is
+                    // flushed to the two pipes, we are opening it with `O_NONBLOCK` flag.
+                    // In this case, writing to a pipe will start failing when reaching 64K of
+                    // unconsumed content.
+                    let file = std::fs::OpenOptions::new()
+                        .custom_flags(libc::O_NONBLOCK)
+                        .read(true)
+                        .write(true)
+                        .open(path)
+                        .map_err(LoggerConfigError::File)?;
+                    // Wrap file to satisfy `tracing_subscriber::fmt::MakeWriter`.
+                    let writer = Mutex::new(LineWriter::new(file));
+                    BoxMakeWriter::new(writer)
+                }
+                None => BoxMakeWriter::new(std::io::stdout),
+            };
+            let fmt_subscriber = FmtSubscriber::new()
+                .event_format(LoggerFormatter::new(
+                    self.new_format.unwrap_or_default(),
+                    self.show_level.unwrap_or_default(),
+                    self.show_log_origin.unwrap_or_default(),
+                ))
+                .with_writer(fmt_writer);
+            tracing_subscriber::reload::Subscriber::new(fmt_subscriber)
+        };
 
-        // Write the initialization message.
-        file.write_all(LoggerConfig::INIT_MESSAGE.as_bytes())
-            .map_err(LoggerConfigError::File)?;
+        // Setup flame layer
+        let (flame, flame_handle) = {
+            let flame_writer = match &self.profile_file {
+                Some(file) => FlameWriter::File(BufWriter::new(
+                    std::fs::OpenOptions::new()
+                        .create(true)
+                        .write(true)
+                        .open(file)
+                        .unwrap(),
+                )),
+                None => FlameWriter::Sink(std::io::sink()),
+            };
+            let flame_subscriber = FlameSubscriber::new(flame_writer);
+            tracing_subscriber::reload::Subscriber::new(flame_subscriber)
+        };
 
-        // Wrap file to satisfy `tracing_subscriber::fmt::MakeWriter`.
-        let writer = Mutex::new(LineWriter::new(file));
-
-        match (self.new_format.unwrap_or_default(), &self.profile_file) {
-            (true, Some(p)) => registry!(filter, new_log(self, writer), flame(p)).try_init(),
-            (false, Some(p)) => registry!(filter, old_log(self, writer), flame(p)).try_init(),
-            (true, None) => registry!(filter, new_log(self, writer)).try_init(),
-            (false, None) => registry!(filter, old_log(self, writer)).try_init(),
-        }
-        .map_err(LoggerConfigError::Init)?;
+        Registry::default()
+            .with(filter)
+            .with(fmt)
+            .with(flame)
+            .try_init()
+            .map_err(LoggerConfigError::Init)?;
 
         tracing::error!("Error level logs enabled.");
         tracing::warn!("Warn level logs enabled.");
@@ -346,67 +412,90 @@ impl LoggerConfig {
         tracing::debug!("Debug level logs enabled.");
         tracing::trace!("Trace level logs enabled.");
 
-        Ok(())
+        Ok(LoggerHandles {
+            filter: filter_handle,
+            fmt: fmt_handle,
+            flame: flame_handle,
+        })
+    }
+    /// Updates the logger using the given handles.
+    pub fn update(&self, LoggerHandles { filter, fmt, flame }: &LoggerHandles) {
+        // Update the log path
+        if let Some(log_path) = &self.log_path {
+            // In case we open a FIFO, in order to not block the instance if nobody is consuming the
+            // message that is flushed to the two pipes, we are opening it with `O_NONBLOCK` flag.
+            // In this case, writing to a pipe will start failing when reaching 64K of unconsumed
+            // content.
+            let file = std::fs::OpenOptions::new()
+                .custom_flags(libc::O_NONBLOCK)
+                .read(true)
+                .write(true)
+                .open(log_path)
+                .map_err(LoggerConfigError::File)
+                .unwrap();
+
+            fmt.modify(|f| *f.writer_mut() = BoxMakeWriter::new(Mutex::new(file)))
+                .unwrap();
+        }
+
+        // Update the filter level
+        if let Some(level) = self.level {
+            filter
+                .modify(|f| *f = LevelFilter::from_level(tracing::Level::from(level)))
+                .unwrap();
+        }
+
+        // Update if the logger shows the level
+        if let Some(show_level) = self.show_level {
+            SHOW_LEVEL.store(show_level, SeqCst);
+        }
+
+        // Updates if the logger shows the origin
+        if let Some(show_log_origin) = self.show_log_origin {
+            SHOW_LOG_ORIGIN.store(show_log_origin, SeqCst);
+        }
+
+        // Updates if the logger uses the new format
+        if let Some(new_format) = self.new_format {
+            NEW_FORMAT.store(new_format, SeqCst);
+        }
+
+        // Reload the flame layer with a new target file
+        if let Some(profile_file) = &self.profile_file {
+            let file = std::fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(profile_file)
+                .unwrap();
+            flame
+                .reload(FlameSubscriber::new(FlameWriter::File(BufWriter::new(
+                    file,
+                ))))
+                .unwrap();
+        }
     }
 }
 
-type FormatWriter = Mutex<LineWriter<File>>;
-
-fn new_log<S: Subscriber + for<'span> LookupSpan<'span>>(
-    config: &LoggerConfig,
-    writer: FormatWriter,
-) -> Layer<S, format::DefaultFields, format::Format, FormatWriter> {
-    let show_origin = config.show_log_origin.unwrap_or_default();
-    Layer::new()
-        .with_level(config.show_level.unwrap_or_default())
-        .with_file(show_origin)
-        .with_line_number(show_origin)
-        .with_writer(writer)
-}
-fn old_log<S: Subscriber + for<'span> LookupSpan<'span>>(
-    config: &LoggerConfig,
-    writer: FormatWriter,
-) -> Layer<S, format::DefaultFields, OldLoggerFormatter, FormatWriter> {
-    Layer::new()
-        .event_format(OldLoggerFormatter {
-            show_level: config.show_level.unwrap_or_default(),
-            show_log_origin: config.show_log_origin.unwrap_or_default(),
-        })
-        .with_writer(writer)
+#[derive(Debug)]
+struct LoggerFormatter;
+impl LoggerFormatter {
+    pub fn new(new_format: bool, show_level: bool, show_log_origin: bool) -> Self {
+        NEW_FORMAT.store(new_format, SeqCst);
+        SHOW_LEVEL.store(show_level, SeqCst);
+        SHOW_LOG_ORIGIN.store(show_log_origin, SeqCst);
+        Self
+    }
 }
 
-fn flame<S: Subscriber + for<'span> LookupSpan<'span>>(
-    profile_file: &PathBuf,
-) -> FlameLayer<S, BufWriter<File>> {
-    // We can discard the flush guard as
-    // > This type is only needed when using
-    // > `tracing::subscriber::set_global_default`, which prevents the drop
-    // > implementation of layers from running when the program exits.
-    // See https://docs.rs/tracing-flame/0.2.0/tracing_flame/struct.FlushGuard.html
-    let (flame_layer, _guard) = FlameLayer::with_file(profile_file).unwrap();
-    flame_layer
-}
+// TODO Using statics for these options is a bad solution, don't do this.
+static NEW_FORMAT: AtomicBool = AtomicBool::new(false);
+static SHOW_LEVEL: AtomicBool = AtomicBool::new(false);
+static SHOW_LOG_ORIGIN: AtomicBool = AtomicBool::new(false);
 
-// use std::sync::atomic::AtomicUsize;
-// use std::sync::atomic::Ordering;
-// static GURAD: AtomicUsize = AtomicUsize::new(0);
-
-/// The log line should look lie this:
-/// ```text
-/// YYYY-MM-DDTHH:MM:SS.NNNNNNNNN [ID:THREAD:LEVEL:FILE:LINE] MESSAGE
-/// ```
-/// where LEVEL and FILE:LINE are both optional. e.g. with THREAD NAME as TN
-/// ```text
-/// 2018-09-09T12:52:00.123456789 [MYID:TN:WARN:/path/to/file.rs:52] warning
-/// ```
-struct OldLoggerFormatter {
-    show_level: bool,
-    show_log_origin: bool,
-}
-
-impl<S, N> FormatEvent<S, N> for OldLoggerFormatter
+impl<S, N> FormatEvent<S, N> for LoggerFormatter
 where
-    S: Subscriber + for<'a> LookupSpan<'a>,
+    S: Collect + for<'a> LookupSpan<'a>,
     N: for<'a> FormatFields<'a> + 'static,
 {
     fn format_event(
@@ -415,6 +504,15 @@ where
         mut writer: format::Writer<'_>,
         event: &Event<'_>,
     ) -> fmt::Result {
+        // If using the new format, use the default formatters.
+        if NEW_FORMAT.load(SeqCst) {
+            return tracing_subscriber::fmt::format::Format::default()
+                .with_level(SHOW_LEVEL.load(SeqCst))
+                .with_file(SHOW_LOG_ORIGIN.load(SeqCst))
+                .with_line_number(SHOW_LOG_ORIGIN.load(SeqCst))
+                .format_event(ctx, writer, event);
+        }
+
         // Format values from the event's's metadata:
         let metadata = event.metadata();
 
@@ -432,12 +530,12 @@ where
         write!(writer, "{time} [{instance_id}:{thread_id}")?;
 
         // Write the log level
-        if self.show_level {
+        if SHOW_LEVEL.load(SeqCst) {
             write!(writer, ":{}", metadata.level())?;
         }
 
         // Write the log file and line.
-        if self.show_log_origin {
+        if SHOW_LOG_ORIGIN.load(SeqCst) {
             // Write the file
             write!(writer, ":{}", metadata.file().unwrap_or("unknown"))?;
             // Write the line

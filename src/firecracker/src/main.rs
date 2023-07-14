@@ -286,7 +286,8 @@ fn main_exitable() -> FcExitCode {
 
     logger::INSTANCE_ID.set(String::from(instance_id)).unwrap();
 
-    if let Some(log_path) = arguments.single_value("log-path") {
+    // Configure logger, the logger handles can be used to re-configure the logger with the API.
+    let logger_handles = {
         let level_res = arguments
             .single_value("level")
             .map(|s| Level::from_str(s))
@@ -302,19 +303,21 @@ fn main_exitable() -> FcExitCode {
             }
         };
 
-        let logger_config = vmm::vmm_config::LoggerConfig {
-            log_path: PathBuf::from(log_path),
+        let config = vmm::vmm_config::LoggerConfig {
+            log_path: arguments.single_value("log-path").map(PathBuf::from),
             level,
             show_level: Some(arguments.flag_present("show-level")),
             show_log_origin: Some(arguments.flag_present("show-log-origin")),
             new_format: Some(arguments.flag_present("new-format")),
             profile_file: arguments.single_value("profile-file").map(PathBuf::from),
         };
-
-        if let Err(err) = logger_config.init() {
-            return generic_error_exit(&format!("Could not initialize logger: {}", err));
-        };
-    }
+        match config.init() {
+            Ok(h) => h,
+            Err(err) => {
+                return generic_error_exit(&format!("Could not initialize logger: {}", err));
+            }
+        }
+    };
 
     if let Some(metrics_path) = arguments.single_value("metrics-path") {
         let metrics_config = MetricsConfig {
@@ -404,6 +407,7 @@ fn main_exitable() -> FcExitCode {
             api_payload_limit,
             mmds_size_limit,
             metadata_json.as_deref(),
+            logger_handles,
         )
     } else {
         let seccomp_filters: BpfThreadMap = seccomp_filters

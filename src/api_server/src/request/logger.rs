@@ -37,7 +37,7 @@ mod tests {
               }"#;
 
         let mut expected_cfg = LoggerConfig {
-            log_path: PathBuf::from("log"),
+            log_path: Some(PathBuf::from("log")),
             level: Some(Level::Warn),
             show_level: Some(false),
             show_log_origin: Some(false),
@@ -57,7 +57,7 @@ mod tests {
               }"#;
 
         expected_cfg = LoggerConfig {
-            log_path: PathBuf::from("log"),
+            log_path: Some(PathBuf::from("log")),
             level: Some(Level::Debug),
             show_level: Some(false),
             show_log_origin: Some(false),
