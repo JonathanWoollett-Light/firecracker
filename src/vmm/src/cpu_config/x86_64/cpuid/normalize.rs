@@ -113,6 +113,7 @@ pub struct CheckedAssignError;
 
 /// Sets a given bit to a true or false (1 or 0).
 #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
+#[tracing::instrument(level = "debug", ret(skip), skip(x, bit, y))]
 pub fn set_bit(x: &mut u32, bit: u8, y: bool) {
     debug_assert!(bit < 32);
     *x = (*x & !(1 << bit)) | ((u32::from(u8::from(y))) << bit);
@@ -120,6 +121,7 @@ pub fn set_bit(x: &mut u32, bit: u8, y: bool) {
 
 /// Sets a given range to a given value.
 #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
+#[tracing::instrument(level = "debug", ret(skip), skip(x, range, y))]
 pub fn set_range(
     x: &mut u32,
     range: std::ops::Range<u8>,
@@ -146,6 +148,7 @@ pub fn set_range(
 }
 /// Gets a given range within a given value.
 #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
+#[tracing::instrument(level = "debug", ret(skip), skip(x, range))]
 pub fn get_range(x: u32, range: std::ops::Range<u8>) -> u32 {
     debug_assert!(range.end >= range.start);
     (x & mask(range.clone())) >> range.start
@@ -195,6 +198,7 @@ impl super::Cpuid {
     /// - [`AmdCpuid::normalize`] errors.
     // As we pass through host frequency, we require CPUID and thus `cfg(cpuid)`.
     #[inline]
+    #[tracing::instrument(level = "debug", ret(skip), skip(self, cpu_index, cpu_count, cpu_bits))]
     pub fn normalize(
         &mut self,
         // The index of the current logical CPU in the range [0..cpu_count].
@@ -227,6 +231,7 @@ impl super::Cpuid {
 
     /// Pass-through the vendor ID from the host. This is used to prevent modification of the vendor
     /// ID via custom CPU templates.
+    #[tracing::instrument(level = "debug", ret(skip), skip(self))]
     fn update_vendor_id(&mut self) -> Result<(), VendorIdError> {
         let leaf_0 = self
             .get_mut(&CpuidKey::leaf(0x0))
@@ -242,6 +247,7 @@ impl super::Cpuid {
     }
 
     // Update feature information entry
+    #[tracing::instrument(level = "debug", ret(skip), skip(self, cpu_index, cpu_count))]
     fn update_feature_info_entry(
         &mut self,
         cpu_index: u8,
@@ -326,6 +332,11 @@ impl super::Cpuid {
     }
 
     /// Update extended topology entry
+    #[tracing::instrument(
+        level = "debug",
+        ret(skip),
+        skip(self, cpu_index, cpu_count, cpu_bits, cpus_per_core)
+    )]
     fn update_extended_topology_entry(
         &mut self,
         cpu_index: u8,
@@ -467,6 +478,7 @@ impl super::Cpuid {
     }
 
     // Update extended cache features entry
+    #[tracing::instrument(level = "debug", ret(skip), skip(self))]
     fn update_extended_cache_features(&mut self) -> Result<(), ExtendedCacheFeaturesError> {
         // Leaf 0x800000005 indicates L1 Cache and TLB Information.
         let guest_leaf_0x80000005 = self
