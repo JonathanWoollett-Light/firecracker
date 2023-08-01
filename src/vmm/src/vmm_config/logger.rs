@@ -12,7 +12,7 @@ use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 use tracing::{Collect, Event};
-use tracing_subscriber::filter::LevelFilter;
+use tracing_subscriber::filter::{EnvFilter, LevelFilter};
 use tracing_subscriber::fmt::format::{self, FormatEvent, FormatFields};
 use tracing_subscriber::fmt::writer::BoxMakeWriter;
 use tracing_subscriber::fmt::FmtContext;
@@ -143,7 +143,8 @@ pub enum UpdateLoggerError {
     Filter(ReloadError),
 }
 
-type FmtInner = Layered<tracing_subscriber::reload::Subscriber<LevelFilter>, Registry>;
+type ReloadSubscriber<S> = tracing_subscriber::reload::Subscriber<S>;
+type FmtInner = Layered<ReloadSubscriber<LevelFilter>, Layered<EnvFilter, Registry>>;
 type FmtType = FmtSubscriber<FmtInner, format::DefaultFields, LoggerFormatter, BoxMakeWriter>;
 
 /// Handles that allow re-configuring the logger.
@@ -162,7 +163,7 @@ impl LoggerConfig {
         let (filter, filter_handle) = {
             let level = tracing::Level::from(self.level.unwrap_or_default());
             let filter_subscriber = LevelFilter::from_level(level);
-            tracing_subscriber::reload::Subscriber::new(filter_subscriber)
+            ReloadSubscriber::new(filter_subscriber)
         };
 
         // Setup fmt layer
@@ -193,10 +194,16 @@ impl LoggerConfig {
                     self.show_log_origin.unwrap_or_default(),
                 ))
                 .with_writer(fmt_writer);
-            tracing_subscriber::reload::Subscriber::new(fmt_subscriber)
+            ReloadSubscriber::new(fmt_subscriber)
         };
 
+        // Setup the env layer
+        let env = EnvFilter::builder()
+            .with_default_directive(LevelFilter::TRACE.into())
+            .from_env_lossy();
+
         Registry::default()
+            .with(env)
             .with(filter)
             .with(fmt)
             .try_init()
