@@ -11,8 +11,9 @@ use std::thread;
 
 use api_server::{ApiServer, ServerError};
 use event_manager::{EventOps, Events, MutEventSubscriber, SubscriberOps};
-use logger::{error, warn, ProcessTimeReporter};
+use logger::ProcessTimeReporter;
 use seccompiler::BpfThreadMap;
+use tracing::{error, warn};
 use utils::epoll::EventSet;
 use utils::eventfd::EventFd;
 use vmm::resources::VmResources;
@@ -128,6 +129,7 @@ pub(crate) fn run_with_api(
     api_payload_limit: usize,
     mmds_size_limit: usize,
     metadata_json: Option<&str>,
+    logger_handles: vmm::vmm_config::logger::LoggerHandles,
 ) -> FcExitCode {
     // FD to notify of API events. This is a blocking eventfd by design.
     // It is used in the config/pre-boot loop which is a simple blocking loop
@@ -209,6 +211,7 @@ pub(crate) fn run_with_api(
             boot_timer_enabled,
             mmds_size_limit,
             metadata_json,
+            logger_handles,
         ),
     };
 

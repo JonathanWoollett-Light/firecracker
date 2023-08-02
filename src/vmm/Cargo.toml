@@ -3,6 +3,7 @@ name = "vmm"
 version = "0.1.0"
 authors = ["Amazon Firecracker team <firecracker-devel@amazon.com>"]
 edition = "2021"
+build = "../../build.rs"
 license = "Apache-2.0"
 
 [lib]
@@ -29,6 +30,8 @@ versionize_derive = "0.1.5"
 vm-allocator = "0.1.0"
 vm-fdt = "0.2.0"
 vm-superio = "0.7.0"
+tracing = { git = "https://github.com/tokio-rs/tracing", rev = "27f688efb72316a26f3ec1f952c82626692c08ff", features = ["attributes"] }
+tracing-subscriber = { git = "https://github.com/tokio-rs/tracing", rev = "27f688efb72316a26f3ec1f952c82626692c08ff" }
 log = { version = "0.4.17", features = ["serde"] }
 
 dumbo = { path = "../dumbo" }

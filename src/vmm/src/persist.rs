@@ -11,11 +11,11 @@ use std::os::unix::net::UnixStream;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use log::{error, info, warn};
 use seccompiler::BpfThreadMap;
 use semver::Version;
 use serde::Serialize;
 use snapshot::Snapshot;
+use tracing::{error, info, warn};
 use userfaultfd::{FeatureFlags, Uffd, UffdBuilder};
 use utils::sock_ctrl_msg::ScmSocket;
 use utils::vm_memory::{GuestMemory, GuestMemoryMmap};

@@ -6,8 +6,8 @@
 use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
 
-use logger::warn;
 use snapshot::Persist;
+use tracing::warn;
 use utils::vm_memory::GuestMemoryMmap;
 use versionize::{VersionMap, Versionize, VersionizeError, VersionizeResult};
 use versionize_derive::Versionize;

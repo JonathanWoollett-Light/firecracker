@@ -7,13 +7,15 @@ mod seccomp;
 
 use std::fs::{self, File};
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 use std::{io, panic, process};
 
 use event_manager::SubscriberOps;
-use logger::{error, info, ProcessTimeReporter, StoreMetric, LOGGER, METRICS};
+use logger::{ProcessTimeReporter, StoreMetric, METRICS};
 use seccompiler::BpfThreadMap;
 use snapshot::Snapshot;
+use tracing::{error, info};
 use utils::arg_parser::{ArgParser, Argument};
 use utils::terminal::Terminal;
 use utils::validators::validate_instance_id;
@@ -21,7 +23,7 @@ use vmm::resources::VmResources;
 use vmm::signal_handler::register_signal_handlers;
 use vmm::version_map::{FC_VERSION_TO_SNAP_VERSION, VERSION_MAP};
 use vmm::vmm_config::instance_info::{InstanceInfo, VmState};
-use vmm::vmm_config::logger::{init_logger, LoggerConfig, LoggerLevel};
+use vmm::vmm_config::logger::Level;
 use vmm::vmm_config::metrics::{init_metrics, MetricsConfig};
 use vmm::{EventManager, FcExitCode, HTTP_MAX_PAYLOAD_SIZE};
 
@@ -31,7 +33,6 @@ use crate::seccomp::SeccompConfig;
 // runtime file.
 // see https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s15.html for more information.
 const DEFAULT_API_SOCK_PATH: &str = "/run/firecracker.socket";
-const DEFAULT_INSTANCE_ID: &str = "anonymous-instance";
 const FIRECRACKER_VERSION: &str = env!("FIRECRACKER_VERSION");
 const MMDS_CONTENT_ARG: &str = "metadata";
 
@@ -72,10 +73,6 @@ pub fn enable_ssbd_mitigation() {
 }
 
 fn main_exitable() -> FcExitCode {
-    LOGGER
-        .configure(Some(DEFAULT_INSTANCE_ID.to_string()))
-        .expect("Failed to register logger");
-
     if let Err(err) = register_signal_handlers() {
         error!("Failed to register signal handlers: {}", err);
         return vmm::FcExitCode::GenericError;
@@ -122,7 +119,7 @@ fn main_exitable() -> FcExitCode {
         .arg(
             Argument::new("id")
                 .takes_value(true)
-                .default_value(DEFAULT_INSTANCE_ID)
+                .default_value("anonymous-instance")
                 .help("MicroVM unique identifier."),
         )
         .arg(
@@ -277,13 +274,14 @@ fn main_exitable() -> FcExitCode {
         app_name: "Firecracker".to_string(),
     };
 
-    LOGGER.set_instance_id(instance_id.to_owned());
-
-    if let Some(log) = arguments.single_value("log-path") {
-        // It's safe to unwrap here because the field's been provided with a default value.
-        let level = arguments.single_value("level").unwrap().to_owned();
-        let logger_level = match LoggerLevel::from_string(level) {
-            Ok(level) => level,
+    // Configure logger, the logger handles can be used to re-configure the logger with the API.
+    let logger_handles = {
+        let level_res = arguments
+            .single_value("level")
+            .map(|s| Level::from_str(s))
+            .transpose();
+        let level = match level_res {
+            Ok(l) => l,
             Err(err) => {
                 return generic_error_exit(&format!(
                     "Invalid value for logger level: {}.Possible values: [Error, Warning, Info, \
@@ -292,19 +290,20 @@ fn main_exitable() -> FcExitCode {
                 ));
             }
         };
-        let show_level = arguments.flag_present("show-level");
-        let show_log_origin = arguments.flag_present("show-log-origin");
 
-        let logger_config = LoggerConfig {
-            log_path: PathBuf::from(log),
-            level: logger_level,
-            show_level,
-            show_log_origin,
+        let logger_config = vmm::vmm_config::logger::LoggerConfig {
+            log_path: arguments.single_value("log-path").map(PathBuf::from),
+            level,
+            show_level: Some(arguments.flag_present("show-level")),
+            show_log_origin: Some(arguments.flag_present("show-log-origin")),
         };
-        if let Err(err) = init_logger(logger_config, &instance_info) {
-            return generic_error_exit(&format!("Could not initialize logger: {}", err));
-        };
-    }
+        match logger_config.init() {
+            Ok(h) => h,
+            Err(err) => {
+                return generic_error_exit(&format!("Could not initialize logger: {}", err));
+            }
+        }
+    };
 
     if let Some(metrics_path) = arguments.single_value("metrics-path") {
         let metrics_config = MetricsConfig {
@@ -394,6 +393,7 @@ fn main_exitable() -> FcExitCode {
             api_payload_limit,
             mmds_size_limit,
             metadata_json.as_deref(),
+            logger_handles,
         )
     } else {
         let seccomp_filters: BpfThreadMap = seccomp_filters

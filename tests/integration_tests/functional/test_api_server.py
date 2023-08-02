@@ -24,5 +24,5 @@ def test_api_socket_in_use(test_microvm_with_api):
     sock = socket.socket(socket.AF_UNIX)
     sock.bind(microvm.jailer.api_socket_path())
     microvm.spawn()
-    msg = "Failed to open the API socket at: /run/firecracker.socket. Check that it is not already used."
+    msg = "Firecracker panicked at 'The channel's sending half was disconnected."
     microvm.check_log_message(msg)

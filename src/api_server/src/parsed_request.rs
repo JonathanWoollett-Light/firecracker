@@ -3,10 +3,10 @@
 
 use std::fmt::Debug;
 
-use logger::{error, info, log_enabled, Level};
 use micro_http::{Body, Method, Request, Response, StatusCode, Version};
 use serde::ser::Serialize;
 use serde_json::Value;
+use tracing::{enabled, error, info, Level};
 use vmm::rpc_interface::{VmmAction, VmmActionError};
 
 use super::VmmData;
@@ -232,7 +232,7 @@ fn describe(method: Method, path: &str, body: Option<&Body>) -> String {
         ("/cpu-config", Some(payload_value)) => {
             // If the log level is at Debug or higher, include the CPU template in
             // the log line.
-            if log_enabled!(Level::Debug) {
+            if enabled!(Level::DEBUG) {
                 describe_with_body(method, path, payload_value)
             } else {
                 format!(

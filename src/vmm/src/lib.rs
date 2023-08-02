@@ -109,9 +109,10 @@ use std::time::Duration;
 use std::{fmt, io};
 
 use event_manager::{EventManager as BaseEventManager, EventOps, Events, MutEventSubscriber};
-use logger::{error, info, warn, MetricsError, METRICS};
+use logger::{MetricsError, METRICS};
 use seccompiler::BpfProgram;
 use snapshot::Persist;
+use tracing::{error, info, warn};
 use userfaultfd::Uffd;
 use utils::epoll::EventSet;
 use utils::eventfd::EventFd;

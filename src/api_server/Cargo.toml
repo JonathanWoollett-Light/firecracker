@@ -21,6 +21,8 @@ mmds = { path = "../mmds" }
 seccompiler = { path = "../seccompiler" }
 utils = { path = "../utils" }
 vmm = { path = "../vmm" }
+tracing = { git = "https://github.com/tokio-rs/tracing", rev = "27f688efb72316a26f3ec1f952c82626692c08ff", features = ["attributes"] }
 
 [dev-dependencies]
 libc = "0.2.117"
+log = "0.4.19"

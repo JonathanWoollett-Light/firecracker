@@ -130,7 +130,6 @@ impl From<Option<RateLimiterConfig>> for RateLimiterUpdate {
 
 impl TryInto<RateLimiter> for RateLimiterConfig {
     type Error = io::Error;
-
     fn try_into(self) -> Result<RateLimiter, Self::Error> {
         let bw = self.bandwidth.unwrap_or_default();
         let ops = self.ops.unwrap_or_default();
