@@ -55,11 +55,12 @@ pub enum RegsError {
 pub struct SetupFpuError(utils::errno::Error);
 impl std::error::Error for SetupFpuError {}
 impl fmt::Display for SetupFpuError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Failed to setup FPU: {}", self.0)
     }
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip(vcpu))]
 /// Configure Floating-Point Unit (FPU) registers for a given CPU.
 ///
 /// # Arguments
@@ -84,11 +85,12 @@ pub fn setup_fpu(vcpu: &VcpuFd) -> Result<(), SetupFpuError> {
 pub struct SetupRegistersError(utils::errno::Error);
 impl std::error::Error for SetupRegistersError {}
 impl fmt::Display for SetupRegistersError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Failed to setup registers:{}", self.0)
     }
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip(vcpu,boot_ip))]
 /// Configure base registers for a given CPU.
 ///
 /// # Arguments
@@ -135,6 +137,7 @@ pub enum SetupSpecialRegistersError {
     SetSpecialRegisters(utils::errno::Error),
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip(mem,vcpu))]
 /// Configures the special registers and system page tables for a given CPU.
 ///
 /// # Arguments
@@ -174,6 +177,7 @@ const X86_CR0_PE: u64 = 0x1;
 const X86_CR0_PG: u64 = 0x8000_0000;
 const X86_CR4_PAE: u64 = 0x20;
 
+#[tracing::instrument(level = "trace", ret(skip), skip(table,guest_mem))]
 fn write_gdt_table(table: &[u64], guest_mem: &GuestMemoryMmap) -> Result<(), RegsError> {
     let boot_gdt_addr = GuestAddress(BOOT_GDT_OFFSET);
     for (index, entry) in table.iter().enumerate() {
@@ -187,6 +191,7 @@ fn write_gdt_table(table: &[u64], guest_mem: &GuestMemoryMmap) -> Result<(), Reg
     Ok(())
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip(val,guest_mem))]
 fn write_idt_value(val: u64, guest_mem: &GuestMemoryMmap) -> Result<(), RegsError> {
     let boot_idt_addr = GuestAddress(BOOT_IDT_OFFSET);
     guest_mem
@@ -194,6 +199,7 @@ fn write_idt_value(val: u64, guest_mem: &GuestMemoryMmap) -> Result<(), RegsErro
         .map_err(|_| RegsError::WriteIDT)
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip(mem,sregs))]
 fn configure_segments_and_sregs(
     mem: &GuestMemoryMmap,
     sregs: &mut kvm_sregs,
@@ -233,6 +239,7 @@ fn configure_segments_and_sregs(
     Ok(())
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip(mem,sregs))]
 fn setup_page_tables(mem: &GuestMemoryMmap, sregs: &mut kvm_sregs) -> Result<(), RegsError> {
     // Puts PML4 right after zero page but aligned to 4k.
     let boot_pml4_addr = GuestAddress(PML4_START);
@@ -266,6 +273,7 @@ mod tests {
 
     use super::*;
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(mem_size))]
     fn create_guest_mem(mem_size: Option<u64>) -> GuestMemoryMmap {
         let page_size = 0x10000usize;
         let mem_size = mem_size.unwrap_or(page_size as u64) as usize;
@@ -284,11 +292,13 @@ mod tests {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(gm,offset))]
     fn read_u64(gm: &GuestMemoryMmap, offset: u64) -> u64 {
         let read_addr = GuestAddress(offset);
         gm.read_obj(read_addr).unwrap()
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(gm,sregs))]
     fn validate_segments_and_sregs(gm: &GuestMemoryMmap, sregs: &kvm_sregs) {
         assert_eq!(0x0, read_u64(gm, BOOT_GDT_OFFSET));
         assert_eq!(0xaf_9b00_0000_ffff, read_u64(gm, BOOT_GDT_OFFSET + 8));
@@ -309,6 +319,7 @@ mod tests {
         assert!(sregs.efer & EFER_LME != 0 && sregs.efer & EFER_LMA != 0);
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(gm,sregs))]
     fn validate_page_tables(gm: &GuestMemoryMmap, sregs: &kvm_sregs) {
         assert_eq!(0xa003, read_u64(gm, PML4_START));
         assert_eq!(0xb003, read_u64(gm, PDPTE_START));
@@ -448,3 +459,4 @@ mod tests {
         validate_page_tables(&gm, &sregs);
     }
 }
+

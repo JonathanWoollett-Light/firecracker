@@ -57,6 +57,7 @@ fn bindgen_test_layout_sockaddr() {
         2usize,
         concat!("Alignment of ", stringify!(sockaddr))
     );
+    
     fn test_field_sa_family() {
         assert_eq!(
             unsafe {
@@ -74,6 +75,7 @@ fn bindgen_test_layout_sockaddr() {
         );
     }
     test_field_sa_family();
+    
     fn test_field_sa_data() {
         assert_eq!(
             unsafe {
@@ -111,6 +113,7 @@ fn bindgen_test_layout_sync_serial_settings() {
         4usize,
         concat!("Alignment of ", stringify!(sync_serial_settings))
     );
+    
     fn test_field_clock_rate() {
         assert_eq!(
             unsafe {
@@ -128,6 +131,7 @@ fn bindgen_test_layout_sync_serial_settings() {
         );
     }
     test_field_clock_rate();
+    
     fn test_field_clock_type() {
         assert_eq!(
             unsafe {
@@ -145,6 +149,7 @@ fn bindgen_test_layout_sync_serial_settings() {
         );
     }
     test_field_clock_type();
+    
     fn test_field_loopback() {
         assert_eq!(
             unsafe {
@@ -183,6 +188,7 @@ fn bindgen_test_layout_te1_settings() {
         4usize,
         concat!("Alignment of ", stringify!(te1_settings))
     );
+    
     fn test_field_clock_rate() {
         assert_eq!(
             unsafe {
@@ -200,6 +206,7 @@ fn bindgen_test_layout_te1_settings() {
         );
     }
     test_field_clock_rate();
+    
     fn test_field_clock_type() {
         assert_eq!(
             unsafe {
@@ -217,6 +224,7 @@ fn bindgen_test_layout_te1_settings() {
         );
     }
     test_field_clock_type();
+    
     fn test_field_loopback() {
         assert_eq!(
             unsafe {
@@ -234,6 +242,7 @@ fn bindgen_test_layout_te1_settings() {
         );
     }
     test_field_loopback();
+    
     fn test_field_slot_map() {
         assert_eq!(
             unsafe {
@@ -270,6 +279,7 @@ fn bindgen_test_layout_raw_hdlc_proto() {
         2usize,
         concat!("Alignment of ", stringify!(raw_hdlc_proto))
     );
+    
     fn test_field_encoding() {
         assert_eq!(
             unsafe {
@@ -287,6 +297,7 @@ fn bindgen_test_layout_raw_hdlc_proto() {
         );
     }
     test_field_encoding();
+    
     fn test_field_parity() {
         assert_eq!(
             unsafe {
@@ -328,6 +339,7 @@ fn bindgen_test_layout_fr_proto() {
         4usize,
         concat!("Alignment of ", stringify!(fr_proto))
     );
+    
     fn test_field_t391() {
         assert_eq!(
             unsafe {
@@ -345,6 +357,7 @@ fn bindgen_test_layout_fr_proto() {
         );
     }
     test_field_t391();
+    
     fn test_field_t392() {
         assert_eq!(
             unsafe {
@@ -362,6 +375,7 @@ fn bindgen_test_layout_fr_proto() {
         );
     }
     test_field_t392();
+    
     fn test_field_n391() {
         assert_eq!(
             unsafe {
@@ -379,6 +393,7 @@ fn bindgen_test_layout_fr_proto() {
         );
     }
     test_field_n391();
+    
     fn test_field_n392() {
         assert_eq!(
             unsafe {
@@ -396,6 +411,7 @@ fn bindgen_test_layout_fr_proto() {
         );
     }
     test_field_n392();
+    
     fn test_field_n393() {
         assert_eq!(
             unsafe {
@@ -413,6 +429,7 @@ fn bindgen_test_layout_fr_proto() {
         );
     }
     test_field_n393();
+    
     fn test_field_lmi() {
         assert_eq!(
             unsafe {
@@ -430,6 +447,7 @@ fn bindgen_test_layout_fr_proto() {
         );
     }
     test_field_lmi();
+    
     fn test_field_dce() {
         assert_eq!(
             unsafe {
@@ -465,6 +483,7 @@ fn bindgen_test_layout_fr_proto_pvc() {
         4usize,
         concat!("Alignment of ", stringify!(fr_proto_pvc))
     );
+    
     fn test_field_dlci() {
         assert_eq!(
             unsafe {
@@ -501,6 +520,7 @@ fn bindgen_test_layout_fr_proto_pvc_info() {
         4usize,
         concat!("Alignment of ", stringify!(fr_proto_pvc_info))
     );
+    
     fn test_field_dlci() {
         assert_eq!(
             unsafe {
@@ -518,6 +538,7 @@ fn bindgen_test_layout_fr_proto_pvc_info() {
         );
     }
     test_field_dlci();
+    
     fn test_field_master() {
         assert_eq!(
             unsafe {
@@ -554,6 +575,7 @@ fn bindgen_test_layout_cisco_proto() {
         4usize,
         concat!("Alignment of ", stringify!(cisco_proto))
     );
+    
     fn test_field_interval() {
         assert_eq!(
             unsafe {
@@ -571,6 +593,7 @@ fn bindgen_test_layout_cisco_proto() {
         );
     }
     test_field_interval();
+    
     fn test_field_timeout() {
         assert_eq!(
             unsafe {
@@ -680,6 +703,7 @@ fn bindgen_test_layout_ifmap() {
         8usize,
         concat!("Alignment of ", stringify!(ifmap))
     );
+    
     fn test_field_mem_start() {
         assert_eq!(
             unsafe {
@@ -697,6 +721,7 @@ fn bindgen_test_layout_ifmap() {
         );
     }
     test_field_mem_start();
+    
     fn test_field_mem_end() {
         assert_eq!(
             unsafe {
@@ -714,6 +739,7 @@ fn bindgen_test_layout_ifmap() {
         );
     }
     test_field_mem_end();
+    
     fn test_field_base_addr() {
         assert_eq!(
             unsafe {
@@ -731,6 +757,7 @@ fn bindgen_test_layout_ifmap() {
         );
     }
     test_field_base_addr();
+    
     fn test_field_irq() {
         assert_eq!(
             unsafe {
@@ -748,6 +775,7 @@ fn bindgen_test_layout_ifmap() {
         );
     }
     test_field_irq();
+    
     fn test_field_dma() {
         assert_eq!(
             unsafe {
@@ -765,6 +793,7 @@ fn bindgen_test_layout_ifmap() {
         );
     }
     test_field_dma();
+    
     fn test_field_port() {
         assert_eq!(
             unsafe {
@@ -813,6 +842,7 @@ fn bindgen_test_layout_if_settings__bindgen_ty_1() {
         8usize,
         concat!("Alignment of ", stringify!(if_settings__bindgen_ty_1))
     );
+    
     fn test_field_raw_hdlc() {
         assert_eq!(
             unsafe {
@@ -830,6 +860,7 @@ fn bindgen_test_layout_if_settings__bindgen_ty_1() {
         );
     }
     test_field_raw_hdlc();
+    
     fn test_field_cisco() {
         assert_eq!(
             unsafe {
@@ -847,6 +878,7 @@ fn bindgen_test_layout_if_settings__bindgen_ty_1() {
         );
     }
     test_field_cisco();
+    
     fn test_field_fr() {
         assert_eq!(
             unsafe {
@@ -864,6 +896,7 @@ fn bindgen_test_layout_if_settings__bindgen_ty_1() {
         );
     }
     test_field_fr();
+    
     fn test_field_fr_pvc() {
         assert_eq!(
             unsafe {
@@ -881,6 +914,7 @@ fn bindgen_test_layout_if_settings__bindgen_ty_1() {
         );
     }
     test_field_fr_pvc();
+    
     fn test_field_fr_pvc_info() {
         assert_eq!(
             unsafe {
@@ -898,6 +932,7 @@ fn bindgen_test_layout_if_settings__bindgen_ty_1() {
         );
     }
     test_field_fr_pvc_info();
+    
     fn test_field_sync() {
         assert_eq!(
             unsafe {
@@ -915,6 +950,7 @@ fn bindgen_test_layout_if_settings__bindgen_ty_1() {
         );
     }
     test_field_sync();
+    
     fn test_field_te1() {
         assert_eq!(
             unsafe {
@@ -934,6 +970,7 @@ fn bindgen_test_layout_if_settings__bindgen_ty_1() {
     test_field_te1();
 }
 impl Default for if_settings__bindgen_ty_1 {
+    
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -954,6 +991,7 @@ fn bindgen_test_layout_if_settings() {
         8usize,
         concat!("Alignment of ", stringify!(if_settings))
     );
+    
     fn test_field_type() {
         assert_eq!(
             unsafe {
@@ -971,6 +1009,7 @@ fn bindgen_test_layout_if_settings() {
         );
     }
     test_field_type();
+    
     fn test_field_size() {
         assert_eq!(
             unsafe {
@@ -988,6 +1027,7 @@ fn bindgen_test_layout_if_settings() {
         );
     }
     test_field_size();
+    
     fn test_field_ifs_ifsu() {
         assert_eq!(
             unsafe {
@@ -1007,6 +1047,7 @@ fn bindgen_test_layout_if_settings() {
     test_field_ifs_ifsu();
 }
 impl Default for if_settings {
+    
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -1038,6 +1079,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_1() {
         1usize,
         concat!("Alignment of ", stringify!(ifreq__bindgen_ty_1))
     );
+    
     fn test_field_ifrn_name() {
         assert_eq!(
             unsafe {
@@ -1057,6 +1099,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_1() {
     test_field_ifrn_name();
 }
 impl Default for ifreq__bindgen_ty_1 {
+    
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -1094,6 +1137,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         8usize,
         concat!("Alignment of ", stringify!(ifreq__bindgen_ty_2))
     );
+    
     fn test_field_ifru_addr() {
         assert_eq!(
             unsafe {
@@ -1111,6 +1155,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_addr();
+    
     fn test_field_ifru_dstaddr() {
         assert_eq!(
             unsafe {
@@ -1128,6 +1173,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_dstaddr();
+    
     fn test_field_ifru_broadaddr() {
         assert_eq!(
             unsafe {
@@ -1145,6 +1191,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_broadaddr();
+    
     fn test_field_ifru_netmask() {
         assert_eq!(
             unsafe {
@@ -1162,6 +1209,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_netmask();
+    
     fn test_field_ifru_hwaddr() {
         assert_eq!(
             unsafe {
@@ -1179,6 +1227,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_hwaddr();
+    
     fn test_field_ifru_flags() {
         assert_eq!(
             unsafe {
@@ -1196,6 +1245,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_flags();
+    
     fn test_field_ifru_ivalue() {
         assert_eq!(
             unsafe {
@@ -1213,6 +1263,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_ivalue();
+    
     fn test_field_ifru_mtu() {
         assert_eq!(
             unsafe {
@@ -1230,6 +1281,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_mtu();
+    
     fn test_field_ifru_map() {
         assert_eq!(
             unsafe {
@@ -1247,6 +1299,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_map();
+    
     fn test_field_ifru_slave() {
         assert_eq!(
             unsafe {
@@ -1264,6 +1317,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_slave();
+    
     fn test_field_ifru_newname() {
         assert_eq!(
             unsafe {
@@ -1281,6 +1335,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_newname();
+    
     fn test_field_ifru_data() {
         assert_eq!(
             unsafe {
@@ -1298,6 +1353,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
         );
     }
     test_field_ifru_data();
+    
     fn test_field_ifru_settings() {
         assert_eq!(
             unsafe {
@@ -1317,6 +1373,7 @@ fn bindgen_test_layout_ifreq__bindgen_ty_2() {
     test_field_ifru_settings();
 }
 impl Default for ifreq__bindgen_ty_2 {
+    
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -1337,6 +1394,7 @@ fn bindgen_test_layout_ifreq() {
         8usize,
         concat!("Alignment of ", stringify!(ifreq))
     );
+    
     fn test_field_ifr_ifrn() {
         assert_eq!(
             unsafe {
@@ -1354,6 +1412,7 @@ fn bindgen_test_layout_ifreq() {
         );
     }
     test_field_ifr_ifrn();
+    
     fn test_field_ifr_ifru() {
         assert_eq!(
             unsafe {
@@ -1373,6 +1432,7 @@ fn bindgen_test_layout_ifreq() {
     test_field_ifr_ifru();
 }
 impl Default for ifreq {
+    
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -1405,6 +1465,7 @@ fn bindgen_test_layout_ifconf__bindgen_ty_1() {
         8usize,
         concat!("Alignment of ", stringify!(ifconf__bindgen_ty_1))
     );
+    
     fn test_field_ifcu_buf() {
         assert_eq!(
             unsafe {
@@ -1422,6 +1483,7 @@ fn bindgen_test_layout_ifconf__bindgen_ty_1() {
         );
     }
     test_field_ifcu_buf();
+    
     fn test_field_ifcu_req() {
         assert_eq!(
             unsafe {
@@ -1441,6 +1503,7 @@ fn bindgen_test_layout_ifconf__bindgen_ty_1() {
     test_field_ifcu_req();
 }
 impl Default for ifconf__bindgen_ty_1 {
+    
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -1461,6 +1524,7 @@ fn bindgen_test_layout_ifconf() {
         8usize,
         concat!("Alignment of ", stringify!(ifconf))
     );
+    
     fn test_field_ifc_len() {
         assert_eq!(
             unsafe {
@@ -1478,6 +1542,7 @@ fn bindgen_test_layout_ifconf() {
         );
     }
     test_field_ifc_len();
+    
     fn test_field_ifc_ifcu() {
         assert_eq!(
             unsafe {
@@ -1497,6 +1562,7 @@ fn bindgen_test_layout_ifconf() {
     test_field_ifc_ifcu();
 }
 impl Default for ifconf {
+    
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -1505,3 +1571,4 @@ impl Default for ifconf {
         }
     }
 }
+

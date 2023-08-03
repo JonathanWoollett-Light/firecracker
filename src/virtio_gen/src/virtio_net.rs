@@ -66,6 +66,7 @@ fn bindgen_test_layout_virtio_net_hdr_v1() {
         2usize,
         concat!("Alignment of ", stringify!(virtio_net_hdr_v1))
     );
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     fn test_field_flags() {
         assert_eq!(
             unsafe {
@@ -83,6 +84,7 @@ fn bindgen_test_layout_virtio_net_hdr_v1() {
         );
     }
     test_field_flags();
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     fn test_field_gso_type() {
         assert_eq!(
             unsafe {
@@ -100,6 +102,7 @@ fn bindgen_test_layout_virtio_net_hdr_v1() {
         );
     }
     test_field_gso_type();
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     fn test_field_hdr_len() {
         assert_eq!(
             unsafe {
@@ -117,6 +120,7 @@ fn bindgen_test_layout_virtio_net_hdr_v1() {
         );
     }
     test_field_hdr_len();
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     fn test_field_gso_size() {
         assert_eq!(
             unsafe {
@@ -134,6 +138,7 @@ fn bindgen_test_layout_virtio_net_hdr_v1() {
         );
     }
     test_field_gso_size();
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     fn test_field_csum_start() {
         assert_eq!(
             unsafe {
@@ -151,6 +156,7 @@ fn bindgen_test_layout_virtio_net_hdr_v1() {
         );
     }
     test_field_csum_start();
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     fn test_field_csum_offset() {
         assert_eq!(
             unsafe {
@@ -168,6 +174,7 @@ fn bindgen_test_layout_virtio_net_hdr_v1() {
         );
     }
     test_field_csum_offset();
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     fn test_field_num_buffers() {
         assert_eq!(
             unsafe {
@@ -186,3 +193,4 @@ fn bindgen_test_layout_virtio_net_hdr_v1() {
     }
     test_field_num_buffers();
 }
+

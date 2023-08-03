@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use crate::cpu_config::templates::CustomCpuTemplate;
 
 // Get a static CPU template stored as a JSON file.
+#[tracing::instrument(level = "trace", ret(skip), skip(filename))]
 pub fn get_json_template(filename: &str) -> CustomCpuTemplate {
     let json_path = [
         env!("CARGO_MANIFEST_DIR"),
@@ -17,3 +18,4 @@ pub fn get_json_template(filename: &str) -> CustomCpuTemplate {
 
     serde_json::from_str(&std::fs::read_to_string(json_path).unwrap()).unwrap()
 }
+

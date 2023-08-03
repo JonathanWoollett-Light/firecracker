@@ -38,6 +38,7 @@ pub enum RequestType {
 }
 
 impl From<u32> for RequestType {
+    #[tracing::instrument(level = "trace", ret(skip), skip(value))]
     fn from(value: u32) -> Self {
         match value {
             VIRTIO_BLK_T_IN => RequestType::In,
@@ -70,6 +71,7 @@ enum Status {
 }
 
 impl Status {
+    #[tracing::instrument(level = "trace", ret(skip), skip(data_len,transferred_data_len,data_to_mem))]
     fn from_data(data_len: u32, transferred_data_len: u32, data_to_mem: bool) -> Status {
         let num_bytes_to_mem = match data_to_mem {
             true => transferred_data_len,
@@ -98,6 +100,7 @@ pub struct PendingRequest {
 }
 
 impl PendingRequest {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,status,mem))]
     fn write_status_and_finish(self, status: &Status, mem: &GuestMemoryMmap) -> FinishedRequest {
         let (num_bytes_to_mem, status_code) = match status {
             Status::Ok { num_bytes_to_mem } => (*num_bytes_to_mem, VIRTIO_BLK_S_OK),
@@ -137,6 +140,7 @@ impl PendingRequest {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,mem,res))]
     pub fn finish(self, mem: &GuestMemoryMmap, res: Result<u32, IoErr>) -> FinishedRequest {
         let status = match (res, self.r#type) {
             (Ok(transferred_data_len), RequestType::In) => {
@@ -196,6 +200,7 @@ pub struct RequestHeader {
 unsafe impl ByteValued for RequestHeader {}
 
 impl RequestHeader {
+    #[tracing::instrument(level = "trace", ret(skip), skip(request_type,sector))]
     pub fn new(request_type: u32, sector: u64) -> RequestHeader {
         RequestHeader {
             request_type,
@@ -203,6 +208,7 @@ impl RequestHeader {
             sector,
         }
     }
+    #[tracing::instrument(level = "trace", ret(skip), skip(memory,addr))]
     /// Reads the request header from GuestMemoryMmap starting at `addr`.
     ///
     /// Virtio 1.0 specifies that the data is transmitted by the driver in little-endian
@@ -228,6 +234,7 @@ pub struct Request {
 }
 
 impl Request {
+    #[tracing::instrument(level = "trace", ret(skip), skip(avail_desc,mem,num_disk_sectors))]
     pub fn parse(
         avail_desc: &DescriptorChain,
         mem: &GuestMemoryMmap,
@@ -317,6 +324,7 @@ impl Request {
         Ok(req)
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,rate_limiter))]
     pub(crate) fn rate_limit(&self, rate_limiter: &mut RateLimiter) -> bool {
         // If limiter.consume() fails it means there is no more TokenType::Ops
         // budget and rate limiting is in effect.
@@ -337,10 +345,12 @@ impl Request {
         false
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self))]
     fn offset(&self) -> u64 {
         self.sector << SECTOR_SHIFT
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,desc_idx))]
     fn to_pending_request(&self, desc_idx: u16) -> PendingRequest {
         PendingRequest {
             r#type: self.r#type,
@@ -350,6 +360,7 @@ impl Request {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,disk,desc_idx,mem))]
     pub(crate) fn process(
         self,
         disk: &mut DiskProperties,
@@ -458,6 +469,7 @@ mod tests {
     }
 
     impl<'a, 'b> RequestDescriptorChain<'a, 'b> {
+        #[tracing::instrument(level = "trace", ret(skip), skip(self,_e))]
         fn check_parse_err(&self, _e: BlockError) {
             let mut q = self.driver_queue.create_queue();
             let memory = self.driver_queue.memory();
@@ -468,6 +480,7 @@ mod tests {
             ));
         }
 
+        #[tracing::instrument(level = "trace", ret(skip), skip(self,check_data))]
         fn check_parse(&self, check_data: bool) {
             let mut q = self.driver_queue.create_queue();
             let memory = self.driver_queue.memory();
@@ -681,6 +694,7 @@ mod tests {
             ),
         )>;
 
+        #[tracing::instrument(level = "trace", ret(skip), skip())]
         fn arbitrary_with(_: Self::Parameters) -> Self::Strategy {
             // All strategies have the same weight, there is no reson currently to skew
             // the rations to increase the odds of a specific request type.
@@ -703,6 +717,7 @@ mod tests {
     }
 
     impl From<RequestType> for u32 {
+        #[tracing::instrument(level = "trace", ret(skip), skip(request_type))]
         fn from(request_type: RequestType) -> u32 {
             match request_type {
                 RequestType::In => VIRTIO_BLK_T_IN,
@@ -715,6 +730,7 @@ mod tests {
     }
 
     // Returns flags based on the request type.
+    #[tracing::instrument(level = "trace", ret(skip), skip(request_type))]
     fn request_type_flags(request_type: RequestType) -> u16 {
         match request_type {
             RequestType::In => VIRTQ_DESC_F_NEXT | VIRTQ_DESC_F_WRITE,
@@ -725,6 +741,7 @@ mod tests {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     #[allow(clippy::let_with_type_underscore)]
     fn random_request_parse(
     ) -> impl Strategy<Value = (Result<Request, BlockError>, GuestMemoryMmap, Queue)> {
@@ -764,6 +781,7 @@ mod tests {
             )
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(sparsity,data_len,sector,request_type,virtio_request_id,coins_arr))]
     fn do_random_request_parse(
         sparsity: u64,
         data_len: u32,
@@ -962,3 +980,4 @@ mod tests {
         });
     }
 }
+

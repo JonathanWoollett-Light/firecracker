@@ -148,6 +148,7 @@ fn bindgen_test_layout_sock_filter() {
         4usize,
         concat!("Alignment of ", stringify!(sock_filter))
     );
+    
     fn test_field_code() {
         assert_eq!(
             unsafe {
@@ -165,6 +166,7 @@ fn bindgen_test_layout_sock_filter() {
         );
     }
     test_field_code();
+    
     fn test_field_jt() {
         assert_eq!(
             unsafe {
@@ -182,6 +184,7 @@ fn bindgen_test_layout_sock_filter() {
         );
     }
     test_field_jt();
+    
     fn test_field_jf() {
         assert_eq!(
             unsafe {
@@ -199,6 +202,7 @@ fn bindgen_test_layout_sock_filter() {
         );
     }
     test_field_jf();
+    
     fn test_field_k() {
         assert_eq!(
             unsafe {
@@ -235,6 +239,7 @@ fn bindgen_test_layout_sock_fprog() {
         8usize,
         concat!("Alignment of ", stringify!(sock_fprog))
     );
+    
     fn test_field_len() {
         assert_eq!(
             unsafe {
@@ -252,6 +257,7 @@ fn bindgen_test_layout_sock_fprog() {
         );
     }
     test_field_len();
+    
     fn test_field_filter() {
         assert_eq!(
             unsafe {
@@ -271,6 +277,7 @@ fn bindgen_test_layout_sock_fprog() {
     test_field_filter();
 }
 impl Default for sock_fprog {
+    
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -279,3 +286,4 @@ impl Default for sock_fprog {
         }
     }
 }
+

@@ -19,6 +19,7 @@ pub(crate) struct SyscallTable {
 const MAP_CAPACITY: usize = 351;
 
 impl SyscallTable {
+    #[tracing::instrument(level = "trace", ret(skip), skip(arch))]
     pub fn new(arch: TargetArch) -> Self {
         let mut instance = Self {
             arch,
@@ -30,11 +31,13 @@ impl SyscallTable {
         instance
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,sys_name))]
     /// Returns the arch-specific syscall number based on the given name.
     pub fn get_syscall_nr(&self, sys_name: &str) -> Option<i64> {
         self.map.get(sys_name).copied()
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self))]
     /// Populates the arch-specific syscall map.
     fn populate_map(&mut self) {
         match self.arch {
@@ -63,3 +66,4 @@ mod tests {
         assert!(instance_aarch64.get_syscall_nr("nosyscall").is_none());
     }
 }
+

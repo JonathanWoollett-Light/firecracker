@@ -25,6 +25,7 @@ pub enum Restriction {
 }
 
 impl From<&Restriction> for bindings::io_uring_restriction {
+    #[tracing::instrument(level = "trace", ret(skip), skip(restriction))]
     fn from(restriction: &Restriction) -> Self {
         use Restriction::*;
 
@@ -45,3 +46,4 @@ impl From<&Restriction> for bindings::io_uring_restriction {
         instance
     }
 }
+

@@ -8,6 +8,7 @@ use super::super::VmmAction;
 use crate::parsed_request::{checked_id, Error, ParsedRequest};
 use crate::request::{Body, StatusCode};
 
+#[tracing::instrument(level = "trace", ret(skip), skip(body,id_from_path))]
 pub(crate) fn parse_put_net(
     body: &Body,
     id_from_path: Option<&str>,
@@ -40,6 +41,7 @@ pub(crate) fn parse_put_net(
     )))
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip(body,id_from_path))]
 pub(crate) fn parse_patch_net(
     body: &Body,
     id_from_path: Option<&str>,
@@ -159,3 +161,4 @@ mod tests {
         assert!(parse_patch_net(&Body::new(body), Some("foo")).is_err());
     }
 }
+

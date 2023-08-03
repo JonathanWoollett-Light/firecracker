@@ -31,6 +31,7 @@ pub const TEST_INVALID_TEMPLATE_JSON: &str = r#"{
     ]
 }"#;
 
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 /// Builds a sample custom CPU template
 pub fn build_test_template() -> CustomCpuTemplate {
     CustomCpuTemplate {
@@ -52,3 +53,4 @@ pub fn build_test_template() -> CustomCpuTemplate {
         ],
     }
 }
+

@@ -30,7 +30,7 @@ pub struct MacAddr {
 }
 
 impl fmt::Display for MacAddr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let b = &self.bytes;
         write!(
             f,
@@ -41,12 +41,14 @@ impl fmt::Display for MacAddr {
 }
 
 impl From<[u8; 6]> for MacAddr {
+    #[tracing::instrument(level = "trace", ret(skip), skip(bytes))]
     fn from(bytes: [u8; 6]) -> Self {
         Self { bytes }
     }
 }
 
 impl From<MacAddr> for [u8; 6] {
+    #[tracing::instrument(level = "trace", ret(skip), skip(mac))]
     fn from(mac: MacAddr) -> Self {
         mac.bytes
     }
@@ -54,6 +56,7 @@ impl From<MacAddr> for [u8; 6] {
 
 impl FromStr for MacAddr {
     type Err = String;
+    #[tracing::instrument(level = "trace", ret(skip), skip(s))]
     /// Try to turn a `&str` into a `MacAddr` object. The method will return the `str` that failed
     /// to be parsed.
     /// # Arguments
@@ -87,6 +90,7 @@ impl FromStr for MacAddr {
 }
 
 impl MacAddr {
+    #[tracing::instrument(level = "trace", ret(skip), skip(src))]
     /// Create a `MacAddr` from a slice.
     /// Does not check whether `src.len()` == `MAC_ADDR_LEN`.
     /// # Arguments
@@ -109,6 +113,7 @@ impl MacAddr {
         MacAddr { bytes }
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     /// Return the underlying content of this `MacAddr` in bytes.
     /// # Example
     ///
@@ -124,6 +129,7 @@ impl MacAddr {
 }
 
 impl Serialize for MacAddr {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,serializer))]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -133,6 +139,7 @@ impl Serialize for MacAddr {
 }
 
 impl<'de> Deserialize<'de> for MacAddr {
+    #[tracing::instrument(level = "trace", ret(skip), skip(deserializer))]
     fn deserialize<D>(deserializer: D) -> Result<MacAddr, D::Error>
     where
         D: Deserializer<'de>,
@@ -180,3 +187,4 @@ mod tests {
         assert_eq!(s, "\"12:34:56:78:9a:bc\"");
     }
 }
+

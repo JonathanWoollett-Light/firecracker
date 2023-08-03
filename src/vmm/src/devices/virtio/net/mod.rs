@@ -59,3 +59,4 @@ pub enum NetError {
     #[error("The VNET header is missing from the frame")]
     VnetHeaderMissing,
 }
+

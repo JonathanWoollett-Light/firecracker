@@ -45,6 +45,7 @@ pub enum StaticCpuTemplate {
 }
 
 impl StaticCpuTemplate {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self))]
     /// Check if no template specified
     pub fn is_none(&self) -> bool {
         self == &StaticCpuTemplate::None
@@ -72,3 +73,4 @@ mod tests {
         }
     }
 }
+

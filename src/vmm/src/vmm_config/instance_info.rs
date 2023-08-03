@@ -17,7 +17,7 @@ pub enum VmState {
 }
 
 impl Display for VmState {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
             VmState::NotStarted => write!(f, "Not started"),
             VmState::Paused => write!(f, "Paused"),
@@ -27,6 +27,7 @@ impl Display for VmState {
 }
 
 impl ser::Serialize for VmState {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,serializer))]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: ser::Serializer,
@@ -47,3 +48,4 @@ pub struct InstanceInfo {
     /// The name of the application that runs the microVM.
     pub app_name: String,
 }
+

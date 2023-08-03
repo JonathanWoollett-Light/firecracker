@@ -5,6 +5,7 @@ use std::fs::File;
 
 use seccompiler::{apply_filter, deserialize_binary};
 
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 fn main() {
     let args: Vec<String> = args().collect();
     let bpf_path = &args[1];
@@ -15,3 +16,4 @@ fn main() {
     apply_filter(map.get(filter_thread).unwrap()).unwrap();
     panic!("Expected panic.");
 }
+

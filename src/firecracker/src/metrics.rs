@@ -22,6 +22,7 @@ pub(crate) struct PeriodicMetrics {
 }
 
 impl PeriodicMetrics {
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     /// PeriodicMetrics constructor. Can panic on `TimerFd` creation failure.
     pub fn new() -> Self {
         let write_metrics_event_fd = TimerFd::new_custom(ClockId::Monotonic, true, true)
@@ -33,6 +34,7 @@ impl PeriodicMetrics {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,interval_ms))]
     /// Start the periodic metrics engine which will flush metrics every `interval_ms` millisecs.
     pub(crate) fn start(&mut self, interval_ms: u64) {
         // Arm the log write timer.
@@ -47,6 +49,7 @@ impl PeriodicMetrics {
         self.write_metrics();
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self))]
     fn write_metrics(&mut self) {
         if let Err(err) = METRICS.write() {
             METRICS.logger.missed_metrics_count.inc();
@@ -61,6 +64,7 @@ impl PeriodicMetrics {
 }
 
 impl MutEventSubscriber for PeriodicMetrics {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,event))]
     /// Handle a read event (EPOLLIN).
     fn process(&mut self, event: Events, _: &mut EventOps) {
         let source = event.fd();
@@ -85,6 +89,7 @@ impl MutEventSubscriber for PeriodicMetrics {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,ops))]
     fn init(&mut self, ops: &mut EventOps) {
         if let Err(err) = ops.add(Events::new(&self.write_metrics_event_fd, EventSet::IN)) {
             error!("Failed to register metrics event: {}", err);
@@ -122,3 +127,4 @@ pub mod tests {
         assert_eq!(metrics.lock().expect("Unlock failed.").flush_counter, 2);
     }
 }
+

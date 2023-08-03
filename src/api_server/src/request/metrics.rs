@@ -8,6 +8,7 @@ use super::super::VmmAction;
 use crate::parsed_request::{Error, ParsedRequest};
 use crate::request::Body;
 
+#[tracing::instrument(level = "trace", ret(skip), skip(body))]
 pub(crate) fn parse_put_metrics(body: &Body) -> Result<ParsedRequest, Error> {
     METRICS.put_api_requests.metrics_count.inc();
     Ok(ParsedRequest::new_sync(VmmAction::ConfigureMetrics(
@@ -46,3 +47,4 @@ mod tests {
         assert!(parse_put_metrics(&Body::new(invalid_body)).is_err());
     }
 }
+

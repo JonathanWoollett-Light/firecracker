@@ -13,6 +13,7 @@ pub enum TestState {
 }
 
 impl TestState {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,target_version))]
     fn default_state_two(&self, target_version: u16) -> VersionizeResult<TestState> {
         match target_version {
             1 => Ok(TestState::One(2)),
@@ -34,6 +35,7 @@ pub struct A {
 }
 
 impl A {
+    #[tracing::instrument(level = "trace", ret(skip), skip(_source_version))]
     fn default_c(_source_version: u16) -> String {
         "some_string".to_owned()
     }
@@ -226,3 +228,4 @@ fn test_invalid_data_version() {
     expected_err = Error::InvalidDataVersion(0);
     assert_eq!(result.unwrap_err(), expected_err);
 }
+

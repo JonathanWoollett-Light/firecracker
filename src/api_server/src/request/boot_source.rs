@@ -8,6 +8,7 @@ use super::super::VmmAction;
 use crate::parsed_request::{Error, ParsedRequest};
 use crate::request::Body;
 
+#[tracing::instrument(level = "trace", ret(skip), skip(body))]
 pub(crate) fn parse_put_boot_source(body: &Body) -> Result<ParsedRequest, Error> {
     METRICS.put_api_requests.boot_source_count.inc();
     Ok(ParsedRequest::new_sync(VmmAction::ConfigureBootSource(
@@ -43,3 +44,4 @@ mod tests {
         assert!(parsed_req == ParsedRequest::new_sync(VmmAction::ConfigureBootSource(same_body)));
     }
 }
+

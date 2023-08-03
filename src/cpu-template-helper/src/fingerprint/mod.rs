@@ -55,3 +55,4 @@ declare_fingerprint_struct_and_enum!(
     bios_revision: String,
     guest_cpu_config: CustomCpuTemplate
 );
+

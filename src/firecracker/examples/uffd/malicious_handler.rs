@@ -10,6 +10,7 @@ use std::os::unix::io::AsRawFd;
 
 use uffd_utils::create_pf_handler;
 
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 fn main() {
     let uffd_handler = create_pf_handler();
 
@@ -40,3 +41,4 @@ fn main() {
         }
     }
 }
+

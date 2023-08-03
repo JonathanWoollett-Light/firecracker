@@ -7,6 +7,7 @@ use crate::cpu_config::x86_64::custom_cpu_template::{
     CpuidLeafModifier, CpuidRegister, CpuidRegisterModifier,
 };
 
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 /// T2A template
 ///
 /// Provide instruction set feature partity with Intel Cascade Lake or later using T2CL template.
@@ -244,3 +245,4 @@ pub fn t2a() -> CustomCpuTemplate {
         msr_modifiers: vec![],
     }
 }
+

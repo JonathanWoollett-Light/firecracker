@@ -109,3 +109,4 @@ mod tests {
     byte_order_test_read_write!(test_be_u16, write_be_u16, read_be_u16, true, u16);
     byte_order_test_read_write!(test_be_u32, write_be_u32, read_be_u32, true, u32);
 }
+

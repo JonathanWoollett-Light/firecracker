@@ -7,6 +7,7 @@ use vmm::vmm_config::entropy::EntropyDeviceConfig;
 use crate::parsed_request::{Error, ParsedRequest};
 use crate::request::Body;
 
+#[tracing::instrument(level = "trace", ret(skip), skip(body))]
 pub(crate) fn parse_put_entropy(body: &Body) -> Result<ParsedRequest, Error> {
     let cfg = serde_json::from_slice::<EntropyDeviceConfig>(body.raw())?;
     Ok(ParsedRequest::new_sync(VmmAction::SetEntropyDevice(cfg)))
@@ -31,3 +32,4 @@ mod tests {
         assert!(parse_put_entropy(&Body::new(body)).is_ok());
     }
 }
+

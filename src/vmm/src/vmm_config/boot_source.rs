@@ -72,6 +72,7 @@ pub struct BootConfig {
 }
 
 impl BootConfig {
+    #[tracing::instrument(level = "trace", ret(skip), skip(cfg))]
     /// Creates the BootConfig based on a given configuration.
     pub fn new(cfg: &BootSourceConfig) -> Result<Self, BootSourceConfigError> {
         use self::BootSourceConfigError::{
@@ -126,3 +127,4 @@ pub(crate) mod tests {
         );
     }
 }
+

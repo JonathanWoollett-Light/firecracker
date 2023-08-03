@@ -13,12 +13,14 @@ pub struct RTCDevice(pub vm_superio::Rtc<&'static RTCDeviceMetrics>);
 impl std::ops::Deref for RTCDevice {
     type Target = vm_superio::Rtc<&'static RTCDeviceMetrics>;
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
 impl std::ops::DerefMut for RTCDevice {
+    #[tracing::instrument(level = "trace", skip(self))]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
@@ -26,6 +28,7 @@ impl std::ops::DerefMut for RTCDevice {
 
 // Implements Bus functions for AMBA PL031 RTC device
 impl RTCDevice {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,offset,data))]
     pub fn bus_read(&mut self, offset: u64, data: &mut [u8]) {
         if data.len() == 4 {
             // read() function from RTC implementation expects a slice of
@@ -40,6 +43,7 @@ impl RTCDevice {
         }
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,offset,data))]
     pub fn bus_write(&mut self, offset: u64, data: &[u8]) {
         if data.len() == 4 {
             // write() function from RTC implementation expects a slice of
@@ -95,3 +99,4 @@ mod tests {
         assert_eq!(u16::from_le_bytes(data_bad), 0);
     }
 }
+

@@ -113,3 +113,4 @@ pub struct Vm {
     /// The microVM state, which can be `paused` or `resumed`.
     pub state: VmState,
 }
+

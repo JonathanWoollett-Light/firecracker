@@ -3,6 +3,7 @@
 
 use std::net::Ipv4Addr;
 
+#[tracing::instrument(level = "trace", ret(skip), skip(ipv4_addr))]
 /// Checks if an IPv4 address is RFC 3927 compliant.
 /// # Examples
 ///
@@ -61,3 +62,4 @@ mod tests {
         assert!(is_link_local_valid(ipv4_addr));
     }
 }
+

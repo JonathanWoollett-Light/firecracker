@@ -36,6 +36,7 @@ const DEFAULT_API_SOCK_PATH: &str = "/run/firecracker.socket";
 const FIRECRACKER_VERSION: &str = env!("FIRECRACKER_VERSION");
 const MMDS_CONTENT_ARG: &str = "metadata";
 
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 #[cfg(target_arch = "aarch64")]
 /// Enable SSBD mitigation through `prctl`.
 pub fn enable_ssbd_mitigation() {
@@ -72,6 +73,7 @@ pub fn enable_ssbd_mitigation() {
     }
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 fn main_exitable() -> FcExitCode {
     if let Err(err) = register_signal_handlers() {
         error!("Failed to register signal handlers: {}", err);
@@ -411,6 +413,7 @@ fn main_exitable() -> FcExitCode {
     }
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 fn main() {
     // This idiom is the prescribed way to get a clean shutdown of Rust (that will report
     // no leaks in Valgrind or sanitizers).  Calling `unsafe { libc::exit() }` does no
@@ -427,16 +430,19 @@ fn main() {
 }
 
 // Exit gracefully with a generic error code.
+#[tracing::instrument(level = "trace", ret(skip), skip(msg))]
 fn generic_error_exit(msg: &str) -> FcExitCode {
     error!("{}", msg);
     vmm::FcExitCode::GenericError
 }
 
 // Log a warning for any usage of deprecated parameters.
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 #[allow(unused)]
 fn warn_deprecated_parameters() {}
 
 // Print supported snapshot data format versions.
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 fn print_supported_snapshot_versions() {
     let mut versions: Vec<_> = FC_VERSION_TO_SNAP_VERSION
         .iter()
@@ -451,6 +457,7 @@ fn print_supported_snapshot_versions() {
 }
 
 // Print data format of provided snapshot state file.
+#[tracing::instrument(level = "trace", ret(skip), skip(snapshot_path))]
 fn print_snapshot_data_format(snapshot_path: &str) {
     let mut snapshot_reader = File::open(snapshot_path).unwrap_or_else(|err| {
         process::exit(
@@ -478,6 +485,7 @@ fn print_snapshot_data_format(snapshot_path: &str) {
 }
 
 // Configure and start a microVM as described by the command-line JSON.
+#[tracing::instrument(level = "trace", ret(skip), skip(seccomp_filters,event_manager,config_json,instance_info,boot_timer_enabled,mmds_size_limit,metadata_json))]
 fn build_microvm_from_json(
     seccomp_filters: &BpfThreadMap,
     event_manager: &mut EventManager,
@@ -512,6 +520,7 @@ fn build_microvm_from_json(
     Ok((vm_resources, vmm))
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip(seccomp_filters,config_json,instance_info,bool_timer_enabled,mmds_size_limit,metadata_json))]
 fn run_without_api(
     seccomp_filters: &BpfThreadMap,
     config_json: Option<String>,
@@ -558,3 +567,4 @@ fn run_without_api(
         }
     }
 }
+

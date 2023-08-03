@@ -8,6 +8,7 @@ use super::super::VmmAction;
 use crate::parsed_request::{Error, ParsedRequest};
 use crate::request::Body;
 
+#[tracing::instrument(level = "trace", ret(skip), skip(body))]
 pub(crate) fn parse_put_cpu_config(body: &Body) -> Result<ParsedRequest, Error> {
     METRICS.put_api_requests.cpu_cfg_count.inc();
 
@@ -90,3 +91,4 @@ mod tests {
         assert!(matches!(invalid_put_result, Err(Error::SerdeJson(_))));
     }
 }
+

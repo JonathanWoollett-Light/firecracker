@@ -41,6 +41,7 @@ pub struct GicVcpuState {
 }
 
 impl<T: Versionize> Versionize for GicRegState<T> {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,writer,version_map,app_version))]
     fn serialize<W: std::io::Write>(
         &self,
         writer: &mut W,
@@ -52,6 +53,7 @@ impl<T: Versionize> Versionize for GicRegState<T> {
         Versionize::serialize(chunks, writer, version_map, app_version)
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(reader,version_map,app_version))]
     fn deserialize<R: std::io::Read>(
         reader: &mut R,
         version_map: &VersionMap,
@@ -62,6 +64,7 @@ impl<T: Versionize> Versionize for GicRegState<T> {
         Ok(Self { chunks })
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     fn version() -> u16 {
         1
     }
@@ -184,7 +187,9 @@ impl SimpleReg {
 }
 
 impl MmioReg for SimpleReg {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self))]
     fn range(&self) -> Range<u64> {
         self.offset..self.offset + u64::from(self.size)
     }
 }
+

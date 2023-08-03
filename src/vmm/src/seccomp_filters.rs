@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use seccompiler::BpfThreadMap;
 
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 /// Retrieve empty seccomp filters.
 pub fn get_empty_filters() -> BpfThreadMap {
     let mut map = BpfThreadMap::new();
@@ -12,3 +13,4 @@ pub fn get_empty_filters() -> BpfThreadMap {
     map.insert("vcpu".to_string(), Arc::new(vec![]));
     map
 }
+

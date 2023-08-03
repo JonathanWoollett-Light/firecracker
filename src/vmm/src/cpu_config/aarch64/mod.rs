@@ -25,6 +25,7 @@ pub struct CpuConfiguration {
 }
 
 impl CpuConfiguration {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,template))]
     /// Creates new guest CPU config based on the provided template
     pub fn apply_template(
         mut self,
@@ -47,9 +48,11 @@ impl CpuConfiguration {
         Ok(self)
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self))]
     /// Returns ids of registers that are changed
     /// by this template
     pub fn register_ids(&self) -> Vec<u64> {
         self.regs.iter().map(|reg| reg.id).collect()
     }
 }
+

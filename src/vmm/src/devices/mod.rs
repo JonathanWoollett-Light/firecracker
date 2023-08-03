@@ -22,11 +22,13 @@ use crate::devices::virtio::{QueueError, VsockError};
 
 // Function used for reporting error in terms of logging
 // but also in terms of METRICS net event fails.
+#[tracing::instrument(level = "trace", ret(skip), skip(err))]
 pub(crate) fn report_net_event_fail(err: DeviceError) {
     error!("{:?}", err);
     METRICS.net.event_fails.inc();
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip(err))]
 pub(crate) fn report_balloon_event_fail(err: virtio::balloon::BalloonError) {
     error!("{:?}", err);
     METRICS.balloon.event_fails.inc();
@@ -49,3 +51,4 @@ pub enum DeviceError {
     /// Vsock device error.
     VsockError(VsockError),
 }
+

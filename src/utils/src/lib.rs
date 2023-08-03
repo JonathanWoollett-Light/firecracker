@@ -23,6 +23,7 @@ pub mod vm_memory;
 
 use std::result::Result;
 
+#[tracing::instrument(level = "trace", ret(skip), skip())]
 /// Return the default page size of the platform, in bytes.
 pub fn get_page_size() -> Result<usize, errno::Error> {
     // SAFETY: Safe because the parameters are valid.
@@ -31,3 +32,4 @@ pub fn get_page_size() -> Result<usize, errno::Error> {
         ps => Ok(usize::try_from(ps).unwrap()),
     }
 }
+

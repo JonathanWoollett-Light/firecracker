@@ -50,3 +50,4 @@ pub enum VsockUnixBackendError {
 type MuxerConnection = super::csm::VsockConnection<std::os::unix::net::UnixStream>;
 
 impl VsockConnectionBackend for std::os::unix::net::UnixStream {}
+

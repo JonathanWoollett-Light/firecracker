@@ -14,17 +14,19 @@ unsafe impl ByteValued for io_uring_sqe {}
 pub(crate) struct Sqe(pub(crate) io_uring_sqe);
 
 impl fmt::Debug for Sqe {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Sqe").finish()
     }
 }
 
 impl Sqe {
+    #[tracing::instrument(level = "trace", ret(skip), skip(inner))]
     /// Construct a new sqe.
     pub(crate) fn new(inner: io_uring_sqe) -> Self {
         Self(inner)
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self))]
     /// Consume the sqe and return the `user_data`.
     ///
     /// # Safety
@@ -50,3 +52,4 @@ mod tests {
         assert_eq!(unsafe { sqe.user_data::<u8>() }, 10);
     }
 }
+

@@ -64,3 +64,4 @@ pub enum BlockError {
     // Persistence error.
     Persist(crate::devices::virtio::persist::PersistError),
 }
+

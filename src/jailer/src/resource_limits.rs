@@ -24,6 +24,7 @@ pub enum Resource {
 }
 
 impl From<Resource> for u32 {
+    #[tracing::instrument(level = "trace", ret(skip), skip(resource))]
     fn from(resource: Resource) -> u32 {
         match resource {
             #[allow(clippy::unnecessary_cast)]
@@ -45,6 +46,7 @@ impl From<Resource> for u32 {
 }
 
 impl From<Resource> for i32 {
+    #[tracing::instrument(level = "trace", ret(skip), skip(resource))]
     fn from(resource: Resource) -> i32 {
         match resource {
             #[allow(clippy::unnecessary_cast)]
@@ -66,7 +68,7 @@ impl From<Resource> for i32 {
 }
 
 impl Display for Resource {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Resource::RlimitFsize => write!(f, "size of file"),
             Resource::RlimitNoFile => write!(f, "number of file descriptors"),
@@ -81,6 +83,7 @@ pub struct ResourceLimits {
 }
 
 impl Default for ResourceLimits {
+    #[tracing::instrument(level = "trace", ret(skip), skip())]
     fn default() -> Self {
         ResourceLimits {
             file_size: None,
@@ -90,6 +93,7 @@ impl Default for ResourceLimits {
 }
 
 impl ResourceLimits {
+    #[tracing::instrument(level = "trace", ret(skip), skip(self))]
     pub fn install(self) -> Result<()> {
         if let Some(file_size) = self.file_size {
             // Set file size limit.
@@ -101,6 +105,7 @@ impl ResourceLimits {
         Ok(())
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(resource,target))]
     fn set_limit(resource: Resource, target: libc::rlim_t) -> Result<()> {
         let rlim: libc::rlimit = libc::rlimit {
             rlim_cur: target,
@@ -114,10 +119,12 @@ impl ResourceLimits {
             .map_err(|_| Error::Setrlimit(resource.to_string()))
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,file_size))]
     pub fn set_file_size(&mut self, file_size: u64) {
         self.file_size = Some(file_size);
     }
 
+    #[tracing::instrument(level = "trace", ret(skip), skip(self,no_file))]
     pub fn set_no_file(&mut self, no_file: u64) {
         self.no_file = no_file;
     }
@@ -188,3 +195,4 @@ mod tests {
         assert_eq!(rlim.rlim_max, new_limit);
     }
 }
+

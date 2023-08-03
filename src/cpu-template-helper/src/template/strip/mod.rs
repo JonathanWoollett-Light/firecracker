@@ -25,6 +25,7 @@ pub enum Error {
     NumberOfInputs,
 }
 
+#[tracing::instrument(level = "trace", ret(skip), skip(maps))]
 fn strip_common<K, V>(maps: &mut [HashMap<K, RegisterValueFilter<V>>]) -> Result<(), Error>
 where
     K: ModifierMapKey + Debug,
@@ -149,3 +150,4 @@ mod tests {
         assert_eq!(input, expected);
     }
 }
+
