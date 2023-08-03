@@ -381,7 +381,6 @@ pub mod test {
     }
 
     impl fmt::Debug for TestHelper<'_> {
-        #[tracing::instrument(level = "trace", ret(skip), skip(self,f))]
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             f.debug_struct("TestHelper")
                 .field("event_manager", &"?")

@@ -395,7 +395,6 @@ pub(crate) mod test {
     }
 
     impl<T: VirtioTestDevice + MutEventSubscriber + Debug> fmt::Debug for VirtioTestHelper<'_, T> {
-        #[tracing::instrument(level = "trace", ret(skip), skip(self,f))]
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             f.debug_struct("VirtioTestHelper")
                 .field("event_manager", &"?")

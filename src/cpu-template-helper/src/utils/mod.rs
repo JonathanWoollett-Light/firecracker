@@ -127,7 +127,6 @@ pub mod tests {
 
     impl ModifierMapKey for MockModifierMapKey {}
     impl Display for MockModifierMapKey {
-        #[tracing::instrument(level = "trace", ret(skip), skip(self,f))]
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             write!(f, "ID={:#x}", self.0)
         }

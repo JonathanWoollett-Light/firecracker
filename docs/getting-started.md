@@ -99,7 +99,7 @@ sudo ./firecracker/tools/devtool build
 API_SOCKET="/tmp/firecracker.socket"
 
 # Remove API unix socket
-rm -f $API_SOCKET
+sudo rm -f $API_SOCKET
 
 # Run firecracker
 ./firecracker/build/cargo_target/${ARCH}-unknown-linux-musl/debug/firecracker \
@@ -140,8 +140,7 @@ touch $LOGFILE
 # Set log file
 curl -X PUT --unix-socket "${API_SOCKET}" \
     --data "{
-        \"log_path\": \"${LOGFILE}\",
-        \"level\": \"Debug\",
+        \"level\": \"Trace\",
         \"show_level\": true,
         \"show_log_origin\": true
     }" \

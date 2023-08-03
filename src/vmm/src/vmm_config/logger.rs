@@ -61,13 +61,11 @@ pub enum Level {
     Trace,
 }
 impl Default for Level {
-    #[tracing::instrument(level = "trace", ret(skip), skip())]
     fn default() -> Self {
         Self::Warn
     }
 }
 impl From<Level> for tracing::Level {
-    #[tracing::instrument(level = "trace", ret(skip), skip(level))]
     fn from(level: Level) -> tracing::Level {
         match level {
             Level::Error => tracing::Level::ERROR,
@@ -79,7 +77,6 @@ impl From<Level> for tracing::Level {
     }
 }
 impl From<log::Level> for Level {
-    #[tracing::instrument(level = "trace", ret(skip), skip(level))]
     fn from(level: log::Level) -> Level {
         match level {
             log::Level::Error => Level::Error,
@@ -92,7 +89,6 @@ impl From<log::Level> for Level {
 }
 impl FromStr for Level {
     type Err = <log::Level as FromStr>::Err;
-    #[tracing::instrument(level = "trace", ret(skip), skip(s))]
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         // This is required to avoid a breaking change.
         match s {
@@ -159,7 +155,6 @@ pub struct LoggerHandles {
 }
 
 impl LoggerConfig {
-    #[tracing::instrument(level = "trace", ret(skip), skip(self))]
     /// Initializes the logger.
     ///
     /// Returns handles that can be used to dynamically re-configure the logger.
@@ -205,7 +200,8 @@ impl LoggerConfig {
         // Setup the env layer
         let env = EnvFilter::builder()
             .with_default_directive(LevelFilter::TRACE.into())
-            .from_env_lossy();
+            .parse("api_server")
+            .unwrap();
 
         Registry::default()
             .with(env)
@@ -225,7 +221,6 @@ impl LoggerConfig {
             fmt: fmt_handle,
         })
     }
-    #[tracing::instrument(level = "trace", ret(skip), skip(self,filter,fmt))]
     /// Updates the logger using the given handles.
     pub fn update(
         &self,
@@ -272,7 +267,6 @@ impl LoggerConfig {
 #[derive(Debug)]
 struct LoggerFormatter;
 impl LoggerFormatter {
-    #[tracing::instrument(level = "trace", ret(skip), skip(show_level,show_log_origin))]
     pub fn new(show_level: bool, show_log_origin: bool) -> Self {
         SHOW_LEVEL.store(show_level, SeqCst);
         SHOW_LOG_ORIGIN.store(show_log_origin, SeqCst);
@@ -288,7 +282,6 @@ where
     S: Collect + for<'a> LookupSpan<'a>,
     N: for<'a> FormatFields<'a> + 'static,
 {
-    #[tracing::instrument(level = "trace", ret(skip), skip(self,ctx,writer,event))]
     fn format_event(
         &self,
         ctx: &FmtContext<'_, S, N>,

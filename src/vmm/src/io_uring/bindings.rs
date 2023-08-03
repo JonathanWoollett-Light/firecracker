@@ -43,7 +43,6 @@ impl<T> __IncompleteArrayField<T> {
     }
 }
 impl<T> ::std::fmt::Debug for __IncompleteArrayField<T> {
-    #[tracing::instrument(level = "trace", ret(skip), skip(self,fmt))]
     fn fmt(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         fmt.write_str("__IncompleteArrayField")
     }
