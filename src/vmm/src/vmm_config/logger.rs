@@ -12,7 +12,7 @@ use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 use tracing::{Collect, Event};
-use tracing_subscriber::filter::LevelFilter;
+use tracing_subscriber::filter::{EnvFilter, ParseError};
 use tracing_subscriber::fmt::format::{self, FormatEvent, FormatFields};
 use tracing_subscriber::fmt::writer::BoxMakeWriter;
 use tracing_subscriber::fmt::FmtContext;
@@ -108,12 +108,16 @@ impl FromStr for Level {
 pub struct LoggerConfig {
     /// Named pipe or file used as output for logs.
     pub log_path: Option<std::path::PathBuf>,
+    // TODO Deprecate this API argument.
     /// The level of the Logger.
     pub level: Option<Level>,
     /// When enabled, the logger will append to the output the severity of the log entry.
     pub show_level: Option<bool>,
     /// When enabled, the logger will append the origin of the log entry.
     pub show_log_origin: Option<bool>,
+    /// Filter directive used to construct [`tracing::EnvFilter`]. If this is `Some` it overrides
+    /// `self.level`.
+    pub filter: Option<String>,
 }
 
 /// Error type for [`LoggerConfig::init`].
@@ -125,6 +129,9 @@ pub enum InitLoggerError {
     /// Failed to open target file.
     #[error("Failed to open target file: {0}")]
     File(std::io::Error),
+    /// Failed to parse filter directive.
+    #[error("Failed to parse filter directive: {0}")]
+    Env(ParseError),
 }
 
 type ReloadError = tracing_subscriber::reload::Error;
@@ -138,18 +145,29 @@ pub enum UpdateLoggerError {
     /// Failed to modify format subscriber writer.
     #[error("Failed to modify format subscriber writer: {0}")]
     Fmt(ReloadError),
-    /// Failed to modify filter level.
-    #[error("Failed to modify filter level: {0}")]
-    Filter(ReloadError),
+    /// Failed to modify level filter.
+    #[error("Failed to modify level filter: {0}")]
+    Level(ReloadError),
+    /// Failed to construct level filter.
+    #[error("Failed to construct level filter: {0}")]
+    NewLevel(ParseError),
+    /// Failed to modify filter.
+    #[error("Failed to modify filter: {0}")]
+    Env(ReloadError),
+    /// Failed to construct filter.
+    #[error("Failed to construct filter: {0}")]
+    NewEnv(ParseError),
 }
 
-type FmtInner = Layered<tracing_subscriber::reload::Subscriber<LevelFilter>, Registry>;
+type ReloadSubscriber<S> = tracing_subscriber::reload::Subscriber<S>;
+
+type FmtInner = Layered<ReloadSubscriber<EnvFilter>, Registry>;
 type FmtType = FmtSubscriber<FmtInner, format::DefaultFields, LoggerFormatter, BoxMakeWriter>;
 
 /// Handles that allow re-configuring the logger.
 #[derive(Debug)]
 pub struct LoggerHandles {
-    filter: Handle<LevelFilter>,
+    env: Handle<EnvFilter>,
     fmt: Handle<FmtType>,
 }
 
@@ -158,11 +176,17 @@ impl LoggerConfig {
     ///
     /// Returns handles that can be used to dynamically re-configure the logger.
     pub fn init(&self) -> Result<LoggerHandles, InitLoggerError> {
-        // Setup filter
-        let (filter, filter_handle) = {
-            let level = tracing::Level::from(self.level.unwrap_or_default());
-            let filter_subscriber = LevelFilter::from_level(level);
-            tracing_subscriber::reload::Subscriber::new(filter_subscriber)
+        // Setup the env layer
+        let (env, env_handle) = {
+            let env_subscriber = match &self.filter {
+                Some(s) => EnvFilter::try_new(s),
+                None => {
+                    let level = tracing::Level::from(self.level.unwrap_or_default());
+                    EnvFilter::try_new(level.to_string().to_lowercase())
+                }
+            }
+            .map_err(InitLoggerError::Env)?;
+            ReloadSubscriber::new(env_subscriber)
         };
 
         // Setup fmt layer
@@ -193,11 +217,11 @@ impl LoggerConfig {
                     self.show_log_origin.unwrap_or_default(),
                 ))
                 .with_writer(fmt_writer);
-            tracing_subscriber::reload::Subscriber::new(fmt_subscriber)
+            ReloadSubscriber::new(fmt_subscriber)
         };
 
         Registry::default()
-            .with(filter)
+            .with(env)
             .with(fmt)
             .try_init()
             .map_err(InitLoggerError::Init)?;
@@ -209,14 +233,14 @@ impl LoggerConfig {
         tracing::trace!("Trace level logs enabled.");
 
         Ok(LoggerHandles {
-            filter: filter_handle,
+            env: env_handle,
             fmt: fmt_handle,
         })
     }
     /// Updates the logger using the given handles.
     pub fn update(
         &self,
-        LoggerHandles { filter, fmt }: &LoggerHandles,
+        LoggerHandles { env, fmt }: &LoggerHandles,
     ) -> Result<(), UpdateLoggerError> {
         // Update the log path
         if let Some(log_path) = &self.log_path {
@@ -235,11 +259,18 @@ impl LoggerConfig {
                 .map_err(UpdateLoggerError::Fmt)?;
         }
 
-        // Update the filter level
-        if let Some(level) = self.level {
-            filter
-                .modify(|f| *f = LevelFilter::from_level(tracing::Level::from(level)))
-                .map_err(UpdateLoggerError::Filter)?;
+        // Update the filter
+        match (self.level, &self.filter) {
+            (Some(level), None) => {
+                let new = EnvFilter::try_new(format!("={}", tracing::Level::from(level)))
+                    .map_err(UpdateLoggerError::NewEnv)?;
+                env.modify(|e| *e = new).map_err(UpdateLoggerError::Env)?;
+            }
+            (_, Some(filter)) => {
+                let new = EnvFilter::try_new(filter).map_err(UpdateLoggerError::NewLevel)?;
+                env.modify(|e| *e = new).map_err(UpdateLoggerError::Level)?;
+            }
+            (None, None) => {}
         }
 
         // Update if the logger shows the level

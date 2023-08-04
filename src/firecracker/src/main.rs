@@ -178,6 +178,11 @@ fn main_exitable() -> FcExitCode {
                 .help("Path to a fifo or a file used for configuring the logger on startup."),
         )
         .arg(
+            Argument::new("log-filter")
+                .takes_value(true)
+                .help("Filter for logging, if set overrides `level`."),
+        )
+        .arg(
             Argument::new("level")
                 .takes_value(true)
                 .requires("log-path")
@@ -296,6 +301,7 @@ fn main_exitable() -> FcExitCode {
             level,
             show_level: Some(arguments.flag_present("show-level")),
             show_log_origin: Some(arguments.flag_present("show-log-origin")),
+            filter: arguments.single_value("log-filter").cloned(),
         };
         match logger_config.init() {
             Ok(h) => h,

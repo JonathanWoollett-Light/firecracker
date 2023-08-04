@@ -41,6 +41,7 @@ mod tests {
             level: Some(Level::Warn),
             show_level: Some(false),
             show_log_origin: Some(false),
+            filter: None,
         };
         match vmm_action_from_request(parse_put_logger(&Body::new(body)).unwrap()) {
             VmmAction::ConfigureLogger(cfg) => assert_eq!(cfg, expected_cfg),
@@ -59,6 +60,7 @@ mod tests {
             level: Some(Level::Debug),
             show_level: Some(false),
             show_log_origin: Some(false),
+            filter: None,
         };
         match vmm_action_from_request(parse_put_logger(&Body::new(body)).unwrap()) {
             VmmAction::ConfigureLogger(cfg) => assert_eq!(cfg, expected_cfg),
