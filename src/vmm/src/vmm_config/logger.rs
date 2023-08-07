@@ -11,16 +11,16 @@ use std::sync::atomic::Ordering::SeqCst;
 use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
-use tracing::{Collect, Event};
+use tracing::Event;
 use tracing_subscriber::filter::{EnvFilter, ParseError};
 use tracing_subscriber::fmt::format::{self, FormatEvent, FormatFields};
 use tracing_subscriber::fmt::writer::BoxMakeWriter;
 use tracing_subscriber::fmt::FmtContext;
 use tracing_subscriber::registry::{LookupSpan, Registry};
+use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::reload::Handle;
-use tracing_subscriber::subscribe::{CollectExt, Layered};
-use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::FmtSubscriber;
+use tracing_subscriber::layer::Layered;
+use tracing_subscriber::fmt::Layer as FmtLayer;
 
 // TODO: See below doc comment.
 /// Mimic of `log::Level`.
@@ -142,8 +142,8 @@ pub enum UpdateLoggerError {
     /// Failed to open target file.
     #[error("Failed to open target file: {0}")]
     File(std::io::Error),
-    /// Failed to modify format subscriber writer.
-    #[error("Failed to modify format subscriber writer: {0}")]
+    /// Failed to modify format layer writer.
+    #[error("Failed to modify format layer writer: {0}")]
     Fmt(ReloadError),
     /// Failed to modify level filter.
     #[error("Failed to modify level filter: {0}")]
@@ -159,16 +159,16 @@ pub enum UpdateLoggerError {
     NewEnv(ParseError),
 }
 
-type ReloadSubscriber<S> = tracing_subscriber::reload::Subscriber<S>;
+type ReloadLayer<S> = tracing_subscriber::reload::Layer<S, i32>;
 
-type FmtInner = Layered<ReloadSubscriber<EnvFilter>, Registry>;
-type FmtType = FmtSubscriber<FmtInner, format::DefaultFields, LoggerFormatter, BoxMakeWriter>;
+type FmtInner = Layered<ReloadLayer<EnvFilter>, Registry>;
+type FmtType = FmtLayer<FmtInner, format::DefaultFields, LoggerFormatter, BoxMakeWriter>;
 
 /// Handles that allow re-configuring the logger.
 #[derive(Debug)]
 pub struct LoggerHandles {
-    env: Handle<EnvFilter>,
-    fmt: Handle<FmtType>,
+    env: Handle<EnvFilter, i32>,
+    fmt: Handle<FmtType, i32>,
 }
 
 impl LoggerConfig {
@@ -186,7 +186,7 @@ impl LoggerConfig {
                 }
             }
             .map_err(InitLoggerError::Env)?;
-            ReloadSubscriber::new(env_subscriber)
+            ReloadLayer::new(env_subscriber)
         };
 
         // Setup fmt layer
@@ -211,13 +211,13 @@ impl LoggerConfig {
                 }
                 None => BoxMakeWriter::new(std::io::stdout),
             };
-            let fmt_subscriber = FmtSubscriber::new()
+            let fmt_subscriber = FmtLayer::new()
                 .event_format(LoggerFormatter::new(
                     self.show_level.unwrap_or_default(),
                     self.show_log_origin.unwrap_or_default(),
                 ))
                 .with_writer(fmt_writer);
-            ReloadSubscriber::new(fmt_subscriber)
+            ReloadLayer::new(fmt_subscriber)
         };
 
         Registry::default()
@@ -302,7 +302,7 @@ static SHOW_LOG_ORIGIN: AtomicBool = AtomicBool::new(false);
 
 impl<S, N> FormatEvent<S, N> for LoggerFormatter
 where
-    S: Collect + for<'a> LookupSpan<'a>,
+    S: tracing::Subscriber + for<'a> LookupSpan<'a>,
     N: for<'a> FormatFields<'a> + 'static,
 {
     fn format_event(
