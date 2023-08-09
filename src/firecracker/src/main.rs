@@ -75,14 +75,23 @@ impl From<MainError> for ExitCode {
     }
 }
 
-fn main() -> ExitCode {
-    let result = main_exec();
-    if let Err(e) = result {
-        error!("{}", e);
-        e.into()
-    } else {
-        ExitCode::SUCCESS
+/// Exit result wrapper to return specific error codes, log `err.to_string()` and write
+/// `format!({err:?})` to stderr.
+struct MainExit(Result<(), MainError>);
+impl std::process::Termination for MainExit {
+    fn report(self) -> ExitCode {
+        if let Err(err) = self.0 {
+            error!("{err}");
+            eprintln!("Error: {err:?}");
+            ExitCode::from(err)
+        } else {
+            ExitCode::SUCCESS
+        }
     }
+}
+
+fn main() -> MainExit {
+    MainExit(main_exec())
 }
 
 fn main_exec() -> Result<(), MainError> {
