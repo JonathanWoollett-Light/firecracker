@@ -43,6 +43,7 @@ pub struct ApiServer {
 }
 
 impl ApiServer {
+    #[tracing::instrument(level = "trace", skip(api_request_sender,vmm_response_receiver,to_vmm_fd))]
     /// Constructor for `ApiServer`.
     ///
     /// Returns the newly formed `ApiServer`.
@@ -59,6 +60,7 @@ impl ApiServer {
         }
     }
 
+    #[tracing::instrument(level = "trace", skip(self,server,process_time_reporter,seccomp_filter,api_payload_limit))]
     /// Runs the Api Server.
     ///
     /// # Arguments
@@ -128,6 +130,7 @@ impl ApiServer {
         }
     }
 
+    #[tracing::instrument(level = "trace", skip(self,request,request_processing_start_us))]
     /// Handles an API request received through the associated socket.
     pub fn handle_request(
         &mut self,
@@ -158,6 +161,7 @@ impl ApiServer {
         }
     }
 
+    #[tracing::instrument(level = "trace", skip(self,vmm_action,request_processing_start_us))]
     fn serve_vmm_action_request(
         &mut self,
         vmm_action: Box<VmmAction>,
@@ -199,6 +203,7 @@ impl ApiServer {
         response
     }
 
+    #[tracing::instrument(level = "trace", skip(status,body))]
     /// An HTTP response which also includes a body.
     pub(crate) fn json_response<T: Into<String> + Debug>(status: StatusCode, body: T) -> Response {
         let mut response = Response::new(Version::Http11, status);
@@ -206,6 +211,7 @@ impl ApiServer {
         response
     }
 
+    #[tracing::instrument(level = "trace", skip(msg))]
     fn json_fault_message<T: AsRef<str> + serde::Serialize + Debug>(msg: T) -> String {
         json!({ "fault_message": msg }).to_string()
     }

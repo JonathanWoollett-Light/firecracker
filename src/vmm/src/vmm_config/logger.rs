@@ -28,6 +28,7 @@ pub enum LoggerLevel {
 }
 
 impl LoggerLevel {
+    #[tracing::instrument(level = "trace", skip(level))]
     /// Converts from a logger level value of type String to the corresponding LoggerLevel variant
     /// or returns an error if the parsing failed.
     pub fn from_string(level: String) -> Result<Self, LoggerConfigError> {
@@ -42,6 +43,7 @@ impl LoggerLevel {
 }
 
 impl From<LoggerLevel> for LevelFilter {
+    #[tracing::instrument(level = "trace", skip(logger_level))]
     fn from(logger_level: LoggerLevel) -> Self {
         match logger_level {
             LoggerLevel::Error => LevelFilter::Error,
@@ -53,6 +55,7 @@ impl From<LoggerLevel> for LevelFilter {
 }
 
 // This allows `level` field, which is an enum, to be case-insensitive.
+#[tracing::instrument(level = "trace", skip(deserializer))]
 fn case_insensitive<'de, D>(deserializer: D) -> Result<LoggerLevel, D::Error>
 where
     D: Deserializer<'de>,
@@ -88,6 +91,7 @@ pub struct LoggerConfig {
 }
 
 impl LoggerConfig {
+    #[tracing::instrument(level = "trace", skip(log_path,level,show_level,show_log_origin))]
     /// Creates a new LoggerConfig.
     pub fn new(
         log_path: PathBuf,
@@ -112,6 +116,7 @@ pub enum LoggerConfigError {
     InitializationFailure(String),
 }
 
+#[tracing::instrument(level = "trace", skip(logger_cfg,instance_info))]
 /// Configures the logger as described in `logger_cfg`.
 pub fn init_logger(
     logger_cfg: LoggerConfig,
