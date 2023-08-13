@@ -32,7 +32,7 @@ impl GetCpuTemplate for Option<CpuTemplateType> {
                                 return Err(CpuVendorMismatched);
                             }
                             if !CpuModel::get_cpu_model().is_at_least_cascade_lake() {
-                                log::warn!(
+                                logger::warn!(
                                     "On processors that do not enumerate FBSDP_NO, PSDP_NO and \
                                      SBDR_SSDP_NO on IA32_ARCH_CAPABILITIES MSR, the guest kernel \
                                      does not apply the mitigation against MMIO stale data \
