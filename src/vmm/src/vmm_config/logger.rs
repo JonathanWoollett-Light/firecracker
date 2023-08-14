@@ -217,7 +217,7 @@ impl LoggerConfig {
             }
             (Some(level), None) => {
                 *FILTER.lock().unwrap() = FilterArgs {
-                    file: None,
+                    file: Some(String::from("src/api_server")),
                     module: None,
                     level: Some(log::LevelFilter::from(level)),
                 };
