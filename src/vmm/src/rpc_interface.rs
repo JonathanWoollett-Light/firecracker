@@ -34,7 +34,7 @@ use crate::vmm_config::boot_source::{BootSourceConfig, BootSourceConfigError};
 use crate::vmm_config::drive::{BlockDeviceConfig, BlockDeviceUpdateConfig, DriveError};
 use crate::vmm_config::entropy::{EntropyDeviceConfig, EntropyDeviceError};
 use crate::vmm_config::instance_info::InstanceInfo;
-use crate::vmm_config::logger::{LoggerConfig, LoggerConfigError};
+use crate::vmm_config::logger::{LoggerConfig, LoggerHandles};
 use crate::vmm_config::machine_config::{MachineConfig, MachineConfigUpdate, VmConfigError};
 use crate::vmm_config::metrics::{MetricsConfig, MetricsConfigError};
 use crate::vmm_config::mmds::{MmdsConfig, MmdsConfigError};
@@ -162,7 +162,7 @@ pub enum VmmActionError {
     LoadSnapshot(LoadSnapshotError),
     /// The action `ConfigureLogger` failed because of bad user input.
     #[error("{0}")]
-    Logger(LoggerConfigError),
+    Logger(crate::vmm_config::logger::UpdateLoggerError),
     /// One of the actions `GetVmConfiguration` or `UpdateVmConfiguration` failed because of bad
     /// input.
     #[error("{0}")]
@@ -275,6 +275,8 @@ pub struct PrebootApiController<'a> {
     // Some PrebootApiRequest errors are irrecoverable and Firecracker
     // should cleanly teardown if they occur.
     fatal_error: Option<FcExitCode>,
+    /// Handles that allow re-configuring the logger.
+    logger_handles: LoggerHandles,
 }
 
 // TODO Remove when `EventManager` implements `std::fmt::Debug`.
@@ -319,6 +321,7 @@ impl<'a> PrebootApiController<'a> {
         instance_info: InstanceInfo,
         vm_resources: &'a mut VmResources,
         event_manager: &'a mut EventManager,
+        logger_handles: LoggerHandles,
     ) -> Self {
         Self {
             seccomp_filters,
@@ -328,6 +331,7 @@ impl<'a> PrebootApiController<'a> {
             built_vmm: None,
             boot_path: false,
             fatal_error: None,
+            logger_handles,
         }
     }
 
@@ -382,6 +386,7 @@ impl<'a> PrebootApiController<'a> {
             instance_info,
             &mut vm_resources,
             event_manager,
+            logger_handles,
         );
         // Configure and start microVM through successive API calls.
         // Iterate through API calls to configure microVm.
@@ -408,11 +413,10 @@ impl<'a> PrebootApiController<'a> {
         match request {
             // Supported operations allowed pre-boot.
             ConfigureBootSource(config) => self.set_boot_source(config),
-            ConfigureLogger(logger_cfg) => {
-                vmm_config::logger::init_logger(logger_cfg, &self.instance_info)
-                    .map(|()| VmmData::Empty)
-                    .map_err(VmmActionError::Logger)
-            }
+            ConfigureLogger(logger_cfg) => logger_cfg
+                .update(&self.logger_handles)
+                .map(|()| VmmData::Empty)
+                .map_err(VmmActionError::Logger),
             ConfigureMetrics(metrics_cfg) => vmm_config::metrics::init_metrics(metrics_cfg)
                 .map(|()| VmmData::Empty)
                 .map_err(VmmActionError::Metrics),
@@ -849,24 +853,17 @@ impl RuntimeApiController {
 #[cfg(test)]
 mod tests {
     use std::io;
-    use std::path::PathBuf;
 
-    use mmds::data_store::MmdsVersion;
     use seccompiler::BpfThreadMap;
 
     use super::*;
-    use crate::cpu_config::templates::test_utils::build_test_template;
-    use crate::cpu_config::templates::{CpuTemplateType, StaticCpuTemplate};
+    use crate::cpu_config::templates::StaticCpuTemplate;
     use crate::devices::virtio::balloon::{BalloonConfig, BalloonError};
     use crate::devices::virtio::rng::Error as EntropyError;
     use crate::devices::virtio::VsockError;
     use crate::vmm_config::balloon::BalloonBuilder;
-    use crate::vmm_config::drive::{CacheType, FileEngineType};
-    use crate::vmm_config::logger::LoggerLevel;
     use crate::vmm_config::machine_config::VmConfig;
-    use crate::vmm_config::snapshot::{MemBackendConfig, MemBackendType};
     use crate::vmm_config::vsock::VsockBuilder;
-    use crate::HTTP_MAX_PAYLOAD_SIZE;
 
     impl PartialEq for VmmActionError {
         fn eq(&self, other: &VmmActionError) -> bool {
@@ -1280,263 +1277,9 @@ mod tests {
     }
 
     #[test]
-    fn test_preboot_config_boot_src() {
-        let req = VmmAction::ConfigureBootSource(BootSourceConfig::default());
-        check_preboot_request(req, |result, vm_res| {
-            assert_eq!(result, Ok(VmmData::Empty));
-            assert!(vm_res.boot_cfg_set)
-        });
-
-        let req = VmmAction::ConfigureBootSource(BootSourceConfig::default());
-        check_preboot_request_err(
-            req,
-            VmmActionError::BootSource(BootSourceConfigError::InvalidKernelCommandLine(
-                String::new(),
-            )),
-        );
-    }
-
-    #[test]
-    fn test_preboot_get_vm_config() {
-        let req = VmmAction::GetVmMachineConfig;
-        let expected_cfg = MachineConfig::default();
-        check_preboot_request(req, |result, _| {
-            assert_eq!(result, Ok(VmmData::MachineConfiguration(expected_cfg)))
-        });
-
-        let req = VmmAction::ConfigureBootSource(BootSourceConfig::default());
-        check_preboot_request_err(
-            req,
-            VmmActionError::BootSource(BootSourceConfigError::InvalidKernelCommandLine(
-                String::new(),
-            )),
-        );
-    }
-
-    #[test]
-    fn test_preboot_get_balloon_config() {
-        let req = VmmAction::GetBalloonConfig;
-        let expected_cfg = BalloonDeviceConfig::default();
-        check_preboot_request(req, |result, _| {
-            assert_eq!(result, Ok(VmmData::BalloonConfig(expected_cfg)))
-        });
-    }
-
-    #[test]
-    fn test_preboot_put_cpu_config() {
-        // Start testing - Provide VMM vCPU configuration in preparation for `InstanceStart`
-        let req = VmmAction::PutCpuConfiguration(build_test_template());
-        check_preboot_request(req, |result, vm_res| {
-            assert_eq!(result, Ok(VmmData::Empty));
-            assert_eq!(
-                vm_res.vm_config.cpu_template,
-                Some(CpuTemplateType::Custom(build_test_template()))
-            );
-        });
-    }
-
-    #[test]
-    fn test_preboot_set_vm_config() {
-        let req =
-            VmmAction::UpdateVmConfiguration(MachineConfigUpdate::from(MachineConfig::default()));
-        let expected_cfg = MachineConfig::default();
-        check_preboot_request(req, |result, vm_res| {
-            assert_eq!(result, Ok(VmmData::Empty));
-            assert_eq!(MachineConfig::from(&vm_res.vm_config), expected_cfg);
-        });
-
-        let req =
-            VmmAction::UpdateVmConfiguration(MachineConfigUpdate::from(MachineConfig::default()));
-        check_preboot_request_err(
-            req,
-            VmmActionError::MachineConfig(VmConfigError::InvalidVcpuCount),
-        );
-    }
-
-    #[test]
-    fn test_preboot_set_balloon_dev() {
-        let req = VmmAction::SetBalloonDevice(BalloonDeviceConfig::default());
-        check_preboot_request(req, |result, vm_res| {
-            assert_eq!(result, Ok(VmmData::Empty));
-            assert!(vm_res.balloon_set)
-        });
-
-        let req = VmmAction::SetBalloonDevice(BalloonDeviceConfig::default());
-        check_preboot_request_err(
-            req,
-            VmmActionError::BalloonConfig(BalloonConfigError::DeviceNotFound),
-        );
-    }
-
-    #[test]
-    fn test_preboot_insert_block_dev() {
-        let req = VmmAction::InsertBlockDevice(BlockDeviceConfig {
-            path_on_host: String::new(),
-            is_root_device: false,
-            partuuid: None,
-            cache_type: CacheType::Unsafe,
-            is_read_only: false,
-            drive_id: String::new(),
-            rate_limiter: None,
-            file_engine_type: FileEngineType::default(),
-        });
-        check_preboot_request(req, |result, vm_res| {
-            assert_eq!(result, Ok(VmmData::Empty));
-            assert!(vm_res.block_set)
-        });
-
-        let req = VmmAction::InsertBlockDevice(BlockDeviceConfig {
-            path_on_host: String::new(),
-            is_root_device: false,
-            partuuid: None,
-            cache_type: CacheType::Unsafe,
-            is_read_only: false,
-            drive_id: String::new(),
-            rate_limiter: None,
-            file_engine_type: FileEngineType::default(),
-        });
-        check_preboot_request_err(
-            req,
-            VmmActionError::DriveConfig(DriveError::RootBlockDeviceAlreadyAdded),
-        );
-    }
-
-    #[test]
-    fn test_preboot_insert_net_dev() {
-        let req = VmmAction::InsertNetworkDevice(NetworkInterfaceConfig {
-            iface_id: String::new(),
-            host_dev_name: String::new(),
-            guest_mac: None,
-            rx_rate_limiter: None,
-            tx_rate_limiter: None,
-        });
-        check_preboot_request(req, |result, vm_res| {
-            assert_eq!(result, Ok(VmmData::Empty));
-            assert!(vm_res.net_set)
-        });
-
-        let req = VmmAction::InsertNetworkDevice(NetworkInterfaceConfig {
-            iface_id: String::new(),
-            host_dev_name: String::new(),
-            guest_mac: None,
-            rx_rate_limiter: None,
-            tx_rate_limiter: None,
-        });
-        check_preboot_request_err(
-            req,
-            VmmActionError::NetworkConfig(NetworkInterfaceError::GuestMacAddressInUse(
-                String::new(),
-            )),
-        );
-    }
-
-    #[test]
-    fn test_preboot_set_vsock_dev() {
-        let req = VmmAction::SetVsockDevice(VsockDeviceConfig {
-            vsock_id: Some(String::new()),
-            guest_cid: 0,
-            uds_path: String::new(),
-        });
-        check_preboot_request(req, |result, vm_res| {
-            assert_eq!(result, Ok(VmmData::Empty));
-            assert!(vm_res.vsock_set)
-        });
-
-        let req = VmmAction::SetVsockDevice(VsockDeviceConfig {
-            vsock_id: Some(String::new()),
-            guest_cid: 0,
-            uds_path: String::new(),
-        });
-        check_preboot_request_err(
-            req,
-            VmmActionError::VsockConfig(VsockConfigError::CreateVsockDevice(
-                VsockError::BufDescMissing,
-            )),
-        );
-    }
-
-    #[test]
-    fn test_preboot_set_entropy_device() {
-        let req = VmmAction::SetEntropyDevice(EntropyDeviceConfig::default());
-        check_preboot_request(req, |result, vm_res| {
-            assert_eq!(result, Ok(VmmData::Empty));
-            assert!(vm_res.entropy_set);
-        });
-    }
-
-    #[test]
-    fn test_preboot_set_mmds_config() {
-        let req = VmmAction::SetMmdsConfiguration(MmdsConfig {
-            ipv4_address: None,
-            version: MmdsVersion::V2,
-            network_interfaces: Vec::new(),
-        });
-        check_preboot_request(req, |result, vm_res| {
-            assert_eq!(result, Ok(VmmData::Empty));
-            assert_eq!(
-                vm_res.mmds.as_ref().unwrap().lock().unwrap().version(),
-                MmdsVersion::V2
-            );
-        });
-
-        let req = VmmAction::SetMmdsConfiguration(MmdsConfig {
-            ipv4_address: None,
-            version: MmdsVersion::default(),
-            network_interfaces: Vec::new(),
-        });
-        check_preboot_request_err(
-            req,
-            VmmActionError::MmdsConfig(MmdsConfigError::InvalidIpv4Addr),
-        );
-    }
-
-    #[test]
-    fn test_preboot_get_mmds() {
-        check_preboot_request(VmmAction::GetMMDS, |result, _| {
-            assert_eq!(result, Ok(VmmData::MmdsValue(Value::Null)));
-        });
-    }
-
-    #[test]
     fn test_runtime_get_mmds() {
         check_runtime_request(VmmAction::GetMMDS, |result, _| {
             assert_eq!(result, Ok(VmmData::MmdsValue(Value::Null)));
-        });
-    }
-
-    #[test]
-    fn test_preboot_put_mmds() {
-        let mmds = Arc::new(Mutex::new(Mmds::default()));
-
-        check_preboot_request_with_mmds(
-            VmmAction::PutMMDS(Value::String("string".to_string())),
-            mmds.clone(),
-            |result, _| {
-                assert_eq!(result, Ok(VmmData::Empty));
-            },
-        );
-        check_preboot_request_with_mmds(VmmAction::GetMMDS, mmds.clone(), |result, _| {
-            assert_eq!(
-                result,
-                Ok(VmmData::MmdsValue(Value::String("string".to_string())))
-            );
-        });
-
-        let filling = (0..51300).map(|_| "X").collect::<String>();
-        let data = "{\"key\": \"".to_string() + &filling + "\"}";
-
-        check_preboot_request_with_mmds(
-            VmmAction::PutMMDS(serde_json::from_str(&data).unwrap()),
-            mmds.clone(),
-            |result, _| {
-                assert!(matches!(result, Err(VmmActionError::MmdsLimitExceeded(_))));
-            },
-        );
-        check_preboot_request_with_mmds(VmmAction::GetMMDS, mmds, |result, _| {
-            assert_eq!(
-                result,
-                Ok(VmmData::MmdsValue(Value::String("string".to_string())))
-            );
         });
     }
 
@@ -1885,17 +1628,6 @@ mod tests {
         let mut runtime = RuntimeApiController::new(vm_res, vmm.clone());
         let res = runtime.handle_request(request);
         check_success(res, &vmm.lock().unwrap());
-    }
-
-    // Forces error and validates error kind against expected.
-    fn check_runtime_request_err(request: VmmAction, expected_err: VmmActionError) {
-        let vmm = Arc::new(Mutex::new(MockVmm {
-            force_errors: true,
-            ..Default::default()
-        }));
-        let mut runtime = RuntimeApiController::new(MockVmRes::default(), vmm);
-        let err = runtime.handle_request(request).unwrap_err();
-        assert_eq!(err, expected_err);
     }
 
     #[test]

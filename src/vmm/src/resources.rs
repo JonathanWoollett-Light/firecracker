@@ -19,7 +19,7 @@ use crate::vmm_config::boot_source::{
 use crate::vmm_config::drive::*;
 use crate::vmm_config::entropy::*;
 use crate::vmm_config::instance_info::InstanceInfo;
-use crate::vmm_config::logger::{init_logger, LoggerConfig, LoggerConfigError};
+use crate::vmm_config::logger::{InitLoggerError, LoggerConfig};
 use crate::vmm_config::machine_config::{
     MachineConfig, MachineConfigUpdate, VmConfig, VmConfigError,
 };
@@ -50,7 +50,7 @@ pub enum Error {
     InvalidJson(serde_json::Error),
     /// Logger configuration error.
     #[error("Logger error: {0}")]
-    Logger(LoggerConfigError),
+    Logger(InitLoggerError),
     /// Metrics system configuration error.
     #[error("Metrics error: {0}")]
     Metrics(MetricsConfigError),
@@ -140,7 +140,7 @@ impl VmResources {
         let vmm_config: VmmConfig = serde_json::from_slice::<VmmConfig>(config_json.as_bytes())?;
 
         if let Some(logger) = vmm_config.logger {
-            init_logger(logger, instance_info)?;
+            logger.init()?;
         }
 
         if let Some(metrics) = vmm_config.metrics {
@@ -483,7 +483,6 @@ mod tests {
     use std::os::linux::fs::MetadataExt;
     use std::str::FromStr;
 
-    use logger::{LevelFilter, LOGGER};
     use serde_json::{Map, Value};
     use utils::net::mac::MacAddr;
     use utils::tempfile::TempFile;
@@ -866,9 +865,6 @@ mod tests {
             Err(Error::Logger(LoggerConfigError::InitializationFailure { .. })) => (),
             _ => unreachable!(),
         }
-
-        // The previous call enables the logger. We need to disable it.
-        LOGGER.set_max_level(LevelFilter::Off);
 
         // Invalid path for metrics pipe.
         json = format!(
