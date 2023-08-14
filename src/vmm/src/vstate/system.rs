@@ -46,6 +46,7 @@ pub struct KvmContext {
 }
 
 impl KvmContext {
+    #[tracing::instrument(level = "trace", skip())]
     pub fn new() -> Result<Self> {
         use kvm_ioctls::Cap::*;
         let kvm = Kvm::new()?;
@@ -93,10 +94,12 @@ impl KvmContext {
         }
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     pub fn fd(&self) -> &Kvm {
         &self.kvm
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     /// Get the maximum number of memory slots reported by this KVM context.
     pub fn max_memslots(&self) -> usize {
         self.max_memslots

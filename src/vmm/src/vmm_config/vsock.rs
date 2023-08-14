@@ -56,6 +56,7 @@ struct VsockAndUnixPath {
 }
 
 impl From<&VsockAndUnixPath> for VsockDeviceConfig {
+    #[tracing::instrument(level = "trace", skip(vsock))]
     fn from(vsock: &VsockAndUnixPath) -> Self {
         let vsock_lock = vsock.vsock.lock().unwrap();
         VsockDeviceConfig {
@@ -73,11 +74,13 @@ pub struct VsockBuilder {
 }
 
 impl VsockBuilder {
+    #[tracing::instrument(level = "trace", skip())]
     /// Creates an empty Vsock with Unix backend Store.
     pub fn new() -> Self {
         Self { inner: None }
     }
 
+    #[tracing::instrument(level = "trace", skip(self, device))]
     /// Inserts an existing vsock device.
     pub fn set_device(&mut self, device: Arc<Mutex<Vsock<VsockUnixBackend>>>) {
         self.inner = Some(VsockAndUnixPath {
@@ -91,6 +94,7 @@ impl VsockBuilder {
         });
     }
 
+    #[tracing::instrument(level = "trace", skip(self, cfg))]
     /// Inserts a Unix backend Vsock in the store.
     /// If an entry already exists, it will overwrite it.
     pub fn insert(&mut self, cfg: VsockDeviceConfig) -> Result<()> {
@@ -105,11 +109,13 @@ impl VsockBuilder {
         Ok(())
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     /// Provides a reference to the Vsock if present.
     pub fn get(&self) -> Option<&MutexVsockUnix> {
         self.inner.as_ref().map(|pair| &pair.vsock)
     }
 
+    #[tracing::instrument(level = "trace", skip(cfg))]
     /// Creates a Vsock device from a VsockDeviceConfig.
     pub fn create_unixsock_vsock(cfg: VsockDeviceConfig) -> Result<Vsock<VsockUnixBackend>> {
         let backend = VsockUnixBackend::new(u64::from(cfg.guest_cid), cfg.uds_path)?;
@@ -117,6 +123,7 @@ impl VsockBuilder {
         Vsock::new(u64::from(cfg.guest_cid), backend).map_err(VsockConfigError::CreateVsockDevice)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     /// Returns the structure used to configure the vsock device.
     pub fn config(&self) -> Option<VsockDeviceConfig> {
         self.inner.as_ref().map(VsockDeviceConfig::from)
@@ -130,6 +137,7 @@ pub(crate) mod tests {
     use super::*;
     use crate::devices::virtio::vsock::VSOCK_DEV_ID;
 
+    #[tracing::instrument(level = "trace", skip(tmp_sock_file))]
     pub(crate) fn default_config(tmp_sock_file: &TempFile) -> VsockDeviceConfig {
         VsockDeviceConfig {
             vsock_id: None,

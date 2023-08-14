@@ -108,6 +108,7 @@ pub enum ExtendedCacheFeaturesError {
 #[error("Given value is greater than maximum storable value in bit range.")]
 pub struct CheckedAssignError;
 
+#[tracing::instrument(level = "trace", skip(x, bit, y))]
 /// Sets a given bit to a true or false (1 or 0).
 #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
 pub fn set_bit(x: &mut u32, bit: u8, y: bool) {
@@ -115,6 +116,7 @@ pub fn set_bit(x: &mut u32, bit: u8, y: bool) {
     *x = (*x & !(1 << bit)) | ((u32::from(u8::from(y))) << bit);
 }
 
+#[tracing::instrument(level = "trace", skip(x, range, y))]
 /// Sets a given range to a given value.
 #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
 pub fn set_range(
@@ -141,6 +143,7 @@ pub fn set_range(
         33.. => Err(CheckedAssignError),
     }
 }
+#[tracing::instrument(level = "trace", skip(x, range))]
 /// Gets a given range within a given value.
 #[allow(clippy::integer_arithmetic, clippy::arithmetic_side_effects)]
 pub fn get_range(x: u32, range: std::ops::Range<u8>) -> u32 {
@@ -183,6 +186,7 @@ const fn mask(range: std::ops::Range<u8>) -> u32 {
 // `normalize`.
 #[allow(clippy::multiple_inherent_impl)]
 impl super::Cpuid {
+    #[tracing::instrument(level = "trace", skip(self, cpu_index, cpu_count, cpu_bits))]
     /// Applies required modifications to CPUID respective of a vCPU.
     ///
     /// # Errors
@@ -222,6 +226,7 @@ impl super::Cpuid {
         Ok(())
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     /// Pass-through the vendor ID from the host. This is used to prevent modification of the vendor
     /// ID via custom CPU templates.
     fn update_vendor_id(&mut self) -> Result<(), VendorIdError> {
@@ -239,6 +244,7 @@ impl super::Cpuid {
     }
 
     // Update feature information entry
+    #[tracing::instrument(level = "trace", skip(self, cpu_index, cpu_count))]
     fn update_feature_info_entry(
         &mut self,
         cpu_index: u8,
@@ -322,6 +328,10 @@ impl super::Cpuid {
         Ok(())
     }
 
+    #[tracing::instrument(
+        level = "trace",
+        skip(self, cpu_index, cpu_count, cpu_bits, cpus_per_core)
+    )]
     /// Update extended topology entry
     fn update_extended_topology_entry(
         &mut self,
@@ -464,6 +474,7 @@ impl super::Cpuid {
     }
 
     // Update extended cache features entry
+    #[tracing::instrument(level = "trace", skip(self))]
     fn update_extended_cache_features(&mut self) -> Result<(), ExtendedCacheFeaturesError> {
         let guest_leaf_0x80000006 = self
             .get_mut(&CpuidKey::leaf(0x80000006))

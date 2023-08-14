@@ -15,6 +15,7 @@ use crate::cpu_config::templates::{
 use crate::cpu_config::templates_serde::*;
 
 impl GetCpuTemplate for Option<CpuTemplateType> {
+    #[tracing::instrument(level = "trace", skip(self))]
     fn get_cpu_template(&self) -> Result<Cow<CustomCpuTemplate>, GetCpuTemplateError> {
         match self {
             Some(template_type) => match template_type {
@@ -40,12 +41,42 @@ pub struct CustomCpuTemplate {
 }
 
 impl CustomCpuTemplate {
+    #[tracing::instrument(level = "trace", skip(self))]
     /// Get a list of register IDs that are modified by the CPU template.
     pub fn reg_list(&self) -> Vec<u64> {
         self.reg_modifiers
             .iter()
             .map(|modifier| modifier.addr)
             .collect()
+    }
+
+    #[tracing::instrument(level = "trace", skip(self))]
+    /// Validate the correctness of the template.
+    pub fn validate(&self) -> Result<(), serde_json::Error> {
+        for modifier in self.reg_modifiers.iter() {
+            let reg_size = reg_size(modifier.addr);
+            match RegSize::from(reg_size) {
+                RegSize::U32 | RegSize::U64 => {
+                    let limit = 2u128.pow(reg_size as u32 * 8) - 1;
+                    if limit < modifier.bitmap.value || limit < modifier.bitmap.filter {
+                        return Err(serde_json::Error::custom(format!(
+                            "Invalid size of bitmap for register {:#x}, should be <= {} bits",
+                            modifier.addr,
+                            reg_size * 8
+                        )));
+                    }
+                }
+                RegSize::U128 => {}
+                _ => {
+                    return Err(serde_json::Error::custom(format!(
+                        "Invalid aarch64 register address: {:#x} - Only 32, 64 and 128 bit wide \
+                         registers are supported",
+                        modifier.addr
+                    )))
+                }
+            }
+        }
+        Ok(())
     }
 }
 

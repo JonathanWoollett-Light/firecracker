@@ -450,10 +450,12 @@ fn generic_error_exit(msg: &str) -> FcExitCode {
 }
 
 // Log a warning for any usage of deprecated parameters.
+#[tracing::instrument(level = "trace", skip())]
 #[allow(unused)]
 fn warn_deprecated_parameters() {}
 
 // Print supported snapshot data format versions.
+#[tracing::instrument(level = "trace", skip())]
 fn print_supported_snapshot_versions() {
     let mut snapshot_versions_str = "Supported snapshot data format versions:".to_string();
     let mut snapshot_versions: Vec<String> = FC_VERSION_TO_SNAP_VERSION
@@ -497,6 +499,18 @@ fn print_snapshot_data_format(snapshot_path: &str) {
 }
 
 // Configure and start a microVM as described by the command-line JSON.
+#[tracing::instrument(
+    level = "trace",
+    skip(
+        seccomp_filters,
+        event_manager,
+        config_json,
+        instance_info,
+        boot_timer_enabled,
+        mmds_size_limit,
+        metadata_json
+    )
+)]
 fn build_microvm_from_json(
     seccomp_filters: &BpfThreadMap,
     event_manager: &mut EventManager,

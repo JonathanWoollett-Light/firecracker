@@ -86,6 +86,7 @@ fn parse_args(args: &Arguments) -> Result<(File, File), Error> {
     Ok((base_file, diff_file))
 }
 
+#[tracing::instrument(level = "trace", skip(base_file, diff_file))]
 fn rebase(base_file: &mut File, diff_file: &mut File) -> Result<(), Error> {
     let mut cursor: u64 = 0;
     while let Some(block_start) = diff_file.seek_data(cursor).map_err(Error::SeekData)? {
@@ -212,6 +213,7 @@ mod tests {
         assert!(parse_args(arguments).is_ok());
     }
 
+    #[tracing::instrument(level = "trace", skip(file, expected_content))]
     fn check_file_content(file: &mut File, expected_content: &[u8]) {
         let mut buf = vec![0u8; expected_content.len()];
         file.read_exact_at(buf.as_mut_slice(), 0).unwrap();
