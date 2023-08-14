@@ -161,6 +161,27 @@ fn main_exitable() -> FcExitCode {
                 ),
             )
             .arg(
+                Argument::new("start-time-us").takes_value(true).help(
+                    "Process start time (wall clock, microseconds). This parameter is optional.",
+                ),
+            )
+            .arg(Argument::new("start-time-cpu-us").takes_value(true).help(
+                "Process start CPU time (wall clock, microseconds). This parameter is optional.",
+            ))
+            .arg(Argument::new("parent-cpu-time-us").takes_value(true).help(
+                "Parent process CPU time (wall clock, microseconds). This parameter is optional.",
+            ))
+            .arg(
+                Argument::new("config-file")
+                    .takes_value(true)
+                    .help("Path to a file that contains the microVM configuration in JSON format."),
+            )
+            .arg(
+                Argument::new(MMDS_CONTENT_ARG).takes_value(true).help(
+                    "Path to a file that contains metadata in JSON format to add to the mmds.",
+                ),
+            )
+            .arg(
                 Argument::new("no-api")
                     .takes_value(false)
                     .requires("config-file")
@@ -173,6 +194,11 @@ fn main_exitable() -> FcExitCode {
                 Argument::new("log-path")
                     .takes_value(true)
                     .help("Path to a fifo or a file used for configuring the logger on startup."),
+            )
+            .arg(
+                Argument::new("log-filter")
+                    .takes_value(true)
+                    .help("Filter for logging, if set overrides `level`."),
             )
             .arg(
                 Argument::new("level")
@@ -267,22 +293,21 @@ fn main_exitable() -> FcExitCode {
     let logger_handles = {
         let level_res = arguments
             .single_value("level")
-            .map(|s| Level::from_str(s))
+            .map(|s| LevelFilter::from_str(s))
             .transpose();
         let level = level_res.map_err(MainError::InvalidLogLevel)?;
 
-    if let Some(log) = arguments.single_value("log-path") {
-        // It's safe to unwrap here because the field's been provided with a default value.
-        let level = arguments.single_value("level").unwrap().to_owned();
-        let logger_level = match LoggerLevel::from_string(level) {
-            Ok(level) => level,
-            Err(err) => {
-                return generic_error_exit(&format!(
-                    "Invalid value for logger level: {}.Possible values: [Error, Warning, Info, \
-                     Debug]",
-                    err
-                ));
-            }
+        let filter = if let Some(log_filter) = arguments.single_value("log-filter") {
+            Some(serde_json::from_str(log_filter).map_err(MainError::DeserializeLogFilter)?)
+        } else {
+            None
+        };
+        let logger_config = vmm::vmm_config::logger::LoggerConfig {
+            log_path: arguments.single_value("log-path").map(PathBuf::from),
+            level,
+            show_level: Some(arguments.flag_present("show-level")),
+            show_log_origin: Some(arguments.flag_present("show-log-origin")),
+            filter,
         };
         let show_level = arguments.flag_present("show-level");
         let show_log_origin = arguments.flag_present("show-log-origin");
