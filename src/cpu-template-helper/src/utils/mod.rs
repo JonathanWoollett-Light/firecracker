@@ -69,6 +69,7 @@ pub enum Error {
     BuildMicroVm(#[from] StartMicrovmError),
 }
 
+#[allow(clippy::type_complexity)]
 #[tracing::instrument(level = "trace", skip(config))]
 pub fn build_microvm_from_config(config: &str) -> Result<(Arc<Mutex<Vmm>>, VmResources), Error> {
     // Prepare resources from the given config file.
@@ -91,7 +92,7 @@ pub fn build_microvm_from_config(config: &str) -> Result<(Arc<Mutex<Vmm>>, VmRes
         &seccomp_filters,
     )?;
 
-    Ok((vmm, vm_resources))
+    Ok(((vmm, vm_resources), flame_guard))
 }
 
 #[tracing::instrument(level = "trace", skip(path, suffix))]

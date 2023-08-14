@@ -140,12 +140,15 @@ impl VmResources {
         instance_info: &InstanceInfo,
         mmds_size_limit: usize,
         metadata_json: Option<&str>,
-    ) -> std::result::Result<Self, Error> {
+    ) -> Result<(Self, Option<crate::vmm_config::logger::FlameGuard>), Error> {
         let vmm_config: VmmConfig = serde_json::from_slice::<VmmConfig>(config_json.as_bytes())?;
 
-        if let Some(logger) = vmm_config.logger {
-            logger.init()?;
-        }
+        let flame_guard = if let Some(logger) = vmm_config.logger {
+            let (_logger_handles, flame_guard) = logger.init()?;
+            flame_guard
+        } else {
+            None
+        };
 
         if let Some(metrics) = vmm_config.metrics {
             init_metrics(metrics)?;
@@ -200,7 +203,7 @@ impl VmResources {
             resources.build_entropy_device(entropy_device_config)?;
         }
 
-        Ok(resources)
+        Ok((resources, flame_guard))
     }
 
     #[tracing::instrument(level = "trace", skip(self))]
@@ -1059,7 +1062,7 @@ mod tests {
             kernel_file.as_path().to_str().unwrap(),
             rootfs_file.as_path().to_str().unwrap(),
         );
-        let resources = VmResources::from_json(
+        let (resources, _flame_guard) = VmResources::from_json(
             json.as_str(),
             &default_instance_info,
             1200,
@@ -1147,7 +1150,7 @@ mod tests {
             rootfs_file.as_path().to_str().unwrap(),
         );
 
-        let vm_resources = VmResources::from_json(
+        let (vm_resources, _flame_guard) = VmResources::from_json(
             json.as_str(),
             &default_instance_info,
             HTTP_MAX_PAYLOAD_SIZE,
@@ -1207,7 +1210,7 @@ mod tests {
             );
 
             {
-                let resources = VmResources::from_json(
+                let (resources, _flame_guard) = VmResources::from_json(
                     json.as_str(),
                     &InstanceInfo::default(),
                     HTTP_MAX_PAYLOAD_SIZE,
@@ -1223,7 +1226,7 @@ mod tests {
 
             {
                 // In this case the mmds data store will be initialised but the config still None.
-                let resources = VmResources::from_json(
+                let (resources, _flame_guard) = VmResources::from_json(
                     json.as_str(),
                     &InstanceInfo::default(),
                     HTTP_MAX_PAYLOAD_SIZE,
@@ -1284,7 +1287,7 @@ mod tests {
                 kernel_file.as_path().to_str().unwrap(),
                 rootfs_file.as_path().to_str().unwrap(),
             );
-            let resources = VmResources::from_json(
+            let (resources, _flame_guard) = VmResources::from_json(
                 json.as_str(),
                 &InstanceInfo::default(),
                 HTTP_MAX_PAYLOAD_SIZE,
@@ -1343,7 +1346,7 @@ mod tests {
                 kernel_file.as_path().to_str().unwrap(),
                 rootfs_file.as_path().to_str().unwrap(),
             );
-            let resources = VmResources::from_json(
+            let (resources, _flame_guard) = VmResources::from_json(
                 json.as_str(),
                 &InstanceInfo::default(),
                 HTTP_MAX_PAYLOAD_SIZE,

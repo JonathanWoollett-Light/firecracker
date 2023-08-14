@@ -119,7 +119,7 @@ fn run(cli: Cli) -> Result<()> {
         Command::Template(op) => match op {
             TemplateOperation::Dump { config, output } => {
                 let config = read_to_string(config)?;
-                let (vmm, _) = utils::build_microvm_from_config(&config)?;
+                let ((vmm, _), _flame_guard) = utils::build_microvm_from_config(&config)?;
 
                 let cpu_config = template::dump::dump(vmm)?;
 
@@ -144,7 +144,8 @@ fn run(cli: Cli) -> Result<()> {
             }
             TemplateOperation::Verify { config } => {
                 let config = read_to_string(config)?;
-                let (vmm, vm_resources) = utils::build_microvm_from_config(&config)?;
+                let ((vmm, vm_resources), _flame_guard) =
+                    utils::build_microvm_from_config(&config)?;
 
                 let cpu_template = vm_resources
                     .vm_config
@@ -159,7 +160,7 @@ fn run(cli: Cli) -> Result<()> {
         Command::Fingerprint(op) => match op {
             FingerprintOperation::Dump { config, output } => {
                 let config = read_to_string(config)?;
-                let (vmm, _) = utils::build_microvm_from_config(&config)?;
+                let ((vmm, _), _flame_guard) = utils::build_microvm_from_config(&config)?;
 
                 let fingerprint = fingerprint::dump::dump(vmm)?;
 

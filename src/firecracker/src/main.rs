@@ -290,7 +290,7 @@ fn main_exitable() -> FcExitCode {
     };
 
     // Configure logger, the logger handles can be used to re-configure the logger with the API.
-    let logger_handles = {
+    let (logger_handles, _flame_guard) = {
         let level_res = arguments
             .single_value("level")
             .map(|s| LevelFilter::from_str(s))
@@ -308,6 +308,7 @@ fn main_exitable() -> FcExitCode {
             show_level: Some(arguments.flag_present("show-level")),
             show_log_origin: Some(arguments.flag_present("show-log-origin")),
             filter,
+            profile_path: None,
         };
         let show_level = arguments.flag_present("show-level");
         let show_log_origin = arguments.flag_present("show-log-origin");
@@ -520,7 +521,7 @@ fn build_microvm_from_json(
     mmds_size_limit: usize,
     metadata_json: Option<&str>,
 ) -> std::result::Result<(VmResources, Arc<Mutex<vmm::Vmm>>), FcExitCode> {
-    let mut vm_resources =
+    let (mut vm_resources, _flame_guard) =
         VmResources::from_json(&config_json, &instance_info, mmds_size_limit, metadata_json)
             .map_err(|err| {
                 error!("Configuration for VMM from one single json failed: {}", err);
