@@ -26,7 +26,7 @@ class MemoryMonitor(Thread):
     VMM memory usage.
     """
 
-    MEMORY_THRESHOLD = 5 * 1024
+    MEMORY_THRESHOLD = 6 * 1024
     MEMORY_SAMPLE_TIMEOUT_S = 0.05
     X86_MEMORY_GAP_START = 3407872
 
