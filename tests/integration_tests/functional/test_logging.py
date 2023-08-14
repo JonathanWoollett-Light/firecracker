@@ -249,4 +249,7 @@ def _test_log_config(microvm, log_level="Info", show_level=True, show_origin=Tru
 
     lines = microvm.log_data.splitlines()
     for line in lines:
-        check_log_message_format(line, log_level, show_level, show_origin)
+        print(f"{line}")
+        # check_log_message_format(line, log_level, show_level, show_origin)
+    assert False
+
