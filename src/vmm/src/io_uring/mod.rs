@@ -69,7 +69,7 @@ pub enum Error {
 }
 
 impl Error {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Return true if this error is caused by a full submission or completion queue.
     pub fn is_throttling_err(&self) -> bool {
         matches!(
@@ -97,7 +97,7 @@ pub struct IoUring {
 }
 
 impl IoUring {
-    #[tracing::instrument(level = "trace", skip(num_entries, files, restrictions, eventfd))]
+    #[tracing::instrument(level = "info", skip(num_entries, files, restrictions, eventfd))]
     /// Create a new instance.
     ///
     /// # Arguments
@@ -162,7 +162,7 @@ impl IoUring {
         Ok(instance)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, op))]
+    #[tracing::instrument(level = "info", skip(self, op))]
     /// Push an [`Operation`](operation/struct.Operation.html) onto the submission queue.
     ///
     /// # Safety
@@ -197,7 +197,7 @@ impl IoUring {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Pop a completed entry off the completion queue. Returns `Ok(None)` if there are no entries.
     /// The type `T` must be the same as the `user_data` type used for `push`-ing the operation.
     ///
@@ -219,37 +219,37 @@ impl IoUring {
             .map_err(Error::CQueue)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, min_complete))]
+    #[tracing::instrument(level = "info", skip(self, min_complete))]
     fn do_submit(&mut self, min_complete: u32) -> Result<u32> {
         self.squeue.submit(min_complete).map_err(Error::SQueue)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Submit all operations but don't wait for any completions.
     pub fn submit(&mut self) -> Result<u32> {
         self.do_submit(0)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Submit all operations and wait for their completion.
     pub fn submit_and_wait_all(&mut self) -> Result<u32> {
         self.do_submit(self.num_ops)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Return the number of operations currently on the submission queue.
     pub fn pending_sqes(&self) -> Result<u32> {
         self.squeue.pending().map_err(Error::SQueue)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// A total of the number of ops in the submission and completion queues, as well as the
     /// in-flight ops.
     pub fn num_ops(&self) -> u32 {
         self.num_ops
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn enable(&mut self) -> Result<()> {
         // SAFETY: Safe because values are valid and we check the return value.
         SyscallReturnCode(unsafe {
@@ -265,7 +265,7 @@ impl IoUring {
         .map_err(Error::Enable)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, files))]
+    #[tracing::instrument(level = "info", skip(self, files))]
     fn register_files(&mut self, files: Vec<&File>) -> Result<()> {
         if files.is_empty() {
             // No-op.
@@ -300,7 +300,7 @@ impl IoUring {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, fd))]
+    #[tracing::instrument(level = "info", skip(self, fd))]
     fn register_eventfd(&self, fd: RawFd) -> Result<()> {
         // SAFETY: Safe because values are valid and we check the return value.
         SyscallReturnCode(unsafe {
@@ -316,7 +316,7 @@ impl IoUring {
         .map_err(Error::RegisterEventfd)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, restrictions))]
+    #[tracing::instrument(level = "info", skip(self, restrictions))]
     fn register_restrictions(&self, restrictions: Vec<Restriction>) -> Result<()> {
         if restrictions.is_empty() {
             // No-op.
@@ -341,7 +341,7 @@ impl IoUring {
         .map_err(Error::RegisterRestrictions)
     }
 
-    #[tracing::instrument(level = "trace", skip(params))]
+    #[tracing::instrument(level = "info", skip(params))]
     fn check_features(params: io_uring_params) -> Result<()> {
         // We require that the host kernel will never drop completed entries due to an (unlikely)
         // overflow in the completion queue.
@@ -356,7 +356,7 @@ impl IoUring {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn check_operations(&self) -> Result<()> {
         let mut probes = ProbeWrapper::new(PROBE_LEN).map_err(Error::Fam)?;
 
@@ -408,7 +408,7 @@ mod tests {
     /// BEGIN PROPERTY BASED TESTING
     use super::*;
 
-    #[tracing::instrument(level = "trace", skip(ring))]
+    #[tracing::instrument(level = "info", skip(ring))]
     fn drain_cqueue(ring: &mut IoUring) {
         while let Some(entry) = unsafe { ring.pop::<u32>().unwrap() } {
             assert!(entry.result().is_ok());
@@ -420,7 +420,7 @@ mod tests {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(len))]
+    #[tracing::instrument(level = "info", skip(len))]
     fn setup_mem_region(len: usize) -> MmapRegion {
         const PROT: i32 = libc::PROT_READ | libc::PROT_WRITE;
         const FLAGS: i32 = libc::MAP_ANONYMOUS | libc::MAP_PRIVATE;
@@ -437,12 +437,12 @@ mod tests {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(region))]
+    #[tracing::instrument(level = "info", skip(region))]
     fn free_mem_region(region: MmapRegion) {
         unsafe { libc::munmap(region.as_ptr().cast::<libc::c_void>(), region.len()) };
     }
 
-    #[tracing::instrument(level = "trace", skip(region))]
+    #[tracing::instrument(level = "info", skip(region))]
     fn read_entire_mem_region(region: &MmapRegion) -> Vec<u8> {
         let mut result = vec![0u8; region.len()];
         let count = region.as_volatile_slice().read(&mut result[..], 0).unwrap();
@@ -450,7 +450,7 @@ mod tests {
         result
     }
 
-    #[tracing::instrument(level = "trace", skip(file_len))]
+    #[tracing::instrument(level = "info", skip(file_len))]
     #[allow(clippy::let_with_type_underscore)]
     fn arbitrary_rw_operation(file_len: u32) -> impl Strategy<Value = Operation<u32>> {
         (

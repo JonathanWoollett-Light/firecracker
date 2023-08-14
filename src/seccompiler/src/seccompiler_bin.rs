@@ -83,7 +83,7 @@ struct Arguments {
     is_basic: bool,
 }
 
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 fn build_arg_parser() -> ArgParser<'static> {
     ArgParser::new()
         .arg(
@@ -114,7 +114,7 @@ fn build_arg_parser() -> ArgParser<'static> {
         ))
 }
 
-#[tracing::instrument(level = "trace", skip(arguments))]
+#[tracing::instrument(level = "info", skip(arguments))]
 fn get_argument_values(arguments: &ArgumentsBag) -> Result<Arguments> {
     let arch_string = arguments.single_value("target-arch");
     if arch_string.is_none() {
@@ -144,7 +144,7 @@ fn get_argument_values(arguments: &ArgumentsBag) -> Result<Arguments> {
     })
 }
 
-#[tracing::instrument(level = "trace", skip(args))]
+#[tracing::instrument(level = "info", skip(args))]
 fn compile(args: &Arguments) -> Result<()> {
     let input_file = File::open(&args.input_file)
         .map_err(|err| Error::FileOpen(PathBuf::from(&args.input_file), err))?;

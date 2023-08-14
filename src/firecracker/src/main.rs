@@ -451,12 +451,12 @@ fn generic_error_exit(msg: &str) -> FcExitCode {
 }
 
 // Log a warning for any usage of deprecated parameters.
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 #[allow(unused)]
 fn warn_deprecated_parameters() {}
 
 // Print supported snapshot data format versions.
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 fn print_supported_snapshot_versions() {
     let mut snapshot_versions_str = "Supported snapshot data format versions:".to_string();
     let mut snapshot_versions: Vec<String> = FC_VERSION_TO_SNAP_VERSION

@@ -17,7 +17,7 @@ pub struct GICv3(super::GIC);
 impl std::ops::Deref for GICv3 {
     type Target = super::GIC;
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn deref(&self) -> &Self::Target {
         &self.0
     }
@@ -33,25 +33,25 @@ impl GICv3 {
     // Device trees specific constants
     const ARCH_GIC_V3_MAINT_IRQ: u32 = 9;
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     /// Get the address of the GIC distributor.
     fn get_dist_addr() -> u64 {
         super::layout::MAPPED_IO_START - GICv3::KVM_VGIC_V3_DIST_SIZE
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     /// Get the size of the GIC distributor.
     fn get_dist_size() -> u64 {
         GICv3::KVM_VGIC_V3_DIST_SIZE
     }
 
-    #[tracing::instrument(level = "trace", skip(vcpu_count))]
+    #[tracing::instrument(level = "info", skip(vcpu_count))]
     /// Get the address of the GIC redistributors.
     fn get_redists_addr(vcpu_count: u64) -> u64 {
         GICv3::get_dist_addr() - GICv3::get_redists_size(vcpu_count)
     }
 
-    #[tracing::instrument(level = "trace", skip(vcpu_count))]
+    #[tracing::instrument(level = "info", skip(vcpu_count))]
     /// Get the size of the GIC redistributors.
     fn get_redists_size(vcpu_count: u64) -> u64 {
         vcpu_count * GICv3::KVM_VGIC_V3_REDIST_SIZE
@@ -59,17 +59,17 @@ impl GICv3 {
 
     pub const VERSION: u32 = kvm_bindings::kvm_device_type_KVM_DEV_TYPE_ARM_VGIC_V3;
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn fdt_compatibility(&self) -> &str {
         "arm,gic-v3"
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn fdt_maint_irq(&self) -> u32 {
         GICv3::ARCH_GIC_V3_MAINT_IRQ
     }
 
-    #[tracing::instrument(level = "trace", skip(fd, vcpu_count))]
+    #[tracing::instrument(level = "info", skip(fd, vcpu_count))]
     /// Create the GIC device object
     pub fn create_device(fd: DeviceFd, vcpu_count: u64) -> Self {
         GICv3(super::GIC {
@@ -84,17 +84,17 @@ impl GICv3 {
         })
     }
 
-    #[tracing::instrument(level = "trace", skip(self, mpidrs))]
+    #[tracing::instrument(level = "info", skip(self, mpidrs))]
     pub fn save_device(&self, mpidrs: &[u64]) -> Result<GicState> {
         regs::save_state(&self.fd, mpidrs)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, mpidrs, state))]
+    #[tracing::instrument(level = "info", skip(self, mpidrs, state))]
     pub fn restore_device(&self, mpidrs: &[u64], state: &GicState) -> Result<()> {
         regs::restore_state(&self.fd, mpidrs, state)
     }
 
-    #[tracing::instrument(level = "trace", skip(gic_device))]
+    #[tracing::instrument(level = "info", skip(gic_device))]
     pub fn init_device_attributes(gic_device: &Self) -> Result<()> {
         // Setting up the distributor attribute.
         // We are placing the GIC below 1GB so we need to substract the size of the distributor.
@@ -119,7 +119,7 @@ impl GICv3 {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(vm))]
+    #[tracing::instrument(level = "info", skip(vm))]
     /// Initialize a GIC device
     pub fn init_device(vm: &VmFd) -> Result<DeviceFd> {
         let mut gic_device = kvm_bindings::kvm_create_device {
@@ -131,7 +131,7 @@ impl GICv3 {
         vm.create_device(&mut gic_device).map_err(Error::CreateGIC)
     }
 
-    #[tracing::instrument(level = "trace", skip(vm, vcpu_count))]
+    #[tracing::instrument(level = "info", skip(vm, vcpu_count))]
     /// Method to initialize the GIC device
     pub fn create(vm: &VmFd, vcpu_count: u64) -> Result<Self> {
         let vgic_fd = Self::init_device(vm)?;
@@ -145,7 +145,7 @@ impl GICv3 {
         Ok(device)
     }
 
-    #[tracing::instrument(level = "trace", skip(gic_device))]
+    #[tracing::instrument(level = "info", skip(gic_device))]
     /// Finalize the setup of a GIC device
     pub fn finalize_device(gic_device: &Self) -> Result<()> {
         // On arm there are 3 types of interrupts: SGI (0-15), PPI (16-31), SPI (32-1020).
@@ -176,7 +176,7 @@ impl GICv3 {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(fd, group, attr, addr, flags))]
+    #[tracing::instrument(level = "info", skip(fd, group, attr, addr, flags))]
     /// Set a GIC device attribute
     pub fn set_device_attribute(
         fd: &DeviceFd,
@@ -198,7 +198,7 @@ impl GICv3 {
     }
 }
 
-#[tracing::instrument(level = "trace", skip(fd))]
+#[tracing::instrument(level = "info", skip(fd))]
 /// Function that flushes
 /// RDIST pending tables into guest RAM.
 ///

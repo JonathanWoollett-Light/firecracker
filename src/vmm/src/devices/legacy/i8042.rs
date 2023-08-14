@@ -86,7 +86,7 @@ pub struct I8042Device {
 }
 
 impl I8042Device {
-    #[tracing::instrument(level = "trace", skip(reset_evt, kbd_interrupt_evt))]
+    #[tracing::instrument(level = "info", skip(reset_evt, kbd_interrupt_evt))]
     /// Constructs an i8042 device that will signal the given event when the guest requests it.
     pub fn new(reset_evt: EventFd, kbd_interrupt_evt: EventFd) -> I8042Device {
         I8042Device {
@@ -102,7 +102,7 @@ impl I8042Device {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Signal a ctrl-alt-del (reset) event.
     #[inline]
     pub fn trigger_ctrl_alt_del(&mut self) -> Result<()> {
@@ -117,7 +117,7 @@ impl I8042Device {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn trigger_kbd_interrupt(&self) -> Result<()> {
         if (self.control & CB_KBD_INT) == 0 {
             warn!("Failed to trigger i8042 kbd interrupt (disabled by guest OS)");
@@ -128,7 +128,7 @@ impl I8042Device {
             .map_err(Error::KbdInterruptFailure)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, key))]
+    #[tracing::instrument(level = "info", skip(self, key))]
     fn trigger_key(&mut self, key: u16) -> Result<()> {
         if key & 0xff00 != 0 {
             // Check if there is enough room in the buffer, before pushing an extended (2-byte) key.
@@ -145,7 +145,7 @@ impl I8042Device {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self, byte))]
+    #[tracing::instrument(level = "info", skip(self, byte))]
     #[inline]
     fn push_byte(&mut self, byte: u8) -> Result<()> {
         self.status |= SB_OUT_DATA_AVAIL;
@@ -157,7 +157,7 @@ impl I8042Device {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     #[inline]
     fn pop_byte(&mut self) -> Option<u8> {
         if self.buf_len() == 0 {
@@ -171,7 +171,7 @@ impl I8042Device {
         Some(res)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     #[inline]
     fn flush_buf(&mut self) {
         self.bhead = Wrapping(0usize);
@@ -179,7 +179,7 @@ impl I8042Device {
         self.status &= !SB_OUT_DATA_AVAIL;
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     #[inline]
     fn buf_len(&self) -> usize {
         (self.btail - self.bhead).0
@@ -187,7 +187,7 @@ impl I8042Device {
 }
 
 impl I8042Device {
-    #[tracing::instrument(level = "trace", skip(self, offset, data))]
+    #[tracing::instrument(level = "info", skip(self, offset, data))]
     pub fn bus_read(&mut self, offset: u64, data: &mut [u8]) {
         // All our ports are byte-wide. We don't know how to handle any wider data.
         if data.len() != 1 {
@@ -222,7 +222,7 @@ impl I8042Device {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset, data))]
+    #[tracing::instrument(level = "info", skip(self, offset, data))]
     pub fn bus_write(&mut self, offset: u64, data: &[u8]) {
         // All our ports are byte-wide. We don't know how to handle any wider data.
         if data.len() != 1 {
@@ -321,7 +321,7 @@ mod tests {
     use super::*;
 
     impl PartialEq for Error {
-        #[tracing::instrument(level = "trace", skip(self, other))]
+        #[tracing::instrument(level = "info", skip(self, other))]
         fn eq(&self, other: &Error) -> bool {
             self.to_string() == other.to_string()
         }
@@ -438,7 +438,7 @@ mod tests {
             EventFd::new(libc::EFD_NONBLOCK).unwrap(),
         );
 
-        #[tracing::instrument(level = "trace", skip(i8042, key))]
+        #[tracing::instrument(level = "info", skip(i8042, key))]
         fn expect_key(i8042: &mut I8042Device, key: u16) {
             let mut data = [1];
 

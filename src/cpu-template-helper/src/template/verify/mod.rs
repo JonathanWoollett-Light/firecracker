@@ -26,7 +26,7 @@ pub enum Error {
     ValueMismatched(String, String),
 }
 
-#[tracing::instrument(level = "trace", skip(template, config))]
+#[tracing::instrument(level = "info", skip(template, config))]
 /// Verify that the given CPU template is applied as intended.
 ///
 /// This function is an arch-agnostic part of CPU template verification. As template formats differ

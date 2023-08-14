@@ -45,7 +45,7 @@ pub struct CpuConfiguration {
 }
 
 impl CpuConfiguration {
-    #[tracing::instrument(level = "trace", skip(self, template))]
+    #[tracing::instrument(level = "info", skip(self, template))]
     /// Modifies provided config with changes from template
     pub fn apply_template(self, template: &CustomCpuTemplate) -> Result<Self, Error> {
         let Self {
@@ -112,7 +112,7 @@ mod tests {
     use crate::cpu_config::templates::RegisterValueFilter;
     use crate::cpu_config::x86_64::cpuid::{CpuidEntry, IntelCpuid, KvmCpuidFlags};
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_test_template() -> CustomCpuTemplate {
         CustomCpuTemplate {
             cpuid_modifiers: vec![CpuidLeafModifier {
@@ -169,7 +169,7 @@ mod tests {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_supported_cpuid() -> Cpuid {
         Cpuid::Intel(IntelCpuid(BTreeMap::from([(
             CpuidKey {
@@ -180,7 +180,7 @@ mod tests {
         )])))
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn empty_cpu_config() -> CpuConfiguration {
         CpuConfiguration {
             cpuid: Cpuid::Intel(IntelCpuid(BTreeMap::new())),
@@ -188,7 +188,7 @@ mod tests {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn supported_cpu_config() -> CpuConfiguration {
         CpuConfiguration {
             cpuid: build_supported_cpuid(),
@@ -196,7 +196,7 @@ mod tests {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn unsupported_cpu_config() -> CpuConfiguration {
         CpuConfiguration {
             cpuid: build_supported_cpuid(),

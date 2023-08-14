@@ -16,7 +16,7 @@ const CURRENT_DIR_NUL_TERMINATED: &[u8] = b".\0";
 
 // This uses switching to a new mount namespace + pivot_root(), together with the regular chroot,
 // to provide a hardened jail (at least compared to only relying on chroot).
-#[tracing::instrument(level = "trace", skip(path))]
+#[tracing::instrument(level = "info", skip(path))]
 pub fn chroot(path: &Path) -> Result<()> {
     // We unshare into a new mount namespace.
     // SAFETY: The call is safe because we're invoking a C library

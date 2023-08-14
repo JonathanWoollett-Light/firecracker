@@ -65,14 +65,14 @@ impl Persist<'_> for VsockUnixBackend {
     type ConstructorArgs = VsockUdsConstructorArgs;
     type Error = VsockUnixBackendError;
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn save(&self) -> Self::State {
         VsockBackendState::Uds(VsockUdsState {
             path: self.host_sock_path.clone(),
         })
     }
 
-    #[tracing::instrument(level = "trace", skip(constructor_args, state))]
+    #[tracing::instrument(level = "info", skip(constructor_args, state))]
     fn restore(
         constructor_args: Self::ConstructorArgs,
         state: &Self::State,
@@ -94,7 +94,7 @@ where
     type ConstructorArgs = VsockConstructorArgs<B>;
     type Error = VsockError;
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn save(&self) -> Self::State {
         VsockFrontendState {
             cid: self.cid(),
@@ -102,7 +102,7 @@ where
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(constructor_args, state))]
+    #[tracing::instrument(level = "info", skip(constructor_args, state))]
     fn restore(
         constructor_args: Self::ConstructorArgs,
         state: &Self::State,
@@ -147,14 +147,14 @@ pub(crate) mod tests {
         type ConstructorArgs = VsockUdsConstructorArgs;
         type Error = VsockUnixBackendError;
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         fn save(&self) -> Self::State {
             VsockBackendState::Uds(VsockUdsState {
                 path: "test".to_owned(),
             })
         }
 
-        #[tracing::instrument(level = "trace", skip(state))]
+        #[tracing::instrument(level = "info", skip(state))]
         fn restore(
             _: Self::ConstructorArgs,
             state: &Self::State,

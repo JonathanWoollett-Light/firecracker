@@ -34,7 +34,7 @@ pub struct NetConfigSpaceState {
 }
 
 impl NetConfigSpaceState {
-    #[tracing::instrument(level = "trace", skip(self, version))]
+    #[tracing::instrument(level = "info", skip(self, version))]
     fn de_guest_mac_v2(&mut self, version: u16) -> VersionizeResult<()> {
         // v1.1 and older versions do not have optional MAC address.
         warn!("Optional MAC address will be set to older version.");
@@ -44,7 +44,7 @@ impl NetConfigSpaceState {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, _target_version))]
+    #[tracing::instrument(level = "info", skip(self, _target_version))]
     fn ser_guest_mac_v2(&mut self, _target_version: u16) -> VersionizeResult<()> {
         // v1.1 and older versions do not have optional MAC address.
         warn!("Saving to older snapshot version, optional MAC address will not be saved.");
@@ -55,7 +55,7 @@ impl NetConfigSpaceState {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn def_guest_mac_old(_: u16) -> [u8; MAC_ADDR_LEN] {
         // v1.2 and newer don't use this field anyway
         Default::default()
@@ -93,7 +93,7 @@ impl Persist<'_> for Net {
     type ConstructorArgs = NetConstructorArgs;
     type Error = Error;
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn save(&self) -> Self::State {
         NetState {
             id: self.id().clone(),
@@ -109,7 +109,7 @@ impl Persist<'_> for Net {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(constructor_args, state))]
+    #[tracing::instrument(level = "info", skip(constructor_args, state))]
     fn restore(
         constructor_args: Self::ConstructorArgs,
         state: &Self::State,
@@ -170,7 +170,7 @@ mod tests {
     use crate::devices::virtio::net::test_utils::{default_net, default_net_no_mmds};
     use crate::devices::virtio::test_utils::default_mem;
 
-    #[tracing::instrument(level = "trace", skip(net, mmds_ds))]
+    #[tracing::instrument(level = "info", skip(net, mmds_ds))]
     fn validate_save_and_restore(net: Net, mmds_ds: Option<Arc<Mutex<Mmds>>>) {
         let guest_mem = default_mem();
         let mut mem = vec![0; 4096];

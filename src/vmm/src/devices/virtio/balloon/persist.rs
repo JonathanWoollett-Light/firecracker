@@ -41,7 +41,7 @@ pub struct BalloonStatsState {
 }
 
 impl BalloonStatsState {
-    #[tracing::instrument(level = "trace", skip(stats))]
+    #[tracing::instrument(level = "info", skip(stats))]
     fn from_stats(stats: &BalloonStats) -> Self {
         Self {
             swap_in: stats.swap_in,
@@ -57,7 +57,7 @@ impl BalloonStatsState {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn create_stats(&self) -> BalloonStats {
         BalloonStats {
             target_pages: 0,
@@ -98,7 +98,7 @@ impl Persist<'_> for Balloon {
     type ConstructorArgs = BalloonConstructorArgs;
     type Error = super::BalloonError;
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn save(&self) -> Self::State {
         BalloonState {
             stats_polling_interval_s: self.stats_polling_interval_s,
@@ -112,7 +112,7 @@ impl Persist<'_> for Balloon {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(constructor_args, state))]
+    #[tracing::instrument(level = "info", skip(constructor_args, state))]
     fn restore(
         constructor_args: Self::ConstructorArgs,
         state: &Self::State,

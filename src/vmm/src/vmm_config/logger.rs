@@ -14,7 +14,7 @@ use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 use tracing::Event;
-use tracing_subscriber::fmt::format::{self, FormatEvent, FormatFields};
+use tracing_subscriber::fmt::format::{self, FormatEvent, FormatFields, FmtSpan};
 use tracing_subscriber::fmt::writer::BoxMakeWriter;
 use tracing_subscriber::fmt::{FmtContext, Layer as FmtLayer};
 use tracing_subscriber::layer::SubscriberExt;
@@ -267,6 +267,7 @@ impl LoggerConfig {
                 None => BoxMakeWriter::new(std::io::stdout),
             };
             let fmt_subscriber = FmtLayer::new()
+            .with_span_events(FmtSpan::ENTER | FmtSpan::EXIT)
                 .event_format(LoggerFormatter::new(
                     self.show_level.unwrap_or_default(),
                     self.show_log_origin.unwrap_or_default(),

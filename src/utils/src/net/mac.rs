@@ -30,7 +30,7 @@ pub struct MacAddr {
 }
 
 impl fmt::Display for MacAddr {
-    #[tracing::instrument(level = "trace", skip(self, f))]
+    #[tracing::instrument(level = "info", skip(self, f))]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let b = &self.bytes;
         write!(
@@ -42,14 +42,14 @@ impl fmt::Display for MacAddr {
 }
 
 impl From<[u8; 6]> for MacAddr {
-    #[tracing::instrument(level = "trace", skip(bytes))]
+    #[tracing::instrument(level = "info", skip(bytes))]
     fn from(bytes: [u8; 6]) -> Self {
         Self { bytes }
     }
 }
 
 impl From<MacAddr> for [u8; 6] {
-    #[tracing::instrument(level = "trace", skip(mac))]
+    #[tracing::instrument(level = "info", skip(mac))]
     fn from(mac: MacAddr) -> Self {
         mac.bytes
     }
@@ -57,7 +57,7 @@ impl From<MacAddr> for [u8; 6] {
 
 impl FromStr for MacAddr {
     type Err = String;
-    #[tracing::instrument(level = "trace", skip(s))]
+    #[tracing::instrument(level = "info", skip(s))]
     /// Try to turn a `&str` into a `MacAddr` object. The method will return the `str` that failed
     /// to be parsed.
     /// # Arguments
@@ -91,7 +91,7 @@ impl FromStr for MacAddr {
 }
 
 impl MacAddr {
-    #[tracing::instrument(level = "trace", skip(src))]
+    #[tracing::instrument(level = "info", skip(src))]
     /// Create a `MacAddr` from a slice.
     /// Does not check whether `src.len()` == `MAC_ADDR_LEN`.
     /// # Arguments
@@ -114,7 +114,7 @@ impl MacAddr {
         MacAddr { bytes }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Return the underlying content of this `MacAddr` in bytes.
     /// # Example
     ///
@@ -130,7 +130,7 @@ impl MacAddr {
 }
 
 impl Serialize for MacAddr {
-    #[tracing::instrument(level = "trace", skip(self, serializer))]
+    #[tracing::instrument(level = "info", skip(self, serializer))]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -140,7 +140,7 @@ impl Serialize for MacAddr {
 }
 
 impl<'de> Deserialize<'de> for MacAddr {
-    #[tracing::instrument(level = "trace", skip(deserializer))]
+    #[tracing::instrument(level = "info", skip(deserializer))]
     fn deserialize<D>(deserializer: D) -> Result<MacAddr, D::Error>
     where
         D: Deserializer<'de>,

@@ -168,7 +168,7 @@ fn test_disallow_dump_cpu_config_without_pausing() {
     vmm.lock().unwrap().stop(FcExitCode::Ok);
 }
 
-#[tracing::instrument(level = "trace", skip(is_diff))]
+#[tracing::instrument(level = "info", skip(is_diff))]
 fn verify_create_snapshot(is_diff: bool) -> (TempFile, TempFile) {
     let snapshot_file = TempFile::new().unwrap();
     let memory_file = TempFile::new().unwrap();
@@ -233,7 +233,7 @@ fn verify_create_snapshot(is_diff: bool) -> (TempFile, TempFile) {
     (snapshot_file, memory_file)
 }
 
-#[tracing::instrument(level = "trace", skip(snapshot_file, memory_file))]
+#[tracing::instrument(level = "info", skip(snapshot_file, memory_file))]
 fn verify_load_snapshot(snapshot_file: TempFile, memory_file: TempFile) {
     use utils::vm_memory::GuestMemoryMmap;
     use vmm::memory_snapshot::SnapshotMemory;
@@ -341,7 +341,7 @@ fn test_snapshot_load_sanity_checks() {
     );
 }
 
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 fn get_microvm_state_from_snapshot() -> MicrovmState {
     // Create a diff snapshot
     let (snapshot_file, _) = verify_create_snapshot(true);

@@ -7,7 +7,7 @@ use vmm::cpu_config::templates::CustomCpuTemplate;
 use crate::template::strip::{strip_common, Error};
 use crate::utils::aarch64::RegModifierMap;
 
-#[tracing::instrument(level = "trace", skip(templates))]
+#[tracing::instrument(level = "info", skip(templates))]
 #[allow(dead_code)]
 pub fn strip(templates: Vec<CustomCpuTemplate>) -> Result<Vec<CustomCpuTemplate>, Error> {
     // Convert `Vec<CustomCpuTemplate>` to `Vec<HashMap<_>>`.
@@ -43,7 +43,7 @@ mod tests {
     // * An addr 0x0 modifier exists in all the templates but its value is different.
     // * An addr 0x1 modifier exists in all the templates and its value is same.
     // * An addr 0x2 modifier only exist in the third template.
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     #[rustfmt::skip]
     fn build_input_templates() -> Vec<CustomCpuTemplate> {
         vec![
@@ -69,7 +69,7 @@ mod tests {
         ]
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     #[rustfmt::skip]
     fn build_expected_templates() -> Vec<CustomCpuTemplate> {
         vec![

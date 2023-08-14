@@ -123,7 +123,7 @@ impl Endpoint {
         })
     }
 
-    #[tracing::instrument(level = "trace", skip(segment))]
+    #[tracing::instrument(level = "info", skip(segment))]
     pub fn new_with_defaults<T: NetworkBytes + Debug>(
         segment: &TcpSegment<T>,
     ) -> Result<Self, PassiveOpenError> {
@@ -136,7 +136,7 @@ impl Endpoint {
         )
     }
 
-    #[tracing::instrument(level = "trace", skip(self, s, callback))]
+    #[tracing::instrument(level = "info", skip(self, s, callback))]
     pub fn receive_segment<T: NetworkBytes + Debug, F: FnOnce(Request) -> Response>(
         &mut self,
         s: &TcpSegment<T>,
@@ -255,7 +255,7 @@ impl Endpoint {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self, buf, mss_reserved))]
+    #[tracing::instrument(level = "info", skip(self, buf, mss_reserved))]
     pub fn write_next_segment<'a>(
         &mut self,
         buf: &'a mut [u8],
@@ -288,20 +288,20 @@ impl Endpoint {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     #[inline]
     pub fn is_done(&self) -> bool {
         self.connection.is_done()
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     #[inline]
     pub fn is_evictable(&self) -> bool {
         timestamp_cycles().wrapping_sub(self.last_segment_received_timestamp)
             > self.eviction_threshold
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn next_segment_status(&self) -> NextSegmentStatus {
         let can_send_new_data = !self.response_buf.is_empty()
             && seq_after(
@@ -316,21 +316,21 @@ impl Endpoint {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     #[inline]
     pub fn connection(&self) -> &Connection {
         &self.connection
     }
 }
 
-#[tracing::instrument(level = "trace", skip(status_code, body))]
+#[tracing::instrument(level = "info", skip(status_code, body))]
 fn build_response(status_code: StatusCode, body: Body) -> Response {
     let mut response = Response::new(Version::default(), status_code);
     response.set_body(body);
     response
 }
 
-#[tracing::instrument(level = "trace", skip(byte_stream, callback))]
+#[tracing::instrument(level = "info", skip(byte_stream, callback))]
 /// Parses the request bytes and builds a `micro_http::Response` by the given callback function.
 fn parse_request_bytes<F: FnOnce(Request) -> Response>(
     byte_stream: &[u8],
@@ -377,7 +377,7 @@ mod tests {
     use crate::tcp::tests::mock_callback;
 
     impl Endpoint {
-        #[tracing::instrument(level = "trace", skip(self, value))]
+        #[tracing::instrument(level = "info", skip(self, value))]
         pub fn set_eviction_threshold(&mut self, value: u64) {
             self.eviction_threshold = value;
         }

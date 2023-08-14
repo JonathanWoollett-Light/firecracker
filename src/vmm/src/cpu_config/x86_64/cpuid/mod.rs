@@ -68,13 +68,13 @@ pub const VENDOR_ID_AMD_STR: &str = unsafe { std::str::from_utf8_unchecked(VENDO
 /// To store the brand string we have 3 leaves, each with 4 registers, each with 4 bytes.
 pub const BRAND_STRING_LENGTH: usize = 3 * 4 * 4;
 
-#[tracing::instrument(level = "trace", skip(leaf))]
+#[tracing::instrument(level = "info", skip(leaf))]
 /// Mimic of [`std::arch::x86_64::__cpuid`] that wraps [`cpuid_count`].
 fn cpuid(leaf: u32) -> std::arch::x86_64::CpuidResult {
     cpuid_count(leaf, 0)
 }
 
-#[tracing::instrument(level = "trace", skip(leaf, subleaf))]
+#[tracing::instrument(level = "info", skip(leaf, subleaf))]
 /// Safe wrapper around [`std::arch::x86_64::__cpuid_count`].
 fn cpuid_count(leaf: u32, subleaf: u32) -> std::arch::x86_64::CpuidResult {
     // JUSTIFICATION: There is no safe alternative.
@@ -82,7 +82,7 @@ fn cpuid_count(leaf: u32, subleaf: u32) -> std::arch::x86_64::CpuidResult {
     unsafe { std::arch::x86_64::__cpuid_count(leaf, subleaf) }
 }
 
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 /// Gets the Intel default brand.
 // As we pass through host frequency, we require CPUID and thus `cfg(cpuid)`.
 /// Gets host brand string.
@@ -248,7 +248,7 @@ pub trait CpuidTrait {
 }
 
 impl CpuidTrait for kvm_bindings::CpuId {
-    #[tracing::instrument(level = "trace", skip(self, leaf, subleaf))]
+    #[tracing::instrument(level = "info", skip(self, leaf, subleaf))]
     /// Gets a given sub-leaf.
     #[allow(clippy::transmute_ptr_to_ptr, clippy::unwrap_used)]
     #[inline]
@@ -269,7 +269,7 @@ impl CpuidTrait for kvm_bindings::CpuId {
         })
     }
 
-    #[tracing::instrument(level = "trace", skip(self, leaf, subleaf))]
+    #[tracing::instrument(level = "info", skip(self, leaf, subleaf))]
     /// Gets a given sub-leaf.
     #[allow(clippy::transmute_ptr_to_ptr, clippy::unwrap_used)]
     #[inline]
@@ -328,7 +328,7 @@ pub enum Cpuid {
 }
 
 impl Cpuid {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns `Some(&mut IntelCpuid)` if `Self == Self::Intel(_)` else returns `None`.
     #[inline]
     #[must_use]
@@ -339,7 +339,7 @@ impl Cpuid {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns `Some(&IntelCpuid)` if `Self == Self::Intel(_)` else returns `None`.
     #[inline]
     #[must_use]
@@ -350,7 +350,7 @@ impl Cpuid {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns `Some(&AmdCpuid)` if `Self == Self::Amd(_)` else returns `None`.
     #[inline]
     #[must_use]
@@ -361,7 +361,7 @@ impl Cpuid {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns `Some(&mut AmdCpuid)` if `Self == Self::Amd(_)` else returns `None`.
     #[inline]
     #[must_use]
@@ -372,7 +372,7 @@ impl Cpuid {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns imumutable reference to inner BTreeMap<CpuidKey, CpuidEntry>.
     #[inline]
     #[must_use]
@@ -383,7 +383,7 @@ impl Cpuid {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns mutable reference to inner BTreeMap<CpuidKey, CpuidEntry>.
     #[inline]
     #[must_use]
@@ -396,7 +396,7 @@ impl Cpuid {
 }
 
 impl CpuidTrait for Cpuid {
-    #[tracing::instrument(level = "trace", skip(self, key))]
+    #[tracing::instrument(level = "info", skip(self, key))]
     /// Gets a given sub-leaf.
     #[inline]
     fn get(&self, key: &CpuidKey) -> Option<&CpuidEntry> {
@@ -406,7 +406,7 @@ impl CpuidTrait for Cpuid {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self, key))]
+    #[tracing::instrument(level = "info", skip(self, key))]
     /// Gets a given sub-leaf.
     #[inline]
     fn get_mut(&mut self, key: &CpuidKey) -> Option<&mut CpuidEntry> {
@@ -420,7 +420,7 @@ impl CpuidTrait for Cpuid {
 impl TryFrom<kvm_bindings::CpuId> for Cpuid {
     type Error = CpuidTryFromKvmCpuid;
 
-    #[tracing::instrument(level = "trace", skip(kvm_cpuid))]
+    #[tracing::instrument(level = "info", skip(kvm_cpuid))]
     #[inline]
     fn try_from(kvm_cpuid: kvm_bindings::CpuId) -> Result<Self, Self::Error> {
         let vendor_id = kvm_cpuid
@@ -438,7 +438,7 @@ impl TryFrom<kvm_bindings::CpuId> for Cpuid {
 impl TryFrom<Cpuid> for kvm_bindings::CpuId {
     type Error = utils::fam::Error;
 
-    #[tracing::instrument(level = "trace", skip(cpuid))]
+    #[tracing::instrument(level = "info", skip(cpuid))]
     fn try_from(cpuid: Cpuid) -> Result<Self, Self::Error> {
         let entries = cpuid
             .inner()
@@ -469,7 +469,7 @@ pub struct CpuidKey {
 }
 
 impl CpuidKey {
-    #[tracing::instrument(level = "trace", skip(leaf))]
+    #[tracing::instrument(level = "info", skip(leaf))]
     /// `CpuidKey { leaf, subleaf: 0 }`
     #[inline]
     #[must_use]
@@ -477,7 +477,7 @@ impl CpuidKey {
         Self { leaf, subleaf: 0 }
     }
 
-    #[tracing::instrument(level = "trace", skip(leaf, subleaf))]
+    #[tracing::instrument(level = "info", skip(leaf, subleaf))]
     /// `CpuidKey { leaf, subleaf }`
     #[inline]
     #[must_use]
@@ -487,7 +487,7 @@ impl CpuidKey {
 }
 
 impl std::cmp::PartialOrd for CpuidKey {
-    #[tracing::instrument(level = "trace", skip(self, other))]
+    #[tracing::instrument(level = "info", skip(self, other))]
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(
@@ -527,7 +527,7 @@ impl KvmCpuidFlags {
 
 #[allow(clippy::derivable_impls)]
 impl Default for KvmCpuidFlags {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     #[inline]
     fn default() -> Self {
         Self(0)
@@ -605,7 +605,7 @@ pub struct CpuidRegisters {
 }
 
 impl From<core::arch::x86_64::CpuidResult> for CpuidRegisters {
-    #[tracing::instrument(level = "trace", skip(eax, ebx, ecx, edx))]
+    #[tracing::instrument(level = "info", skip(eax, ebx, ecx, edx))]
     #[inline]
     fn from(
         core::arch::x86_64::CpuidResult { eax, ebx, ecx, edx }: core::arch::x86_64::CpuidResult,
@@ -620,7 +620,7 @@ mod tests {
 
     use super::*;
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_intel_leaf0_for_cpuid() -> (CpuidKey, CpuidEntry) {
         (
             CpuidKey {
@@ -640,7 +640,7 @@ mod tests {
         )
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_intel_leaf0_for_kvmcpuid() -> kvm_bindings::kvm_cpuid_entry2 {
         kvm_bindings::kvm_cpuid_entry2 {
             function: 0x0,
@@ -655,7 +655,7 @@ mod tests {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_amd_leaf0_for_cpuid() -> (CpuidKey, CpuidEntry) {
         (
             CpuidKey {
@@ -675,7 +675,7 @@ mod tests {
         )
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_amd_leaf0_for_kvmcpuid() -> kvm_bindings::kvm_cpuid_entry2 {
         kvm_bindings::kvm_cpuid_entry2 {
             function: 0x0,
@@ -690,7 +690,7 @@ mod tests {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_sample_leaf_for_cpuid() -> (CpuidKey, CpuidEntry) {
         (
             CpuidKey {
@@ -709,7 +709,7 @@ mod tests {
         )
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_sample_leaf_for_kvmcpuid() -> kvm_bindings::kvm_cpuid_entry2 {
         kvm_bindings::kvm_cpuid_entry2 {
             function: 0x1,
@@ -723,7 +723,7 @@ mod tests {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_sample_intel_cpuid() -> Cpuid {
         Cpuid::Intel(IntelCpuid(BTreeMap::from([
             build_intel_leaf0_for_cpuid(),
@@ -731,7 +731,7 @@ mod tests {
         ])))
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_sample_intel_kvmcpuid() -> kvm_bindings::CpuId {
         kvm_bindings::CpuId::from_entries(&[
             build_intel_leaf0_for_kvmcpuid(),
@@ -740,7 +740,7 @@ mod tests {
         .unwrap()
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_sample_amd_cpuid() -> Cpuid {
         Cpuid::Amd(AmdCpuid(BTreeMap::from([
             build_amd_leaf0_for_cpuid(),
@@ -748,7 +748,7 @@ mod tests {
         ])))
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn build_sample_amd_kvmcpuid() -> kvm_bindings::CpuId {
         kvm_bindings::CpuId::from_entries(&[
             build_amd_leaf0_for_kvmcpuid(),

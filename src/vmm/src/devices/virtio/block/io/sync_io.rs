@@ -26,18 +26,18 @@ pub struct SyncFileEngine {
 unsafe impl Send for SyncFileEngine {}
 
 impl SyncFileEngine {
-    #[tracing::instrument(level = "trace", skip(file))]
+    #[tracing::instrument(level = "info", skip(file))]
     pub fn from_file(file: File) -> SyncFileEngine {
         SyncFileEngine { file }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     #[cfg(test)]
     pub fn file(&self) -> &File {
         &self.file
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset, mem, addr, count))]
+    #[tracing::instrument(level = "info", skip(self, offset, mem, addr, count))]
     pub fn read(
         &mut self,
         offset: u64,
@@ -54,7 +54,7 @@ impl SyncFileEngine {
         Ok(count)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset, mem, addr, count))]
+    #[tracing::instrument(level = "info", skip(self, offset, mem, addr, count))]
     pub fn write(
         &mut self,
         offset: u64,
@@ -71,7 +71,7 @@ impl SyncFileEngine {
         Ok(count)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn flush(&mut self) -> Result<(), Error> {
         // flush() first to force any cached data out of rust buffers.
         self.file.flush().map_err(Error::Flush)?;

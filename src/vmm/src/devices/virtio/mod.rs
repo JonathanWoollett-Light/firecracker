@@ -74,12 +74,12 @@ pub trait AsAny {
     fn as_mut_any(&mut self) -> &mut dyn Any;
 }
 impl<T: Any> AsAny for T {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn as_any(&self) -> &dyn Any {
         self
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn as_mut_any(&mut self) -> &mut dyn Any {
         self
     }

@@ -25,7 +25,7 @@ pub enum Error {
     NumberOfInputs,
 }
 
-#[tracing::instrument(level = "trace", skip(maps))]
+#[tracing::instrument(level = "info", skip(maps))]
 fn strip_common<K, V>(maps: &mut [HashMap<K, RegisterValueFilter<V>>]) -> Result<(), Error>
 where
     K: ModifierMapKey + Debug,

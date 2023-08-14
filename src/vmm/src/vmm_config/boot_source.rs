@@ -72,7 +72,7 @@ pub struct BootConfig {
 }
 
 impl BootConfig {
-    #[tracing::instrument(level = "trace", skip(cfg))]
+    #[tracing::instrument(level = "info", skip(cfg))]
     /// Creates the BootConfig based on a given configuration.
     pub fn new(cfg: &BootSourceConfig) -> std::result::Result<Self, BootSourceConfigError> {
         use self::BootSourceConfigError::{
