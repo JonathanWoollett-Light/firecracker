@@ -76,7 +76,7 @@ impl ApiServerAdapter {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self, req_action))]
+    #[tracing::instrument(level = "info", skip(self, req_action))]
     fn handle_request(&mut self, req_action: VmmAction) {
         let response = self.controller.handle_request(req_action);
         // Send back the result.
@@ -87,7 +87,7 @@ impl ApiServerAdapter {
     }
 }
 impl MutEventSubscriber for ApiServerAdapter {
-    #[tracing::instrument(level = "trace", skip(self, event))]
+    #[tracing::instrument(level = "info", skip(self, event))]
     /// Handle a read event (EPOLLIN).
     fn process(&mut self, event: Events, _: &mut EventOps) {
         let source = event.fd();
@@ -130,7 +130,7 @@ impl MutEventSubscriber for ApiServerAdapter {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self, ops))]
+    #[tracing::instrument(level = "info", skip(self, ops))]
     fn init(&mut self, ops: &mut EventOps) {
         if let Err(err) = ops.add(Events::new(&self.api_event_fd, EventSet::IN)) {
             error!("Failed to register activate event: {}", err);

@@ -59,7 +59,7 @@ pub struct TokenBucketConfig {
 }
 
 impl From<&TokenBucket> for TokenBucketConfig {
-    #[tracing::instrument(level = "trace", skip(tb))]
+    #[tracing::instrument(level = "info", skip(tb))]
     fn from(tb: &TokenBucket) -> Self {
         let one_time_burst = match tb.initial_one_time_burst() {
             0 => None,
@@ -93,7 +93,7 @@ pub struct RateLimiterUpdate {
     pub ops: BucketUpdate,
 }
 
-#[tracing::instrument(level = "trace", skip(tb_cfg))]
+#[tracing::instrument(level = "info", skip(tb_cfg))]
 fn get_bucket_update(tb_cfg: &Option<TokenBucketConfig>) -> BucketUpdate {
     match tb_cfg {
         // There is data to update.
@@ -114,7 +114,7 @@ fn get_bucket_update(tb_cfg: &Option<TokenBucketConfig>) -> BucketUpdate {
 }
 
 impl From<Option<RateLimiterConfig>> for RateLimiterUpdate {
-    #[tracing::instrument(level = "trace", skip(cfg))]
+    #[tracing::instrument(level = "info", skip(cfg))]
     fn from(cfg: Option<RateLimiterConfig>) -> Self {
         if let Some(cfg) = cfg {
             RateLimiterUpdate {
@@ -133,7 +133,7 @@ impl From<Option<RateLimiterConfig>> for RateLimiterUpdate {
 
 impl TryInto<RateLimiter> for RateLimiterConfig {
     type Error = io::Error;
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn try_into(self) -> Result<RateLimiter, Self::Error> {
         let bw = self.bandwidth.unwrap_or_default();
         let ops = self.ops.unwrap_or_default();
@@ -149,7 +149,7 @@ impl TryInto<RateLimiter> for RateLimiterConfig {
 }
 
 impl From<&RateLimiter> for RateLimiterConfig {
-    #[tracing::instrument(level = "trace", skip(rl))]
+    #[tracing::instrument(level = "info", skip(rl))]
     fn from(rl: &RateLimiter) -> Self {
         RateLimiterConfig {
             bandwidth: rl.bandwidth().map(TokenBucketConfig::from),
@@ -160,7 +160,7 @@ impl From<&RateLimiter> for RateLimiterConfig {
 
 impl RateLimiterConfig {
     // Option<T> already implements From<T> so we have to use a custom one.
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn into_option(self) -> Option<RateLimiterConfig> {
         if self.bandwidth.is_some() || self.ops.is_some() {
             Some(self)
@@ -170,7 +170,7 @@ impl RateLimiterConfig {
     }
 }
 
-#[tracing::instrument(level = "trace", skip(path))]
+#[tracing::instrument(level = "info", skip(path))]
 /// Create and opens a File for writing to it.
 /// In case we open a FIFO, in order to not block the instance if nobody is consuming the message
 /// that is flushed to the two pipes, we are opening it with `O_NONBLOCK` flag.

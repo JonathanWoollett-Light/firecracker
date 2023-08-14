@@ -19,7 +19,7 @@ pub const NOISY_KERNEL_IMAGE: &str = "test_noisy_elf.bin";
 #[cfg(target_arch = "aarch64")]
 pub const NOISY_KERNEL_IMAGE: &str = "test_pe.bin";
 
-#[tracing::instrument(level = "trace", skip(kernel_image))]
+#[tracing::instrument(level = "info", skip(kernel_image))]
 pub fn kernel_image_path(kernel_image: Option<&str>) -> String {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path.push("src/utilities/mock_resources");
@@ -41,7 +41,7 @@ macro_rules! generate_from {
 pub struct MockBootSourceConfig(BootSourceConfig);
 
 impl MockBootSourceConfig {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     pub fn new() -> MockBootSourceConfig {
         MockBootSourceConfig(BootSourceConfig {
             kernel_image_path: kernel_image_path(None),
@@ -50,13 +50,13 @@ impl MockBootSourceConfig {
         })
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn with_default_boot_args(mut self) -> Self {
         self.0.boot_args = Some(DEFAULT_BOOT_ARGS.to_string());
         self
     }
 
-    #[tracing::instrument(level = "trace", skip(self, kernel_image))]
+    #[tracing::instrument(level = "info", skip(self, kernel_image))]
     #[cfg(target_arch = "x86_64")]
     pub fn with_kernel(mut self, kernel_image: &str) -> Self {
         self.0.kernel_image_path = kernel_image_path(Some(kernel_image));
@@ -65,7 +65,7 @@ impl MockBootSourceConfig {
 }
 
 impl Default for MockBootSourceConfig {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         Self::new()
     }
@@ -75,25 +75,25 @@ impl Default for MockBootSourceConfig {
 pub struct MockVmResources(VmResources);
 
 impl MockVmResources {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     pub fn new() -> MockVmResources {
         MockVmResources::default()
     }
 
-    #[tracing::instrument(level = "trace", skip(self, boot_source_cfg))]
+    #[tracing::instrument(level = "info", skip(self, boot_source_cfg))]
     pub fn with_boot_source(mut self, boot_source_cfg: BootSourceConfig) -> Self {
         self.0.build_boot_source(boot_source_cfg).unwrap();
         self
     }
 
-    #[tracing::instrument(level = "trace", skip(self, vm_config))]
+    #[tracing::instrument(level = "info", skip(self, vm_config))]
     pub fn with_vm_config(mut self, vm_config: MachineConfig) -> Self {
         let machine_config = MachineConfigUpdate::from(vm_config);
         self.0.update_vm_config(&machine_config).unwrap();
         self
     }
 
-    #[tracing::instrument(level = "trace", skip(self, cpu_template))]
+    #[tracing::instrument(level = "info", skip(self, cpu_template))]
     pub fn set_cpu_template(&mut self, cpu_template: CustomCpuTemplate) {
         self.0.vm_config.set_custom_cpu_template(cpu_template);
     }
@@ -103,12 +103,12 @@ impl MockVmResources {
 pub struct MockVmConfig(MachineConfig);
 
 impl MockVmConfig {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     pub fn new() -> MockVmConfig {
         MockVmConfig::default()
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn with_dirty_page_tracking(mut self) -> Self {
         self.0.track_dirty_pages = true;
         self

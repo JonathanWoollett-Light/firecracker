@@ -25,7 +25,7 @@ impl Persist<'_> for TokenBucket {
     type ConstructorArgs = ();
     type Error = io::Error;
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn save(&self) -> Self::State {
         TokenBucketState {
             size: self.size,
@@ -36,7 +36,7 @@ impl Persist<'_> for TokenBucket {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(state))]
+    #[tracing::instrument(level = "info", skip(state))]
     fn restore(_: Self::ConstructorArgs, state: &Self::State) -> Result<Self, Self::Error> {
         let now = Instant::now();
         let last_update = now
@@ -67,7 +67,7 @@ impl Persist<'_> for RateLimiter {
     type ConstructorArgs = ();
     type Error = io::Error;
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn save(&self) -> Self::State {
         RateLimiterState {
             ops: self.ops.as_ref().map(|ops| ops.save()),
@@ -75,7 +75,7 @@ impl Persist<'_> for RateLimiter {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(state))]
+    #[tracing::instrument(level = "info", skip(state))]
     fn restore(_: Self::ConstructorArgs, state: &Self::State) -> Result<Self, Self::Error> {
         let rate_limiter = RateLimiter {
             ops: if let Some(ops) = state.ops.as_ref() {

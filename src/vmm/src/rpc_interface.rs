@@ -277,7 +277,7 @@ pub struct PrebootApiController<'a, F, G> {
 
 // TODO Remove when `EventManager` implements `std::fmt::Debug`.
 impl<'a, F, G> fmt::Debug for PrebootApiController<'a, F, G> {
-    #[tracing::instrument(level = "trace", skip(self, f))]
+    #[tracing::instrument(level = "info", skip(self, f))]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("PrebootApiController")
             .field("seccomp_filters", &self.seccomp_filters)
@@ -292,7 +292,7 @@ impl<'a, F, G> fmt::Debug for PrebootApiController<'a, F, G> {
 }
 
 impl<F, G> MmdsRequestHandler for PrebootApiController<'_, F, G> {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn mmds(&mut self) -> MutexGuard<'_, Mmds> {
         self.vm_resources.locked_mmds_or_default()
     }
@@ -447,7 +447,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
         Ok((vm_resources, vmm))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, request))]
+    #[tracing::instrument(level = "info", skip(self, request))]
     /// Handles the incoming preboot request and provides a response for it.
     /// Returns a built/running `Vmm` after handling a successful `StartMicroVm` request.
     pub fn handle_preboot_request(
@@ -511,7 +511,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn balloon_config(&mut self) -> Result<VmmData, VmmActionError> {
         self.vm_resources
             .balloon
@@ -520,7 +520,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
             .map_err(VmmActionError::BalloonConfig)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, cfg))]
+    #[tracing::instrument(level = "info", skip(self, cfg))]
     fn insert_block_device(&mut self, cfg: BlockDeviceConfig) -> Result<VmmData, VmmActionError> {
         self.boot_path = true;
         self.vm_resources
@@ -529,7 +529,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
             .map_err(VmmActionError::DriveConfig)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, cfg))]
+    #[tracing::instrument(level = "info", skip(self, cfg))]
     fn insert_net_device(
         &mut self,
         cfg: NetworkInterfaceConfig,
@@ -541,7 +541,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
             .map_err(VmmActionError::NetworkConfig)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, cfg))]
+    #[tracing::instrument(level = "info", skip(self, cfg))]
     fn set_balloon_device(&mut self, cfg: BalloonDeviceConfig) -> Result<VmmData, VmmActionError> {
         self.boot_path = true;
         self.vm_resources
@@ -550,7 +550,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
             .map_err(VmmActionError::BalloonConfig)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, cfg))]
+    #[tracing::instrument(level = "info", skip(self, cfg))]
     fn set_boot_source(&mut self, cfg: BootSourceConfig) -> Result<VmmData, VmmActionError> {
         self.boot_path = true;
         self.vm_resources
@@ -559,7 +559,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
             .map_err(VmmActionError::BootSource)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, cfg))]
+    #[tracing::instrument(level = "info", skip(self, cfg))]
     fn set_mmds_config(&mut self, cfg: MmdsConfig) -> Result<VmmData, VmmActionError> {
         self.boot_path = true;
         self.vm_resources
@@ -568,7 +568,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
             .map_err(VmmActionError::MmdsConfig)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, cfg))]
+    #[tracing::instrument(level = "info", skip(self, cfg))]
     fn update_vm_config(&mut self, cfg: MachineConfigUpdate) -> Result<VmmData, VmmActionError> {
         self.boot_path = true;
         self.vm_resources
@@ -577,7 +577,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
             .map_err(VmmActionError::MachineConfig)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, cpu_template))]
+    #[tracing::instrument(level = "info", skip(self, cpu_template))]
     fn set_custom_cpu_template(
         &mut self,
         cpu_template: CustomCpuTemplate,
@@ -586,7 +586,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
         Ok(VmmData::Empty)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, cfg))]
+    #[tracing::instrument(level = "info", skip(self, cfg))]
     fn set_vsock_device(&mut self, cfg: VsockDeviceConfig) -> Result<VmmData, VmmActionError> {
         self.boot_path = true;
         self.vm_resources
@@ -595,7 +595,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
             .map_err(VmmActionError::VsockConfig)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, cfg))]
+    #[tracing::instrument(level = "info", skip(self, cfg))]
     fn set_entropy_device(&mut self, cfg: EntropyDeviceConfig) -> Result<VmmData, VmmActionError> {
         self.boot_path = true;
         self.vm_resources.build_entropy_device(cfg)?;
@@ -604,7 +604,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
 
     // On success, this command will end the pre-boot stage and this controller
     // will be replaced by a runtime controller.
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn start_microvm(&mut self) -> Result<VmmData, VmmActionError> {
         build_and_boot_microvm(
             &self.instance_info,
@@ -621,7 +621,7 @@ impl<'a, F: Fn(&tracing::Metadata<'_>) -> bool, G: Fn(&tracing::Metadata<'_>) ->
 
     // On success, this command will end the pre-boot stage and this controller
     // will be replaced by a runtime controller.
-    #[tracing::instrument(level = "trace", skip(self, load_params))]
+    #[tracing::instrument(level = "info", skip(self, load_params))]
     fn load_snapshot(
         &mut self,
         load_params: &LoadSnapshotParams,
@@ -691,14 +691,14 @@ pub struct RuntimeApiController {
 }
 
 impl MmdsRequestHandler for RuntimeApiController {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn mmds(&mut self) -> MutexGuard<'_, Mmds> {
         self.vm_resources.locked_mmds_or_default()
     }
 }
 
 impl RuntimeApiController {
-    #[tracing::instrument(level = "trace", skip(self, request))]
+    #[tracing::instrument(level = "info", skip(self, request))]
     /// Handles the incoming runtime `VmmAction` request and provides a response for it.
     pub fn handle_request(&mut self, request: VmmAction) -> Result<VmmData, VmmActionError> {
         use self::VmmAction::*;
@@ -771,13 +771,13 @@ impl RuntimeApiController {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(vm_resources, vmm))]
+    #[tracing::instrument(level = "info", skip(vm_resources, vmm))]
     /// Creates a new `RuntimeApiController`.
     pub fn new(vm_resources: VmResources, vmm: Arc<Mutex<Vmm>>) -> Self {
         Self { vmm, vm_resources }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Pauses the microVM by pausing the vCPUs.
     pub fn pause(&mut self) -> Result<VmmData, VmmActionError> {
         let pause_start_us = utils::time::get_time_us(utils::time::ClockType::Monotonic);
@@ -791,7 +791,7 @@ impl RuntimeApiController {
         Ok(VmmData::Empty)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Resumes the microVM by resuming the vCPUs.
     pub fn resume(&mut self) -> Result<VmmData, VmmActionError> {
         let resume_start_us = utils::time::get_time_us(utils::time::ClockType::Monotonic);
@@ -805,7 +805,7 @@ impl RuntimeApiController {
         Ok(VmmData::Empty)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Write the metrics on user demand (flush). We use the word `flush` here to highlight the fact
     /// that the metrics will be written immediately.
     /// Defer to inner Vmm. We'll move to a variant where the Vmm simply exposes functionality like
@@ -820,7 +820,7 @@ impl RuntimeApiController {
             .map_err(VmmActionError::InternalVmm)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Injects CTRL+ALT+DEL keystroke combo to the inner Vmm (if present).
     #[cfg(target_arch = "x86_64")]
     fn send_ctrl_alt_del(&mut self) -> Result<VmmData, VmmActionError> {
@@ -832,7 +832,7 @@ impl RuntimeApiController {
             .map_err(VmmActionError::InternalVmm)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, create_params))]
+    #[tracing::instrument(level = "info", skip(self, create_params))]
     fn create_snapshot(
         &mut self,
         create_params: &CreateSnapshotParams,
@@ -884,7 +884,7 @@ impl RuntimeApiController {
         Ok(VmmData::Empty)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, new_cfg))]
+    #[tracing::instrument(level = "info", skip(self, new_cfg))]
     /// Updates block device properties:
     ///  - path of the host file backing the emulated block device, update the disk image on the
     ///    device and its virtio configuration
@@ -911,7 +911,7 @@ impl RuntimeApiController {
         Ok(VmmData::Empty)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, new_cfg))]
+    #[tracing::instrument(level = "info", skip(self, new_cfg))]
     /// Updates configuration for an emulated net device as described in `new_cfg`.
     fn update_net_rate_limiters(
         &mut self,
@@ -949,7 +949,7 @@ mod tests {
     use crate::vmm_config::vsock::VsockBuilder;
 
     impl PartialEq for VmmActionError {
-        #[tracing::instrument(level = "trace", skip(self, other))]
+        #[tracing::instrument(level = "info", skip(self, other))]
         fn eq(&self, other: &VmmActionError) -> bool {
             use VmmActionError::*;
             matches!(
@@ -998,7 +998,7 @@ mod tests {
     }
 
     impl MockVmRes {
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn balloon_config(&mut self) -> Result<BalloonConfig, BalloonError> {
             if self.force_errors {
                 return Err(BalloonError::DeviceNotFound);
@@ -1007,17 +1007,17 @@ mod tests {
             Ok(BalloonConfig::default())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn track_dirty_pages(&self) -> bool {
             self.vm_config.track_dirty_pages
         }
 
-        #[tracing::instrument(level = "trace", skip(self, dirty_page_tracking))]
+        #[tracing::instrument(level = "info", skip(self, dirty_page_tracking))]
         pub fn set_track_dirty_pages(&mut self, dirty_page_tracking: bool) {
             self.vm_config.track_dirty_pages = dirty_page_tracking;
         }
 
-        #[tracing::instrument(level = "trace", skip(self, update))]
+        #[tracing::instrument(level = "info", skip(self, update))]
         pub fn update_vm_config(
             &mut self,
             update: &MachineConfigUpdate,
@@ -1031,7 +1031,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn set_balloon_device(
             &mut self,
             _: BalloonDeviceConfig,
@@ -1043,7 +1043,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self, boot_source))]
+        #[tracing::instrument(level = "info", skip(self, boot_source))]
         pub fn build_boot_source(
             &mut self,
             boot_source: BootSourceConfig,
@@ -1058,12 +1058,12 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn boot_source_config(&self) -> &BootSourceConfig {
             &self.boot_src
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn set_block_device(&mut self, _: BlockDeviceConfig) -> Result<(), DriveError> {
             if self.force_errors {
                 return Err(DriveError::RootBlockDeviceAlreadyAdded);
@@ -1072,7 +1072,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn build_net_device(
             &mut self,
             _: NetworkInterfaceConfig,
@@ -1084,7 +1084,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn set_vsock_device(&mut self, _: VsockDeviceConfig) -> Result<(), VsockConfigError> {
             if self.force_errors {
                 return Err(VsockConfigError::CreateVsockDevice(
@@ -1095,7 +1095,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn build_entropy_device(
             &mut self,
             _: EntropyDeviceConfig,
@@ -1109,7 +1109,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self, mmds_config))]
+        #[tracing::instrument(level = "info", skip(self, mmds_config))]
         pub fn set_mmds_config(
             &mut self,
             mmds_config: MmdsConfig,
@@ -1125,7 +1125,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         /// If not initialised, create the mmds data store with the default config.
         pub fn mmds_or_default(&mut self) -> &Arc<Mutex<Mmds>> {
             self.mmds
@@ -1134,14 +1134,14 @@ mod tests {
                 ))))
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         /// If not initialised, create the mmds data store with the default config.
         pub fn locked_mmds_or_default(&mut self) -> MutexGuard<'_, Mmds> {
             let mmds = self.mmds_or_default();
             mmds.lock().expect("Poisoned lock")
         }
 
-        #[tracing::instrument(level = "trace", skip(self, cpu_template))]
+        #[tracing::instrument(level = "info", skip(self, cpu_template))]
         /// Update the CPU configuration for the guest.
         pub fn set_custom_cpu_template(&mut self, cpu_template: CustomCpuTemplate) {
             self.vm_config.set_custom_cpu_template(cpu_template);
@@ -1149,14 +1149,14 @@ mod tests {
     }
 
     impl From<&MockVmRes> for VmmConfig {
-        #[tracing::instrument(level = "trace", skip())]
+        #[tracing::instrument(level = "info", skip())]
         fn from(_: &MockVmRes) -> Self {
             VmmConfig::default()
         }
     }
 
     impl From<&MockVmRes> for VmInfo {
-        #[tracing::instrument(level = "trace", skip(value))]
+        #[tracing::instrument(level = "info", skip(value))]
         fn from(value: &MockVmRes) -> Self {
             Self {
                 mem_size_mib: value.vm_config.mem_size_mib as u64,
@@ -1185,7 +1185,7 @@ mod tests {
     }
 
     impl MockVmm {
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn resume_vm(&mut self) -> Result<(), VmmError> {
             if self.force_errors {
                 return Err(VmmError::VcpuResume);
@@ -1194,7 +1194,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn pause_vm(&mut self) -> Result<(), VmmError> {
             if self.force_errors {
                 return Err(VmmError::VcpuPause);
@@ -1203,7 +1203,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         #[cfg(target_arch = "x86_64")]
         pub fn send_ctrl_alt_del(&mut self) -> Result<(), VmmError> {
             if self.force_errors {
@@ -1215,7 +1215,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn balloon_config(&mut self) -> Result<BalloonConfig, BalloonError> {
             if self.force_errors {
                 return Err(BalloonError::DeviceNotFound);
@@ -1224,7 +1224,7 @@ mod tests {
             Ok(BalloonConfig::default())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn latest_balloon_stats(&mut self) -> Result<BalloonStats, BalloonError> {
             if self.force_errors {
                 return Err(BalloonError::DeviceNotFound);
@@ -1233,7 +1233,7 @@ mod tests {
             Ok(BalloonStats::default())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn update_balloon_config(&mut self, _: u32) -> Result<(), BalloonError> {
             if self.force_errors {
                 return Err(BalloonError::DeviceNotFound);
@@ -1242,7 +1242,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn update_balloon_stats_config(&mut self, _: u16) -> Result<(), BalloonError> {
             if self.force_errors {
                 return Err(BalloonError::DeviceNotFound);
@@ -1251,7 +1251,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn update_block_device_path(&mut self, _: &str, _: String) -> Result<(), VmmError> {
             if self.force_errors {
                 return Err(VmmError::DeviceManager(
@@ -1262,7 +1262,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn update_block_rate_limiter(
             &mut self,
             _: &str,
@@ -1272,7 +1272,7 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn update_net_rate_limiters(
             &mut self,
             _: &str,
@@ -1290,12 +1290,12 @@ mod tests {
             Ok(())
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn instance_info(&self) -> InstanceInfo {
             InstanceInfo::default()
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         pub fn version(&self) -> String {
             String::default()
         }
@@ -1303,7 +1303,7 @@ mod tests {
 
     // Need to redefine this since the non-test one uses real VmResources
     // and real Vmm instead of our mocks.
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     pub fn build_and_boot_microvm(
         _: &InstanceInfo,
         _: &VmResources,
@@ -1315,7 +1315,7 @@ mod tests {
 
     // Need to redefine this since the non-test one uses real Vmm
     // instead of our mocks.
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     pub fn create_snapshot(
         _: &mut Vmm,
         _: &VmInfo,
@@ -1327,7 +1327,7 @@ mod tests {
 
     // Need to redefine this since the non-test one uses real Vmm
     // instead of our mocks.
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     pub fn restore_from_snapshot(
         _: &InstanceInfo,
         _: &mut EventManager,
@@ -1382,7 +1382,7 @@ mod tests {
         });
     }
 
-    #[tracing::instrument(level = "trace", skip(request, check_success))]
+    #[tracing::instrument(level = "info", skip(request, check_success))]
     fn check_runtime_request<F>(request: VmmAction, check_success: F)
     where
         F: FnOnce(Result<VmmData, VmmActionError>, &MockVmm),
@@ -1393,7 +1393,7 @@ mod tests {
         check_success(res, &vmm.lock().unwrap());
     }
 
-    #[tracing::instrument(level = "trace", skip(request, mmds, check_success))]
+    #[tracing::instrument(level = "info", skip(request, mmds, check_success))]
     fn check_runtime_request_with_mmds<F>(
         request: VmmAction,
         mmds: Arc<Mutex<Mmds>>,

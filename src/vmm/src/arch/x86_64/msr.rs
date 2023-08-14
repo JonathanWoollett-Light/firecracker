@@ -260,7 +260,7 @@ pub fn msr_should_serialize(index: u32) -> bool {
         .any(|range| range.contains(index))
 }
 
-#[tracing::instrument(level = "trace", skip(kvm_fd))]
+#[tracing::instrument(level = "info", skip(kvm_fd))]
 /// Returns the list of serializable MSR indices.
 ///
 /// # Arguments
@@ -397,7 +397,7 @@ static UNDUMPABLE_MSR_RANGES: &[MsrRange] = &[
     MSR_RANGE!(HV_X64_MSR_SYNDBG_OPTIONS),
 ];
 
-#[tracing::instrument(level = "trace", skip(index))]
+#[tracing::instrument(level = "info", skip(index))]
 /// Specifies whether a particular MSR should be dumped.
 ///
 /// # Arguments
@@ -420,7 +420,7 @@ static UNDUMPABLE_MSR_RANGES_AMD: &[MsrRange] = &[
     MSR_RANGE!(MSR_IA32_ARCH_CAPABILITIES),
 ];
 
-#[tracing::instrument(level = "trace", skip(index))]
+#[tracing::instrument(level = "info", skip(index))]
 /// Specifies whether a particular MSR should be dumped on AMD
 ///
 /// # Arguments
@@ -432,7 +432,7 @@ pub fn msr_should_dump_amd(index: u32) -> bool {
         .any(|range| range.contains(index))
 }
 
-#[tracing::instrument(level = "trace", skip(kvm_fd))]
+#[tracing::instrument(level = "info", skip(kvm_fd))]
 /// Returns the list of dumpable MSR indices.
 ///
 /// # Arguments
@@ -456,7 +456,7 @@ pub fn get_msrs_to_dump(kvm_fd: &Kvm) -> Result<MsrList, MsrError> {
     Ok(msr_index_list)
 }
 
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 /// Creates and populates required MSR entries for booting Linux on X86_64.
 pub fn create_boot_msr_entries() -> Vec<kvm_msr_entry> {
     let msr_entry_default = |msr| kvm_msr_entry {
@@ -485,7 +485,7 @@ pub fn create_boot_msr_entries() -> Vec<kvm_msr_entry> {
     ]
 }
 
-#[tracing::instrument(level = "trace", skip(vcpu, msr_entries))]
+#[tracing::instrument(level = "info", skip(vcpu, msr_entries))]
 /// Configure Model Specific Registers (MSRs) required to boot Linux for a given x86_64 vCPU.
 ///
 /// # Arguments
@@ -517,7 +517,7 @@ mod tests {
 
     use super::*;
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn create_vcpu() -> VcpuFd {
         let kvm = Kvm::new().unwrap();
         let vm = kvm.create_vm().unwrap();

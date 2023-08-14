@@ -51,7 +51,7 @@ struct HostCacheStore {
 
 #[cfg(not(test))]
 impl Default for CacheEngine {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         CacheEngine {
             store: Box::new(HostCacheStore {
@@ -62,7 +62,7 @@ impl Default for CacheEngine {
 }
 
 impl CacheStore for HostCacheStore {
-    #[tracing::instrument(level = "trace", skip(self, index, file_name))]
+    #[tracing::instrument(level = "info", skip(self, index, file_name))]
     fn get_by_key(&self, index: u8, file_name: &str) -> Result<String, CacheInfoError> {
         readln_special(&PathBuf::from(format!(
             "{}/index{}/{}",
@@ -74,7 +74,7 @@ impl CacheStore for HostCacheStore {
 }
 
 impl CacheEntry {
-    #[tracing::instrument(level = "trace", skip(index, store))]
+    #[tracing::instrument(level = "info", skip(index, store))]
     fn from_index(index: u8, store: &dyn CacheStore) -> Result<CacheEntry, CacheInfoError> {
         let mut err_str = String::new();
         let mut cache: CacheEntry = CacheEntry::default();
@@ -142,7 +142,7 @@ impl CacheEntry {
 }
 
 impl Default for CacheEntry {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         CacheEntry {
             level: 0,
@@ -164,7 +164,7 @@ pub(crate) enum CacheType {
 }
 
 impl CacheType {
-    #[tracing::instrument(level = "trace", skip(string))]
+    #[tracing::instrument(level = "info", skip(string))]
     fn try_from(string: &str) -> Result<Self, CacheInfoError> {
         match string.trim() {
             "Instruction" => Ok(Self::Instruction),
@@ -178,7 +178,7 @@ impl CacheType {
     }
 
     // The below are auxiliary functions used for constructing the FDT.
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn of_cache_size(&self) -> &str {
         match self {
             Self::Instruction => "i-cache-size",
@@ -187,7 +187,7 @@ impl CacheType {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn of_cache_line_size(&self) -> &str {
         match self {
             Self::Instruction => "i-cache-line-size",
@@ -196,7 +196,7 @@ impl CacheType {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn of_cache_type(&self) -> Option<&'static str> {
         match self {
             Self::Instruction => None,
@@ -205,7 +205,7 @@ impl CacheType {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn of_cache_sets(&self) -> &str {
         match self {
             Self::Instruction => "i-cache-sets",
@@ -215,13 +215,13 @@ impl CacheType {
     }
 }
 
-#[tracing::instrument(level = "trace", skip(file_path))]
+#[tracing::instrument(level = "info", skip(file_path))]
 fn readln_special<T: AsRef<Path>>(file_path: &T) -> Result<String, CacheInfoError> {
     let line = fs::read_to_string(file_path)?;
     Ok(line.trim_end().to_string())
 }
 
-#[tracing::instrument(level = "trace", skip(cache_size_pretty))]
+#[tracing::instrument(level = "info", skip(cache_size_pretty))]
 fn to_bytes(cache_size_pretty: &mut String) -> Result<usize, CacheInfoError> {
     match cache_size_pretty.pop() {
         Some('K') => Ok(cache_size_pretty.parse::<usize>().map_err(|err| {
@@ -250,7 +250,7 @@ fn to_bytes(cache_size_pretty: &mut String) -> Result<usize, CacheInfoError> {
 // Expected input is a list of 32-bit comma separated hex values,
 // without the 0x prefix.
 //
-#[tracing::instrument(level = "trace", skip(mask_str))]
+#[tracing::instrument(level = "info", skip(mask_str))]
 fn mask_str2bit_count(mask_str: &str) -> Result<u16, CacheInfoError> {
     let split_mask_iter = mask_str.split(',');
     let mut bit_count: u16 = 0;
@@ -275,7 +275,7 @@ fn mask_str2bit_count(mask_str: &str) -> Result<u16, CacheInfoError> {
     Ok(bit_count)
 }
 
-#[tracing::instrument(level = "trace", skip(cache_l1, cache_non_l1, cache))]
+#[tracing::instrument(level = "info", skip(cache_l1, cache_non_l1, cache))]
 fn append_cache_level(
     cache_l1: &mut Vec<CacheEntry>,
     cache_non_l1: &mut Vec<CacheEntry>,
@@ -288,7 +288,7 @@ fn append_cache_level(
     }
 }
 
-#[tracing::instrument(level = "trace", skip(cache_l1, cache_non_l1))]
+#[tracing::instrument(level = "info", skip(cache_l1, cache_non_l1))]
 pub(crate) fn read_cache_config(
     cache_l1: &mut Vec<CacheEntry>,
     cache_non_l1: &mut Vec<CacheEntry>,
@@ -338,7 +338,7 @@ mod tests {
     }
 
     impl Default for CacheEngine {
-        #[tracing::instrument(level = "trace", skip())]
+        #[tracing::instrument(level = "info", skip())]
         fn default() -> Self {
             CacheEngine {
                 store: Box::new(MockCacheStore {
@@ -349,7 +349,7 @@ mod tests {
     }
 
     impl CacheEngine {
-        #[tracing::instrument(level = "trace", skip(map))]
+        #[tracing::instrument(level = "info", skip(map))]
         fn new(map: &HashMap<String, String>) -> Self {
             CacheEngine {
                 store: Box::new(MockCacheStore {
@@ -360,7 +360,7 @@ mod tests {
     }
 
     impl CacheStore for MockCacheStore {
-        #[tracing::instrument(level = "trace", skip(self, index, file_name))]
+        #[tracing::instrument(level = "info", skip(self, index, file_name))]
         fn get_by_key(&self, index: u8, file_name: &str) -> Result<String, CacheInfoError> {
             let key = format!("index{}/{}", index, file_name);
             if let Some(val) = self.dummy_fs.get(&key) {
@@ -373,7 +373,7 @@ mod tests {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn create_default_store() -> HashMap<String, String> {
         let mut cache_struct = HashMap::new();
         cache_struct.insert("index0/level".to_string(), "1".to_string());

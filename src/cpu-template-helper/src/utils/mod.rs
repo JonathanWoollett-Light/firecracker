@@ -36,7 +36,7 @@ pub trait DiffString<V> {
 impl<V: Numeric> DiffString<V> for V {
     // Generate a string to display difference of filtered values between CPU template and guest
     // CPU config.
-    #[tracing::instrument(level = "trace", skip(template,config))]
+    #[tracing::instrument(level = "info", skip(template,config))]
     #[rustfmt::skip]
     fn to_diff_string(template: V, config: V) -> String {
         let mut diff = String::new();
@@ -70,7 +70,7 @@ pub enum UtilsError {
 }
 
 #[allow(clippy::type_complexity)]
-#[tracing::instrument(level = "trace", skip(config))]
+#[tracing::instrument(level = "info", skip(config))]
 pub fn build_microvm_from_config(
     config: &str,
 ) -> Result<
@@ -104,7 +104,7 @@ pub fn build_microvm_from_config(
     Ok(((vmm, vm_resources), flame_guard))
 }
 
-#[tracing::instrument(level = "trace", skip(path, suffix))]
+#[tracing::instrument(level = "info", skip(path, suffix))]
 pub fn add_suffix(path: &Path, suffix: &str) -> PathBuf {
     // Extract the part of the filename before the extension.
     let mut new_file_name = OsString::from(path.file_stem().unwrap());
@@ -137,7 +137,7 @@ pub mod tests {
 
     impl ModifierMapKey for MockModifierMapKey {}
     impl Display for MockModifierMapKey {
-        #[tracing::instrument(level = "trace", skip(self, f))]
+        #[tracing::instrument(level = "info", skip(self, f))]
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             write!(f, "ID={:#x}", self.0)
         }

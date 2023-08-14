@@ -30,7 +30,7 @@ impl Init {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self,f))]
+    #[tracing::instrument(level = "info", skip(self,f))]
     /// Performs an initialization routine.
     ///
     /// The given closure will be executed if the current state is `UNINITIALIZED`.
@@ -68,7 +68,7 @@ impl Init {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Checks if the current state is `INITIALIZED`.
     #[inline]
     pub fn is_initialized(&self) -> bool {

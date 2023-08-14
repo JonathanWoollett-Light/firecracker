@@ -189,7 +189,7 @@ const fn mask(range: std::ops::Range<u8>) -> u32 {
 // `normalize`.
 #[allow(clippy::multiple_inherent_impl)]
 impl super::Cpuid {
-    #[tracing::instrument(level = "trace", skip(self, cpu_index, cpu_count, cpu_bits))]
+    #[tracing::instrument(level = "info", skip(self, cpu_index, cpu_count, cpu_bits))]
     /// Applies required modifications to CPUID respective of a vCPU.
     ///
     /// # Errors
@@ -229,7 +229,7 @@ impl super::Cpuid {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Pass-through the vendor ID from the host. This is used to prevent modification of the vendor
     /// ID via custom CPU templates.
     fn update_vendor_id(&mut self) -> Result<(), VendorIdError> {
@@ -247,7 +247,7 @@ impl super::Cpuid {
     }
 
     // Update feature information entry
-    #[tracing::instrument(level = "trace", skip(self, cpu_index, cpu_count))]
+    #[tracing::instrument(level = "info", skip(self, cpu_index, cpu_count))]
     fn update_feature_info_entry(
         &mut self,
         cpu_index: u8,
@@ -477,7 +477,7 @@ impl super::Cpuid {
     }
 
     // Update extended cache features entry
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn update_extended_cache_features(&mut self) -> Result<(), ExtendedCacheFeaturesError> {
         // Leaf 0x800000005 indicates L1 Cache and TLB Information.
         let guest_leaf_0x80000005 = self

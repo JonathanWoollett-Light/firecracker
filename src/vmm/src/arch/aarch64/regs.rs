@@ -155,7 +155,7 @@ impl RegSize {
 }
 
 impl From<u64> for RegSize {
-    #[tracing::instrument(level = "trace", skip(value))]
+    #[tracing::instrument(level = "info", skip(value))]
     fn from(value: u64) -> Self {
         match value {
             RegSize::U8_SIZE => RegSize::U8,
@@ -173,7 +173,7 @@ impl From<u64> for RegSize {
 }
 
 impl From<RegSize> for u64 {
-    #[tracing::instrument(level = "trace", skip(value))]
+    #[tracing::instrument(level = "info", skip(value))]
     fn from(value: RegSize) -> Self {
         match value {
             RegSize::U8 => RegSize::U8_SIZE,
@@ -189,7 +189,7 @@ impl From<RegSize> for u64 {
     }
 }
 
-#[tracing::instrument(level = "trace", skip(reg_id))]
+#[tracing::instrument(level = "info", skip(reg_id))]
 /// Returns register size in bytes
 pub fn reg_size(reg_id: u64) -> u64 {
     2_u64.pow(((reg_id & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT) as u32)
@@ -205,26 +205,26 @@ struct Aarch64RegisterVecInner {
 }
 
 impl Aarch64RegisterVecInner {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns the number of elements in the vector.
     fn len(&self) -> usize {
         self.ids.len()
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns true if the vector contains no elements.
     fn is_empty(&self) -> bool {
         self.ids.is_empty()
     }
 
-    #[tracing::instrument(level = "trace", skip(self, reg))]
+    #[tracing::instrument(level = "info", skip(self, reg))]
     /// Appends a register to the vector, copying register data.
     fn push(&mut self, reg: Aarch64RegisterRef<'_>) {
         self.ids.push(reg.id);
         self.data.extend_from_slice(reg.data);
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns an iterator over stored registers.
     fn iter(&self) -> impl Iterator<Item = Aarch64RegisterRef> {
         Aarch64RegisterVecIterator {
@@ -235,7 +235,7 @@ impl Aarch64RegisterVecInner {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns an iterator over stored registers that allows register modifications.
     fn iter_mut(&mut self) -> impl Iterator<Item = Aarch64RegisterRefMut> {
         Aarch64RegisterVecIteratorMut {
@@ -256,31 +256,31 @@ pub struct Aarch64RegisterVec {
 }
 
 impl Aarch64RegisterVec {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns the number of elements in the vector.
     pub fn len(&self) -> usize {
         self.inner.len()
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns true if the vector contains no elements.
     pub fn is_empty(&self) -> bool {
         self.inner.is_empty()
     }
 
-    #[tracing::instrument(level = "trace", skip(self, reg))]
+    #[tracing::instrument(level = "info", skip(self, reg))]
     /// Appends a register to the vector, copying register data.
     pub fn push(&mut self, reg: Aarch64RegisterRef<'_>) {
         self.inner.push(reg);
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns an iterator over stored registers.
     pub fn iter(&self) -> impl Iterator<Item = Aarch64RegisterRef> {
         self.inner.iter()
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns an iterator over stored registers that allows register modifications.
     pub fn iter_mut(&mut self) -> impl Iterator<Item = Aarch64RegisterRefMut> {
         self.inner.iter_mut()
@@ -288,7 +288,7 @@ impl Aarch64RegisterVec {
 }
 
 impl Versionize for Aarch64RegisterVec {
-    #[tracing::instrument(level = "trace", skip(self, writer, version_map, target_version))]
+    #[tracing::instrument(level = "info", skip(self, writer, version_map, target_version))]
     fn serialize<W: std::io::Write>(
         &self,
         writer: &mut W,
@@ -298,7 +298,7 @@ impl Versionize for Aarch64RegisterVec {
         self.inner.serialize(writer, version_map, target_version)
     }
 
-    #[tracing::instrument(level = "trace", skip(reader, version_map, source_version))]
+    #[tracing::instrument(level = "info", skip(reader, version_map, source_version))]
     fn deserialize<R: std::io::Read>(
         reader: &mut R,
         version_map: &VersionMap,
@@ -331,7 +331,7 @@ impl Versionize for Aarch64RegisterVec {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn version() -> u16 {
         Aarch64RegisterVecInner::version()
     }
@@ -349,7 +349,7 @@ pub struct Aarch64RegisterVecIterator<'a> {
 impl<'a> Iterator for Aarch64RegisterVecIterator<'a> {
     type Item = Aarch64RegisterRef<'a>;
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn next(&mut self) -> Option<Self::Item> {
         if self.index < self.ids.len() {
             let id = self.ids[self.index];
@@ -379,7 +379,7 @@ pub struct Aarch64RegisterVecIteratorMut<'a> {
 impl<'a> Iterator for Aarch64RegisterVecIteratorMut<'a> {
     type Item = Aarch64RegisterRefMut<'a>;
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn next(&mut self) -> Option<Self::Item> {
         if self.index < self.ids.len() {
             let id = self.ids[self.index];
@@ -407,7 +407,7 @@ pub struct Aarch64RegisterRef<'a> {
 }
 
 impl<'a> Aarch64RegisterRef<'a> {
-    #[tracing::instrument(level = "trace", skip(id, data))]
+    #[tracing::instrument(level = "info", skip(id, data))]
     /// Creates new register reference with provided id and data.
     /// Register size in `id` should be equal to the
     /// length of the slice. Otherwise this method
@@ -422,13 +422,13 @@ impl<'a> Aarch64RegisterRef<'a> {
         Self { id, data }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns register size in bytes
     pub fn size(&self) -> RegSize {
         reg_size(self.id).into()
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns a register value.
     /// Type `T` must be of the same length as an
     /// underlying data slice. Otherwise this method
@@ -437,7 +437,7 @@ impl<'a> Aarch64RegisterRef<'a> {
         T::from_slice(self.data)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns register data as a byte slice
     pub fn as_slice(&self) -> &[u8] {
         self.data
@@ -453,7 +453,7 @@ pub struct Aarch64RegisterRefMut<'a> {
 }
 
 impl<'a> Aarch64RegisterRefMut<'a> {
-    #[tracing::instrument(level = "trace", skip(id, data))]
+    #[tracing::instrument(level = "info", skip(id, data))]
     /// Creates new register reference with provided id and data.
     /// Register size in `id` should be equal to the
     /// length of the slice. Otherwise this method
@@ -468,13 +468,13 @@ impl<'a> Aarch64RegisterRefMut<'a> {
         Self { id, data }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns register size in bytes
     pub fn size(&self) -> RegSize {
         reg_size(self.id).into()
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns a register value.
     /// Type `T` must be of the same length as an
     /// underlying data slice. Otherwise this method
@@ -483,7 +483,7 @@ impl<'a> Aarch64RegisterRefMut<'a> {
         T::from_slice(self.data)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, value))]
+    #[tracing::instrument(level = "info", skip(self, value))]
     /// Sets the register value.
     /// Type `T` must be of the same length as an
     /// underlying data slice. Otherwise this method
@@ -508,7 +508,7 @@ pub struct Aarch64RegisterOld {
 impl<'a> TryFrom<Aarch64RegisterRef<'a>> for Aarch64RegisterOld {
     type Error = &'static str;
 
-    #[tracing::instrument(level = "trace", skip(value))]
+    #[tracing::instrument(level = "info", skip(value))]
     fn try_from(value: Aarch64RegisterRef) -> Result<Self, Self::Error> {
         let reg = match value.size() {
             RegSize::U32 => Self {
@@ -532,7 +532,7 @@ impl<'a> TryFrom<Aarch64RegisterRef<'a>> for Aarch64RegisterOld {
 impl<'a> TryFrom<&Aarch64RegisterOld> for Aarch64RegisterRef<'a> {
     type Error = &'static str;
 
-    #[tracing::instrument(level = "trace", skip(value))]
+    #[tracing::instrument(level = "info", skip(value))]
     fn try_from(value: &Aarch64RegisterOld) -> Result<Self, Self::Error> {
         // # Safety:
         // `self.data` is a valid memory and slice size is valid for this type.

@@ -21,7 +21,7 @@ macro_rules! check_metric_after_block {
     }};
 }
 
-#[tracing::instrument(level = "trace", skip(region_size))]
+#[tracing::instrument(level = "info", skip(region_size))]
 /// Creates a [`GuestMemoryMmap`] with a single region of the given size starting at guest physical
 /// address 0
 pub fn single_region_mem(region_size: usize) -> GuestMemoryMmap {
@@ -29,7 +29,7 @@ pub fn single_region_mem(region_size: usize) -> GuestMemoryMmap {
         .unwrap()
 }
 
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 /// Creates a [`GuestMemoryMmap`] with a single region  of size 65536 (= 0x10000 hex) starting at
 /// guest physical address 0
 pub fn default_mem() -> GuestMemoryMmap {
@@ -43,7 +43,7 @@ pub struct InputData {
 }
 
 impl InputData {
-    #[tracing::instrument(level = "trace", skip(self, len))]
+    #[tracing::instrument(level = "info", skip(self, len))]
     pub fn get_slice(&self, len: usize) -> &[u8] {
         let old_pos = self.read_pos.fetch_add(len, Ordering::AcqRel);
         &self.data[old_pos..old_pos + len]
@@ -63,7 +63,7 @@ impl<'a, T> SomeplaceInMemory<'a, T>
 where
     T: Debug + utils::vm_memory::ByteValued,
 {
-    #[tracing::instrument(level = "trace", skip(location, mem))]
+    #[tracing::instrument(level = "info", skip(location, mem))]
     fn new(location: GuestAddress, mem: &'a GuestMemoryMmap) -> Self {
         SomeplaceInMemory {
             location,
@@ -73,20 +73,20 @@ where
     }
 
     // Reads from the actual memory location.
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn get(&self) -> T {
         self.mem.read_obj(self.location).unwrap()
     }
 
     // Writes to the actual memory location.
-    #[tracing::instrument(level = "trace", skip(self, val))]
+    #[tracing::instrument(level = "info", skip(self, val))]
     pub fn set(&self, val: T) {
         self.mem.write_obj(val, self.location).unwrap()
     }
 
     // This function returns a place in memory which holds a value of type U, and starts
     // offset bytes after the current location.
-    #[tracing::instrument(level = "trace", skip(self, offset))]
+    #[tracing::instrument(level = "info", skip(self, offset))]
     fn map_offset<U: Debug>(&self, offset: usize) -> SomeplaceInMemory<'a, U> {
         SomeplaceInMemory {
             location: self.location.checked_add(offset as u64).unwrap(),
@@ -97,12 +97,12 @@ where
 
     // This function returns a place in memory which holds a value of type U, and starts
     // immediately after the end of self (which is location + sizeof(T)).
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn next_place<U: Debug>(&self) -> SomeplaceInMemory<'a, U> {
         self.map_offset::<U>(mem::size_of::<T>())
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn end(&self) -> GuestAddress {
         self.location
             .checked_add(mem::size_of::<T>() as u64)
@@ -122,7 +122,7 @@ pub struct VirtqDesc<'a> {
 impl<'a> VirtqDesc<'a> {
     pub const ALIGNMENT: u64 = 16;
 
-    #[tracing::instrument(level = "trace", skip(start, mem))]
+    #[tracing::instrument(level = "info", skip(start, mem))]
     fn new(start: GuestAddress, mem: &'a GuestMemoryMmap) -> Self {
         assert_eq!(start.0 & (Self::ALIGNMENT - 1), 0);
 
@@ -139,17 +139,17 @@ impl<'a> VirtqDesc<'a> {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn start(&self) -> GuestAddress {
         self.addr.location
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn end(&self) -> GuestAddress {
         self.next.end()
     }
 
-    #[tracing::instrument(level = "trace", skip(self, addr, len, flags, next))]
+    #[tracing::instrument(level = "info", skip(self, addr, len, flags, next))]
     pub fn set(&self, addr: u64, len: u32, flags: u16, next: u16) {
         self.addr.set(addr);
         self.len.set(len);
@@ -157,12 +157,12 @@ impl<'a> VirtqDesc<'a> {
         self.next.set(next);
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn memory(&self) -> &'a GuestMemoryMmap {
         self.addr.mem
     }
 
-    #[tracing::instrument(level = "trace", skip(self, data))]
+    #[tracing::instrument(level = "info", skip(self, data))]
     pub fn set_data(&mut self, data: &[u8]) {
         assert!(self.len.get() as usize >= data.len());
         let mem = self.addr.mem;
@@ -171,7 +171,7 @@ impl<'a> VirtqDesc<'a> {
             .is_ok());
     }
 
-    #[tracing::instrument(level = "trace", skip(self, expected_data))]
+    #[tracing::instrument(level = "info", skip(self, expected_data))]
     pub fn check_data(&self, expected_data: &[u8]) {
         assert!(self.len.get() as usize >= expected_data.len());
         let mem = self.addr.mem;
@@ -197,7 +197,7 @@ impl<'a, T> VirtqRing<'a, T>
 where
     T: Debug + utils::vm_memory::ByteValued,
 {
-    #[tracing::instrument(level = "trace", skip(start, mem, qsize, alignment))]
+    #[tracing::instrument(level = "info", skip(start, mem, qsize, alignment))]
     fn new(start: GuestAddress, mem: &'a GuestMemoryMmap, qsize: u16, alignment: usize) -> Self {
         assert_eq!(start.0 & (alignment as u64 - 1), 0);
 
@@ -227,7 +227,7 @@ where
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn end(&self) -> GuestAddress {
         self.event.end()
     }
@@ -255,7 +255,7 @@ pub struct VirtQueue<'a> {
 
 impl<'a> VirtQueue<'a> {
     // We try to make sure things are aligned properly :-s
-    #[tracing::instrument(level = "trace", skip(start, mem, qsize))]
+    #[tracing::instrument(level = "info", skip(start, mem, qsize))]
     pub fn new(start: GuestAddress, mem: &'a GuestMemoryMmap, qsize: u16) -> Self {
         // power of 2?
         assert!(qsize > 0 && qsize & (qsize - 1) == 0);
@@ -288,33 +288,33 @@ impl<'a> VirtQueue<'a> {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn memory(&self) -> &'a GuestMemoryMmap {
         self.used.flags.mem
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn size(&self) -> u16 {
         self.dtable.len() as u16
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn dtable_start(&self) -> GuestAddress {
         self.dtable.first().unwrap().start()
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn avail_start(&self) -> GuestAddress {
         self.avail.flags.location
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn used_start(&self) -> GuestAddress {
         self.used.flags.location
     }
 
     // Creates a new Queue, using the underlying memory regions represented by the VirtQueue.
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn create_queue(&self) -> Queue {
         let mut q = Queue::new(self.size());
 
@@ -327,17 +327,17 @@ impl<'a> VirtQueue<'a> {
         q
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn start(&self) -> GuestAddress {
         self.dtable_start()
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     pub fn end(&self) -> GuestAddress {
         self.used.end()
     }
 
-    #[tracing::instrument(level = "trace", skip(self, used_index, expected_id, expected_len))]
+    #[tracing::instrument(level = "info", skip(self, used_index, expected_id, expected_len))]
     pub fn check_used_elem(&self, used_index: u16, expected_id: u16, expected_len: u32) {
         let used_elem = self.used.ring[used_index as usize].get();
         assert_eq!(used_elem.id, u32::from(expected_id));
@@ -357,7 +357,7 @@ pub(crate) mod test {
     use crate::devices::virtio::test_utils::{VirtQueue, VirtqDesc};
     use crate::devices::virtio::{Queue, VirtioDevice, MAX_BUFFER_SIZE, VIRTQ_DESC_F_NEXT};
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     pub fn create_virtio_mem() -> GuestMemoryMmap {
         utils::vm_memory::test_utils::create_guest_memory_unguarded(
             &[(GuestAddress(0), MAX_BUFFER_SIZE)],
@@ -395,7 +395,7 @@ pub(crate) mod test {
     }
 
     impl<T: VirtioTestDevice + MutEventSubscriber + Debug> fmt::Debug for VirtioTestHelper<'_, T> {
-        #[tracing::instrument(level = "trace", skip(self, f))]
+        #[tracing::instrument(level = "info", skip(self, f))]
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             f.debug_struct("VirtioTestHelper")
                 .field("event_manager", &"?")
@@ -413,7 +413,7 @@ pub(crate) mod test {
         const QUEUE_SIZE: u16 = 16;
 
         // Helper function to create a set of Virtqueues for the device
-        #[tracing::instrument(level = "trace", skip(mem, num_queues))]
+        #[tracing::instrument(level = "info", skip(mem, num_queues))]
         fn create_virtqueues(mem: &'a GuestMemoryMmap, num_queues: usize) -> Vec<VirtQueue> {
             (0..num_queues)
                 .scan(GuestAddress(0), |next_addr, _| {
@@ -426,7 +426,7 @@ pub(crate) mod test {
                 .collect::<Vec<_>>()
         }
 
-        #[tracing::instrument(level = "trace", skip(mem, device))]
+        #[tracing::instrument(level = "info", skip(mem, device))]
         /// Create a new Virtio Device test helper
         pub fn new(mem: &'a GuestMemoryMmap, mut device: T) -> VirtioTestHelper<'a, T> {
             let mut event_manager = EventManager::new().unwrap();
@@ -445,13 +445,13 @@ pub(crate) mod test {
             }
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         /// Get a (locked) reference to the device
         pub fn device(&mut self) -> MutexGuard<T> {
             self.device.lock().unwrap()
         }
 
-        #[tracing::instrument(level = "trace", skip(self, mem))]
+        #[tracing::instrument(level = "info", skip(self, mem))]
         /// Activate the device
         pub fn activate_device(&mut self, mem: &'a GuestMemoryMmap) {
             self.device.lock().unwrap().activate(mem.clone()).unwrap();
@@ -460,7 +460,7 @@ pub(crate) mod test {
             assert_eq!(ev_count, 1);
         }
 
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         /// Get the start of the data region
         ///
         /// The first address that can be used for data in the guest memory mmap
@@ -470,7 +470,7 @@ pub(crate) mod test {
             self.virtqueues.last().unwrap().end().raw_value()
         }
 
-        #[tracing::instrument(level = "trace", skip(self, queue, addr_offset, desc_list))]
+        #[tracing::instrument(level = "info", skip(self, queue, addr_offset, desc_list))]
         /// Add a new Descriptor in one of the device's queues
         ///
         /// This function adds in one of the queues of the device a DescriptorChain at some offset
@@ -523,7 +523,7 @@ pub(crate) mod test {
             event_fd.write(1).unwrap();
         }
 
-        #[tracing::instrument(level = "trace", skip(self, msec))]
+        #[tracing::instrument(level = "info", skip(self, msec))]
         /// Emulate the device for a period of time
         ///
         /// # Arguments

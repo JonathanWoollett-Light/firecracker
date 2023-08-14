@@ -67,7 +67,7 @@ enum MainError {
 }
 
 impl From<MainError> for ExitCode {
-    #[tracing::instrument(level = "trace", skip(value))]
+    #[tracing::instrument(level = "info", skip(value))]
     fn from(value: MainError) -> Self {
         let exit_code = match value {
             MainError::ParseArguments(_) => FcExitCode::ArgParsing,
@@ -81,7 +81,7 @@ impl From<MainError> for ExitCode {
     }
 }
 
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 fn main() -> ExitCode {
     let result = main_exec();
     if let Err(err) = result {
@@ -93,7 +93,7 @@ fn main() -> ExitCode {
     }
 }
 
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 fn main_exec() -> Result<(), MainError> {
     register_signal_handlers().map_err(MainError::RegisterSignalHandlers)?;
 
@@ -427,7 +427,7 @@ fn main_exec() -> Result<(), MainError> {
     }
 }
 
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 /// Enable SSBD mitigation through `prctl`.
 #[cfg(target_arch = "aarch64")]
 pub fn enable_ssbd_mitigation() {
@@ -465,12 +465,12 @@ pub fn enable_ssbd_mitigation() {
 }
 
 // Log a warning for any usage of deprecated parameters.
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 #[allow(unused)]
 fn warn_deprecated_parameters() {}
 
 // Print supported snapshot data format versions.
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 fn print_supported_snapshot_versions() {
     let mut versions: Vec<_> = FC_VERSION_TO_SNAP_VERSION
         .iter()
@@ -495,7 +495,7 @@ enum SnapshotVersionError {
 }
 
 // Print data format of provided snapshot state file.
-#[tracing::instrument(level = "trace", skip(snapshot_path))]
+#[tracing::instrument(level = "info", skip(snapshot_path))]
 fn print_snapshot_data_format(snapshot_path: &str) -> Result<(), SnapshotVersionError> {
     let mut snapshot_reader =
         File::open(snapshot_path).map_err(SnapshotVersionError::OpenSnapshot)?;

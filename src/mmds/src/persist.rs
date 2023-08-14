@@ -30,7 +30,7 @@ impl Persist<'_> for MmdsNetworkStack {
     type ConstructorArgs = Arc<Mutex<Mmds>>;
     type Error = ();
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn save(&self) -> Self::State {
         let mut mac_addr = [0; MAC_ADDR_LEN];
         mac_addr.copy_from_slice(self.mac_addr.get_bytes());
@@ -44,7 +44,7 @@ impl Persist<'_> for MmdsNetworkStack {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(mmds, state))]
+    #[tracing::instrument(level = "info", skip(mmds, state))]
     fn restore(
         mmds: Self::ConstructorArgs,
         state: &Self::State,

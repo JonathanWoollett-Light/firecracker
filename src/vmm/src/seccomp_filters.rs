@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use seccompiler::BpfThreadMap;
 
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 /// Retrieve empty seccomp filters.
 pub fn get_empty_filters() -> BpfThreadMap {
     let mut map = BpfThreadMap::new();

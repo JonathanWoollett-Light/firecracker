@@ -7,7 +7,7 @@ use utils::vm_memory::{GuestAddress, GuestMemory, GuestMemoryMmap, GuestMemoryRe
 
 use super::{RemoveRegionError, MAX_PAGE_COMPACT_BUFFER};
 
-#[tracing::instrument(level = "trace", skip(v))]
+#[tracing::instrument(level = "info", skip(v))]
 /// This takes a vector of page frame numbers, and compacts them
 /// into ranges of consecutive pages. The result is a vector
 /// of (start_page_frame_number, range_length) pairs.
@@ -65,7 +65,7 @@ pub(crate) fn compact_page_frame_numbers(v: &mut [u32]) -> Vec<(u32, u32)> {
     result
 }
 
-#[tracing::instrument(level = "trace", skip(guest_memory, range, restored))]
+#[tracing::instrument(level = "info", skip(guest_memory, range, restored))]
 pub(crate) fn remove_range(
     guest_memory: &GuestMemoryMmap,
     range: (GuestAddress, u64),
@@ -266,7 +266,7 @@ mod tests {
 
     use crate::devices::virtio::test_utils::single_region_mem;
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     #[allow(clippy::let_with_type_underscore)]
     fn random_pfn_u32_max() -> impl Strategy<Value = Vec<u32>> {
         // Create a randomly sized vec (max MAX_PAGE_COMPACT_BUFFER elements) filled with random u32
@@ -274,7 +274,7 @@ mod tests {
         prop::collection::vec(0..std::u32::MAX, 0..MAX_PAGE_COMPACT_BUFFER)
     }
 
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     #[allow(clippy::let_with_type_underscore)]
     fn random_pfn_100() -> impl Strategy<Value = Vec<u32>> {
         // Create a randomly sized vec (max MAX_PAGE_COMPACT_BUFFER/8) filled with random u32
@@ -284,7 +284,7 @@ mod tests {
 
     // The uncompactor will output deduplicated and sorted elements as compaction algorithm
     // guarantees it.
-    #[tracing::instrument(level = "trace", skip(compacted))]
+    #[tracing::instrument(level = "info", skip(compacted))]
     fn uncompact(compacted: Vec<(u32, u32)>) -> Vec<u32> {
         let mut result = Vec::new();
         for (start, len) in compacted {
@@ -293,7 +293,7 @@ mod tests {
         result
     }
 
-    #[tracing::instrument(level = "trace", skip(v))]
+    #[tracing::instrument(level = "info", skip(v))]
     fn sort_and_dedup<T: Ord + Clone + Debug>(v: &[T]) -> Vec<T> {
         let mut sorted_v = v.to_vec();
         sorted_v.sort_unstable();

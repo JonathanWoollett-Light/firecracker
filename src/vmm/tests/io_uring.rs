@@ -20,14 +20,14 @@ mod test_utils {
     use vmm::io_uring::operation::{OpCode, Operation};
     use vmm::io_uring::{IoUring, IoUringError, SQueueError};
 
-    #[tracing::instrument(level = "trace", skip(ring))]
+    #[tracing::instrument(level = "info", skip(ring))]
     fn drain_cqueue(ring: &mut IoUring) {
         while let Some(entry) = unsafe { ring.pop::<usize>().unwrap() } {
             assert!(entry.result().is_ok());
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(ring, mem_region, opcode, num_bytes))]
+    #[tracing::instrument(level = "info", skip(ring, mem_region, opcode, num_bytes))]
     pub fn drive_submission_and_completion(
         ring: &mut IoUring,
         mem_region: &MmapRegion,

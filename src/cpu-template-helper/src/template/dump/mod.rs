@@ -23,7 +23,7 @@ pub enum DumpError {
     DumpCpuConfig(#[from] DumpCpuConfigError),
 }
 
-#[tracing::instrument(level = "trace", skip(vmm))]
+#[tracing::instrument(level = "info", skip(vmm))]
 pub fn dump(vmm: Arc<Mutex<Vmm>>) -> Result<CustomCpuTemplate, DumpError> {
     // Get CPU configuration.
     let cpu_configs = vmm.lock().unwrap().dump_cpu_config()?;

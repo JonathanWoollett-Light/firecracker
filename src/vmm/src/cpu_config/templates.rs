@@ -66,7 +66,7 @@ pub enum CpuTemplateType {
 }
 
 impl From<&Option<CpuTemplateType>> for StaticCpuTemplate {
-    #[tracing::instrument(level = "trace", skip(value))]
+    #[tracing::instrument(level = "info", skip(value))]
     fn from(value: &Option<CpuTemplateType>) -> Self {
         match value {
             Some(CpuTemplateType::Static(template)) => *template,
@@ -78,7 +78,7 @@ impl From<&Option<CpuTemplateType>> for StaticCpuTemplate {
 impl<'a> TryFrom<&'a [u8]> for CustomCpuTemplate {
     type Error = serde_json::Error;
 
-    #[tracing::instrument(level = "trace", skip(value))]
+    #[tracing::instrument(level = "info", skip(value))]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         let template: CustomCpuTemplate = serde_json::from_slice(value)?;
         template.validate()?;
@@ -89,7 +89,7 @@ impl<'a> TryFrom<&'a [u8]> for CustomCpuTemplate {
 impl TryFrom<&str> for CustomCpuTemplate {
     type Error = serde_json::Error;
 
-    #[tracing::instrument(level = "trace", skip(value))]
+    #[tracing::instrument(level = "info", skip(value))]
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         CustomCpuTemplate::try_from(value.as_bytes())
     }
@@ -111,7 +111,7 @@ impl<V> RegisterValueFilter<V>
 where
     V: Numeric + Debug,
 {
-    #[tracing::instrument(level = "trace", skip(self, value))]
+    #[tracing::instrument(level = "info", skip(self, value))]
     /// Applies filter to the value
     #[inline]
     pub fn apply(&self, value: V) -> V {
@@ -170,7 +170,7 @@ impl<V> Serialize for RegisterValueFilter<V>
 where
     V: Numeric + Debug,
 {
-    #[tracing::instrument(level = "trace", skip(self, serializer))]
+    #[tracing::instrument(level = "info", skip(self, serializer))]
     /// Serialize combination of value and filter into a single tri state string
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -202,7 +202,7 @@ impl<'de, V> Deserialize<'de> for RegisterValueFilter<V>
 where
     V: Numeric + Debug,
 {
-    #[tracing::instrument(level = "trace", skip(deserializer))]
+    #[tracing::instrument(level = "info", skip(deserializer))]
     /// Deserialize a composite bitmap string into a value pair
     /// input string: "010x"
     /// result: {

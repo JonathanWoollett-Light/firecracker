@@ -84,7 +84,7 @@ const SECCOMP_DATA_ARG_SIZE: u8 = 8;
 pub(crate) struct Comment;
 
 impl<'de> Deserialize<'de> for Comment {
-    #[tracing::instrument(level = "trace", skip(_deserializer))]
+    #[tracing::instrument(level = "info", skip(_deserializer))]
     fn deserialize<D>(_deserializer: D) -> std::result::Result<Comment, D::Error>
     where
         D: Deserializer<'de>,
@@ -134,7 +134,7 @@ pub(crate) enum TargetArchError {
 }
 
 impl TargetArch {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Get the arch audit value.
     fn get_audit_value(self) -> u32 {
         match self {
@@ -143,7 +143,7 @@ impl TargetArch {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Get the string representation.
     fn to_string(self) -> &'static str {
         match self {
@@ -155,7 +155,7 @@ impl TargetArch {
 
 impl TryInto<TargetArch> for &str {
     type Error = TargetArchError;
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn try_into(self) -> std::result::Result<TargetArch, TargetArchError> {
         match self.to_lowercase().as_str() {
             "x86_64" => Ok(TargetArch::x86_64),
@@ -166,7 +166,7 @@ impl TryInto<TargetArch> for &str {
 }
 
 impl From<TargetArch> for &str {
-    #[tracing::instrument(level = "trace", skip(target_arch))]
+    #[tracing::instrument(level = "info", skip(target_arch))]
     fn from(target_arch: TargetArch) -> Self {
         target_arch.to_string()
     }
@@ -270,7 +270,7 @@ pub(crate) struct SeccompFilter {
 }
 
 impl SeccompCondition {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Validates the SeccompCondition data
     pub fn validate(&self) -> Result<(), FilterError> {
         // Checks that the given argument number is valid.
@@ -281,7 +281,7 @@ impl SeccompCondition {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Splits the [`SeccompCondition`] into 32 bit chunks and offsets.
     ///
     /// Returns most significant half, least significant half of the `value` field of
@@ -305,7 +305,7 @@ impl SeccompCondition {
         (msb, lsb, msb_offset, lsb_offset)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset))]
+    #[tracing::instrument(level = "info", skip(self, offset))]
     /// Translates the `eq` (equal) condition into BPF statements.
     ///
     /// # Arguments
@@ -338,7 +338,7 @@ impl SeccompCondition {
         bpf
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset))]
+    #[tracing::instrument(level = "info", skip(self, offset))]
     /// Translates the `ge` (greater than or equal) condition into BPF statements.
     ///
     /// # Arguments
@@ -363,7 +363,7 @@ impl SeccompCondition {
         bpf
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset))]
+    #[tracing::instrument(level = "info", skip(self, offset))]
     /// Translates the `gt` (greater than) condition into BPF statements.
     ///
     /// # Arguments
@@ -388,7 +388,7 @@ impl SeccompCondition {
         bpf
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset))]
+    #[tracing::instrument(level = "info", skip(self, offset))]
     /// Translates the `le` (less than or equal) condition into BPF statements.
     ///
     /// # Arguments
@@ -413,7 +413,7 @@ impl SeccompCondition {
         bpf
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset))]
+    #[tracing::instrument(level = "info", skip(self, offset))]
     /// Translates the `lt` (less than) condition into BPF statements.
     ///
     /// # Arguments
@@ -438,7 +438,7 @@ impl SeccompCondition {
         bpf
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset, mask))]
+    #[tracing::instrument(level = "info", skip(self, offset, mask))]
     /// Translates the `masked_eq` (masked equal) condition into BPF statements.
     ///
     /// The `masked_eq` condition is `true` if the result of logical `AND` between the given value
@@ -470,7 +470,7 @@ impl SeccompCondition {
         bpf
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset))]
+    #[tracing::instrument(level = "info", skip(self, offset))]
     /// Translates the `ne` (not equal) condition into BPF statements.
     ///
     /// # Arguments
@@ -494,7 +494,7 @@ impl SeccompCondition {
         bpf
     }
 
-    #[tracing::instrument(level = "trace", skip(self, offset))]
+    #[tracing::instrument(level = "info", skip(self, offset))]
     /// Translates the [`SeccompCondition`] into BPF statements.
     ///
     /// # Arguments
@@ -521,7 +521,7 @@ impl SeccompCondition {
 }
 
 impl From<SeccompAction> for u32 {
-    #[tracing::instrument(level = "trace", skip(action))]
+    #[tracing::instrument(level = "info", skip(action))]
     /// Return codes of the BPF program for each action.
     ///
     /// # Arguments
@@ -543,7 +543,7 @@ impl From<SeccompAction> for u32 {
 }
 
 impl SeccompRule {
-    #[tracing::instrument(level = "trace", skip(conditions, action))]
+    #[tracing::instrument(level = "info", skip(conditions, action))]
     /// Creates a new rule. Rules with 0 conditions always match.
     ///
     /// # Arguments
@@ -557,7 +557,7 @@ impl SeccompRule {
         Self { conditions, action }
     }
 
-    #[tracing::instrument(level = "trace", skip(condition, accumulator, rule_len, offset))]
+    #[tracing::instrument(level = "info", skip(condition, accumulator, rule_len, offset))]
     /// Appends a condition of the rule to an accumulator.
     ///
     /// The length of the rule and offset to the next rule are updated.
@@ -606,7 +606,7 @@ impl SeccompRule {
 }
 
 impl From<SeccompRule> for BpfProgram {
-    #[tracing::instrument(level = "trace", skip(rule))]
+    #[tracing::instrument(level = "info", skip(rule))]
     /// Translates a rule into BPF statements.
     ///
     /// Each rule starts with 2 jump statements:
@@ -648,7 +648,7 @@ impl From<SeccompRule> for BpfProgram {
 }
 
 impl SeccompFilter {
-    #[tracing::instrument(level = "trace", skip(rules, default_action, target_arch))]
+    #[tracing::instrument(level = "info", skip(rules, default_action, target_arch))]
     /// Creates a new filter with a set of rules and a default action.
     ///
     /// # Arguments
@@ -672,7 +672,7 @@ impl SeccompFilter {
         Ok(instance)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Performs semantic checks on the SeccompFilter.
     fn validate(&self) -> Result<(), FilterError> {
         for (syscall_number, syscall_rules) in self.rules.iter() {
@@ -766,7 +766,7 @@ impl SeccompFilter {
 
 impl TryInto<BpfProgram> for SeccompFilter {
     type Error = FilterError;
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     fn try_into(self) -> Result<BpfProgram, FilterError> {
         // Initialize the result with the precursory architecture check.
         let mut result = VALIDATE_ARCHITECTURE(self.target_arch);
@@ -821,7 +821,7 @@ impl TryInto<BpfProgram> for SeccompFilter {
     }
 }
 
-#[tracing::instrument(level = "trace", skip(code, k, jt, jf))]
+#[tracing::instrument(level = "info", skip(code, k, jt, jf))]
 /// Builds a `jump` BPF instruction.
 ///
 /// # Arguments
@@ -836,7 +836,7 @@ fn BPF_JUMP(code: u16, k: u32, jt: u8, jf: u8) -> sock_filter {
     sock_filter { code, jt, jf, k }
 }
 
-#[tracing::instrument(level = "trace", skip(code, k))]
+#[tracing::instrument(level = "info", skip(code, k))]
 /// Builds a "statement" BPF instruction.
 ///
 /// # Arguments
@@ -854,7 +854,7 @@ fn BPF_STMT(code: u16, k: u32) -> sock_filter {
     }
 }
 
-#[tracing::instrument(level = "trace", skip(target_arch))]
+#[tracing::instrument(level = "info", skip(target_arch))]
 /// Builds a sequence of BPF instructions that validate the underlying architecture.
 #[allow(non_snake_case)]
 #[inline(always)]
@@ -867,7 +867,7 @@ fn VALIDATE_ARCHITECTURE(target_arch: TargetArch) -> Vec<sock_filter> {
     ]
 }
 
-#[tracing::instrument(level = "trace", skip())]
+#[tracing::instrument(level = "info", skip())]
 /// Builds a sequence of BPF instructions that are followed by syscall examination.
 #[allow(non_snake_case)]
 #[inline(always)]
@@ -896,14 +896,14 @@ mod tests {
     }
 
     // Builds the (syscall, rules) tuple for allowing a syscall with certain arguments.
-    #[tracing::instrument(level = "trace", skip(syscall_number, rules))]
+    #[tracing::instrument(level = "info", skip(syscall_number, rules))]
     fn allow_syscall_if(syscall_number: i64, rules: Vec<SeccompRule>) -> (i64, Vec<SeccompRule>) {
         (syscall_number, rules)
     }
 
     impl SeccompCondition {
         // Creates a new `SeccompCondition`.
-        #[tracing::instrument(level = "trace", skip(arg_number, arg_len, operator, value))]
+        #[tracing::instrument(level = "info", skip(arg_number, arg_len, operator, value))]
         pub fn new(
             arg_number: u8,
             arg_len: SeccompCmpArgLen,
@@ -945,7 +945,7 @@ mod tests {
         libc::SYS_futex,
     ];
 
-    #[tracing::instrument(level = "trace", skip(bpf_filter))]
+    #[tracing::instrument(level = "info", skip(bpf_filter))]
     fn install_filter(bpf_filter: BpfProgram) {
         unsafe {
             {
@@ -968,7 +968,7 @@ mod tests {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(rules, validation_fn, should_fail))]
+    #[tracing::instrument(level = "info", skip(rules, validation_fn, should_fail))]
     fn validate_seccomp_filter(
         rules: Vec<(i64, Vec<SeccompRule>)>,
         validation_fn: fn(),
@@ -1504,7 +1504,7 @@ mod tests {
         assert_eq!(bpfprog, instructions);
     }
 
-    #[tracing::instrument(level = "trace", skip(arg_len))]
+    #[tracing::instrument(level = "info", skip(arg_len))]
     fn create_test_bpf_filter(arg_len: ArgLen) -> SeccompFilter {
         SeccompFilter::new(
             vec![

@@ -17,7 +17,7 @@ pub enum VmState {
 }
 
 impl Display for VmState {
-    #[tracing::instrument(level = "trace", skip(self, f))]
+    #[tracing::instrument(level = "info", skip(self, f))]
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
             VmState::NotStarted => write!(f, "Not started"),
@@ -28,7 +28,7 @@ impl Display for VmState {
 }
 
 impl ser::Serialize for VmState {
-    #[tracing::instrument(level = "trace", skip(self, serializer))]
+    #[tracing::instrument(level = "info", skip(self, serializer))]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: ser::Serializer,

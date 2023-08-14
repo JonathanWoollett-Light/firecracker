@@ -41,7 +41,7 @@ pub struct EthernetFrame<'a, T: 'a> {
 
 #[allow(clippy::len_without_is_empty)]
 impl<'a, T: NetworkBytes + Debug> EthernetFrame<'a, T> {
-    #[tracing::instrument(level = "trace", skip(bytes))]
+    #[tracing::instrument(level = "info", skip(bytes))]
     /// Interprets `bytes` as an Ethernet frame without any validity checks.
     ///
     /// # Panics
@@ -55,7 +55,7 @@ impl<'a, T: NetworkBytes + Debug> EthernetFrame<'a, T> {
         }
     }
 
-    #[tracing::instrument(level = "trace", skip(bytes))]
+    #[tracing::instrument(level = "info", skip(bytes))]
     /// Checks whether the specified byte sequence can be interpreted as an Ethernet frame.
     #[inline]
     pub fn from_bytes(bytes: T) -> Result<Self, Error> {
@@ -66,42 +66,42 @@ impl<'a, T: NetworkBytes + Debug> EthernetFrame<'a, T> {
         Ok(EthernetFrame::from_bytes_unchecked(bytes))
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns the destination MAC address.
     #[inline]
     pub fn dst_mac(&self) -> MacAddr {
         MacAddr::from_bytes_unchecked(&self.bytes[DST_MAC_OFFSET..SRC_MAC_OFFSET])
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns the source MAC address.
     #[inline]
     pub fn src_mac(&self) -> MacAddr {
         MacAddr::from_bytes_unchecked(&self.bytes[SRC_MAC_OFFSET..ETHERTYPE_OFFSET])
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns the ethertype of the frame.
     #[inline]
     pub fn ethertype(&self) -> u16 {
         self.bytes.ntohs_unchecked(ETHERTYPE_OFFSET)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns the offset of the payload within the frame.
     #[inline]
     pub fn payload_offset(&self) -> usize {
         PAYLOAD_OFFSET
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns the payload of the frame as an `[&u8]` slice.
     #[inline]
     pub fn payload(&self) -> &[u8] {
         self.bytes.split_at(self.payload_offset()).1
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns the length of the frame.
     #[inline]
     pub fn len(&self) -> usize {
@@ -110,7 +110,7 @@ impl<'a, T: NetworkBytes + Debug> EthernetFrame<'a, T> {
 }
 
 impl<'a, T: NetworkBytesMut + Debug> EthernetFrame<'a, T> {
-    #[tracing::instrument(level = "trace", skip(buf, dst_mac, src_mac, ethertype))]
+    #[tracing::instrument(level = "info", skip(buf, dst_mac, src_mac, ethertype))]
     /// Attempts to write an Ethernet frame using the given header fields to `buf`.
     fn new_with_header(
         buf: T,
@@ -132,7 +132,7 @@ impl<'a, T: NetworkBytesMut + Debug> EthernetFrame<'a, T> {
         Ok(frame)
     }
 
-    #[tracing::instrument(level = "trace", skip(buf, dst_mac, src_mac, ethertype))]
+    #[tracing::instrument(level = "info", skip(buf, dst_mac, src_mac, ethertype))]
     /// Attempts to write an incomplete Ethernet frame (whose length is currently unknown) to `buf`,
     /// using the specified header fields.
     #[inline]
@@ -147,7 +147,7 @@ impl<'a, T: NetworkBytesMut + Debug> EthernetFrame<'a, T> {
         )?))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, addr))]
+    #[tracing::instrument(level = "info", skip(self, addr))]
     /// Sets the destination MAC address.
     #[inline]
     pub fn set_dst_mac(&mut self, addr: MacAddr) -> &mut Self {
@@ -155,7 +155,7 @@ impl<'a, T: NetworkBytesMut + Debug> EthernetFrame<'a, T> {
         self
     }
 
-    #[tracing::instrument(level = "trace", skip(self, addr))]
+    #[tracing::instrument(level = "info", skip(self, addr))]
     /// Sets the source MAC address.
     #[inline]
     pub fn set_src_mac(&mut self, addr: MacAddr) -> &mut Self {
@@ -163,7 +163,7 @@ impl<'a, T: NetworkBytesMut + Debug> EthernetFrame<'a, T> {
         self
     }
 
-    #[tracing::instrument(level = "trace", skip(self, value))]
+    #[tracing::instrument(level = "info", skip(self, value))]
     /// Sets the ethertype of the frame.
     #[inline]
     pub fn set_ethertype(&mut self, value: u16) -> &mut Self {
@@ -171,7 +171,7 @@ impl<'a, T: NetworkBytesMut + Debug> EthernetFrame<'a, T> {
         self
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     /// Returns the payload of the frame as a `&mut [u8]` slice.
     #[inline]
     pub fn payload_mut(&mut self) -> &mut [u8] {
@@ -182,7 +182,7 @@ impl<'a, T: NetworkBytesMut + Debug> EthernetFrame<'a, T> {
 }
 
 impl<'a, T: NetworkBytes + Debug> Incomplete<EthernetFrame<'a, T>> {
-    #[tracing::instrument(level = "trace", skip(self, payload_len))]
+    #[tracing::instrument(level = "info", skip(self, payload_len))]
     /// Completes the inner frame by shrinking it to its actual length.
     ///
     /// # Panics
@@ -264,7 +264,7 @@ mod kani_proofs {
     pub const MAX_FRAME_SIZE: usize = 1514;
 
     impl<'a, T: NetworkBytesMut + Debug> EthernetFrame<'a, T> {
-        #[tracing::instrument(level = "trace", skip(self))]
+        #[tracing::instrument(level = "info", skip(self))]
         fn is_valid(&self) -> bool {
             self.len() >= PAYLOAD_OFFSET
         }
@@ -275,7 +275,7 @@ mod kani_proofs {
         // performance degradation given a necessary loop unrolling. Using this stub,
         // we read the same information from the buffer while avoiding the loop, thus,
         // notably improving performance.
-        #[tracing::instrument(level = "trace", skip(input))]
+        #[tracing::instrument(level = "info", skip(input))]
         pub fn read_be_u16(input: &[u8]) -> u16 {
             u16::from_be_bytes([input[0], input[1]])
         }

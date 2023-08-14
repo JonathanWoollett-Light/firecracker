@@ -21,29 +21,29 @@ impl<T> __IncompleteArrayField<T> {
     pub const fn new() -> Self {
         __IncompleteArrayField(::std::marker::PhantomData, [])
     }
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     #[inline]
     pub fn as_ptr(&self) -> *const T {
         self as *const _ as *const T
     }
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "info", skip(self))]
     #[inline]
     pub fn as_mut_ptr(&mut self) -> *mut T {
         self as *mut _ as *mut T
     }
-    #[tracing::instrument(level = "trace", skip(self, len))]
+    #[tracing::instrument(level = "info", skip(self, len))]
     #[inline]
     pub unsafe fn as_slice(&self, len: usize) -> &[T] {
         ::std::slice::from_raw_parts(self.as_ptr(), len)
     }
-    #[tracing::instrument(level = "trace", skip(self, len))]
+    #[tracing::instrument(level = "info", skip(self, len))]
     #[inline]
     pub unsafe fn as_mut_slice(&mut self, len: usize) -> &mut [T] {
         ::std::slice::from_raw_parts_mut(self.as_mut_ptr(), len)
     }
 }
 impl<T> ::std::fmt::Debug for __IncompleteArrayField<T> {
-    #[tracing::instrument(level = "trace", skip(self, fmt))]
+    #[tracing::instrument(level = "info", skip(self, fmt))]
     fn fmt(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         fmt.write_str("__IncompleteArrayField")
     }
@@ -113,7 +113,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_1() {
         8usize,
         concat!("Alignment of ", stringify!(io_uring_sqe__bindgen_ty_1))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_off() {
         assert_eq!(
             unsafe {
@@ -131,7 +131,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_1() {
         );
     }
     test_field_off();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_addr2() {
         assert_eq!(
             unsafe {
@@ -151,7 +151,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_1() {
     test_field_addr2();
 }
 impl Default for io_uring_sqe__bindgen_ty_1 {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -178,7 +178,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_2() {
         8usize,
         concat!("Alignment of ", stringify!(io_uring_sqe__bindgen_ty_2))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_addr() {
         assert_eq!(
             unsafe {
@@ -196,7 +196,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_2() {
         );
     }
     test_field_addr();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_splice_off_in() {
         assert_eq!(
             unsafe {
@@ -216,7 +216,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_2() {
     test_field_splice_off_in();
 }
 impl Default for io_uring_sqe__bindgen_ty_2 {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -254,7 +254,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         4usize,
         concat!("Alignment of ", stringify!(io_uring_sqe__bindgen_ty_3))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_rw_flags() {
         assert_eq!(
             unsafe {
@@ -272,7 +272,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_rw_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_fsync_flags() {
         assert_eq!(
             unsafe {
@@ -290,7 +290,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_fsync_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_poll_events() {
         assert_eq!(
             unsafe {
@@ -308,7 +308,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_poll_events();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_poll32_events() {
         assert_eq!(
             unsafe {
@@ -326,7 +326,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_poll32_events();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_sync_range_flags() {
         assert_eq!(
             unsafe {
@@ -344,7 +344,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_sync_range_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_msg_flags() {
         assert_eq!(
             unsafe {
@@ -362,7 +362,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_msg_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_timeout_flags() {
         assert_eq!(
             unsafe {
@@ -380,7 +380,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_timeout_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_accept_flags() {
         assert_eq!(
             unsafe {
@@ -398,7 +398,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_accept_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_cancel_flags() {
         assert_eq!(
             unsafe {
@@ -416,7 +416,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_cancel_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_open_flags() {
         assert_eq!(
             unsafe {
@@ -434,7 +434,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_open_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_statx_flags() {
         assert_eq!(
             unsafe {
@@ -452,7 +452,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_statx_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_fadvise_advice() {
         assert_eq!(
             unsafe {
@@ -470,7 +470,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
         );
     }
     test_field_fadvise_advice();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_splice_flags() {
         assert_eq!(
             unsafe {
@@ -490,7 +490,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_3() {
     test_field_splice_flags();
 }
 impl Default for io_uring_sqe__bindgen_ty_3 {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -536,7 +536,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_4__bindgen_ty_1__bindgen_ty_1() 
             stringify!(io_uring_sqe__bindgen_ty_4__bindgen_ty_1__bindgen_ty_1)
         )
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_buf_index() {
         assert_eq!(
             unsafe {
@@ -556,7 +556,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_4__bindgen_ty_1__bindgen_ty_1() 
         );
     }
     test_field_buf_index();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_buf_group() {
         assert_eq!(
             unsafe {
@@ -578,7 +578,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_4__bindgen_ty_1__bindgen_ty_1() 
     test_field_buf_group();
 }
 impl Default for io_uring_sqe__bindgen_ty_4__bindgen_ty_1__bindgen_ty_1 {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -605,7 +605,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_4__bindgen_ty_1() {
             stringify!(io_uring_sqe__bindgen_ty_4__bindgen_ty_1)
         )
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_personality() {
         assert_eq!(
             unsafe {
@@ -624,7 +624,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_4__bindgen_ty_1() {
         );
     }
     test_field_personality();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_splice_fd_in() {
         assert_eq!(
             unsafe {
@@ -645,7 +645,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_4__bindgen_ty_1() {
     test_field_splice_fd_in();
 }
 impl Default for io_uring_sqe__bindgen_ty_4__bindgen_ty_1 {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -666,7 +666,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_4() {
         8usize,
         concat!("Alignment of ", stringify!(io_uring_sqe__bindgen_ty_4))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field___pad2() {
         assert_eq!(
             unsafe {
@@ -686,7 +686,7 @@ fn bindgen_test_layout_io_uring_sqe__bindgen_ty_4() {
     test_field___pad2();
 }
 impl Default for io_uring_sqe__bindgen_ty_4 {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -707,7 +707,7 @@ fn bindgen_test_layout_io_uring_sqe() {
         8usize,
         concat!("Alignment of ", stringify!(io_uring_sqe))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_opcode() {
         assert_eq!(
             unsafe {
@@ -725,7 +725,7 @@ fn bindgen_test_layout_io_uring_sqe() {
         );
     }
     test_field_opcode();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_flags() {
         assert_eq!(
             unsafe {
@@ -743,7 +743,7 @@ fn bindgen_test_layout_io_uring_sqe() {
         );
     }
     test_field_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_ioprio() {
         assert_eq!(
             unsafe {
@@ -761,7 +761,7 @@ fn bindgen_test_layout_io_uring_sqe() {
         );
     }
     test_field_ioprio();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_fd() {
         assert_eq!(
             unsafe {
@@ -779,7 +779,7 @@ fn bindgen_test_layout_io_uring_sqe() {
         );
     }
     test_field_fd();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_len() {
         assert_eq!(
             unsafe {
@@ -797,7 +797,7 @@ fn bindgen_test_layout_io_uring_sqe() {
         );
     }
     test_field_len();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_user_data() {
         assert_eq!(
             unsafe {
@@ -817,7 +817,7 @@ fn bindgen_test_layout_io_uring_sqe() {
     test_field_user_data();
 }
 impl Default for io_uring_sqe {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -888,7 +888,7 @@ fn bindgen_test_layout_io_uring_cqe() {
         8usize,
         concat!("Alignment of ", stringify!(io_uring_cqe))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_user_data() {
         assert_eq!(
             unsafe {
@@ -906,7 +906,7 @@ fn bindgen_test_layout_io_uring_cqe() {
         );
     }
     test_field_user_data();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_res() {
         assert_eq!(
             unsafe {
@@ -924,7 +924,7 @@ fn bindgen_test_layout_io_uring_cqe() {
         );
     }
     test_field_res();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_flags() {
         assert_eq!(
             unsafe {
@@ -970,7 +970,7 @@ fn bindgen_test_layout_io_sqring_offsets() {
         8usize,
         concat!("Alignment of ", stringify!(io_sqring_offsets))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_head() {
         assert_eq!(
             unsafe {
@@ -988,7 +988,7 @@ fn bindgen_test_layout_io_sqring_offsets() {
         );
     }
     test_field_head();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_tail() {
         assert_eq!(
             unsafe {
@@ -1006,7 +1006,7 @@ fn bindgen_test_layout_io_sqring_offsets() {
         );
     }
     test_field_tail();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_ring_mask() {
         assert_eq!(
             unsafe {
@@ -1024,7 +1024,7 @@ fn bindgen_test_layout_io_sqring_offsets() {
         );
     }
     test_field_ring_mask();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_ring_entries() {
         assert_eq!(
             unsafe {
@@ -1042,7 +1042,7 @@ fn bindgen_test_layout_io_sqring_offsets() {
         );
     }
     test_field_ring_entries();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_flags() {
         assert_eq!(
             unsafe {
@@ -1060,7 +1060,7 @@ fn bindgen_test_layout_io_sqring_offsets() {
         );
     }
     test_field_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_dropped() {
         assert_eq!(
             unsafe {
@@ -1078,7 +1078,7 @@ fn bindgen_test_layout_io_sqring_offsets() {
         );
     }
     test_field_dropped();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_array() {
         assert_eq!(
             unsafe {
@@ -1096,7 +1096,7 @@ fn bindgen_test_layout_io_sqring_offsets() {
         );
     }
     test_field_array();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv1() {
         assert_eq!(
             unsafe {
@@ -1114,7 +1114,7 @@ fn bindgen_test_layout_io_sqring_offsets() {
         );
     }
     test_field_resv1();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv2() {
         assert_eq!(
             unsafe {
@@ -1158,7 +1158,7 @@ fn bindgen_test_layout_io_cqring_offsets() {
         8usize,
         concat!("Alignment of ", stringify!(io_cqring_offsets))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_head() {
         assert_eq!(
             unsafe {
@@ -1176,7 +1176,7 @@ fn bindgen_test_layout_io_cqring_offsets() {
         );
     }
     test_field_head();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_tail() {
         assert_eq!(
             unsafe {
@@ -1194,7 +1194,7 @@ fn bindgen_test_layout_io_cqring_offsets() {
         );
     }
     test_field_tail();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_ring_mask() {
         assert_eq!(
             unsafe {
@@ -1212,7 +1212,7 @@ fn bindgen_test_layout_io_cqring_offsets() {
         );
     }
     test_field_ring_mask();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_ring_entries() {
         assert_eq!(
             unsafe {
@@ -1230,7 +1230,7 @@ fn bindgen_test_layout_io_cqring_offsets() {
         );
     }
     test_field_ring_entries();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_overflow() {
         assert_eq!(
             unsafe {
@@ -1248,7 +1248,7 @@ fn bindgen_test_layout_io_cqring_offsets() {
         );
     }
     test_field_overflow();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_cqes() {
         assert_eq!(
             unsafe {
@@ -1266,7 +1266,7 @@ fn bindgen_test_layout_io_cqring_offsets() {
         );
     }
     test_field_cqes();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_flags() {
         assert_eq!(
             unsafe {
@@ -1284,7 +1284,7 @@ fn bindgen_test_layout_io_cqring_offsets() {
         );
     }
     test_field_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv1() {
         assert_eq!(
             unsafe {
@@ -1302,7 +1302,7 @@ fn bindgen_test_layout_io_cqring_offsets() {
         );
     }
     test_field_resv1();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv2() {
         assert_eq!(
             unsafe {
@@ -1347,7 +1347,7 @@ fn bindgen_test_layout_io_uring_params() {
         8usize,
         concat!("Alignment of ", stringify!(io_uring_params))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_sq_entries() {
         assert_eq!(
             unsafe {
@@ -1365,7 +1365,7 @@ fn bindgen_test_layout_io_uring_params() {
         );
     }
     test_field_sq_entries();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_cq_entries() {
         assert_eq!(
             unsafe {
@@ -1383,7 +1383,7 @@ fn bindgen_test_layout_io_uring_params() {
         );
     }
     test_field_cq_entries();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_flags() {
         assert_eq!(
             unsafe {
@@ -1401,7 +1401,7 @@ fn bindgen_test_layout_io_uring_params() {
         );
     }
     test_field_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_sq_thread_cpu() {
         assert_eq!(
             unsafe {
@@ -1419,7 +1419,7 @@ fn bindgen_test_layout_io_uring_params() {
         );
     }
     test_field_sq_thread_cpu();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_sq_thread_idle() {
         assert_eq!(
             unsafe {
@@ -1437,7 +1437,7 @@ fn bindgen_test_layout_io_uring_params() {
         );
     }
     test_field_sq_thread_idle();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_features() {
         assert_eq!(
             unsafe {
@@ -1455,7 +1455,7 @@ fn bindgen_test_layout_io_uring_params() {
         );
     }
     test_field_features();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_wq_fd() {
         assert_eq!(
             unsafe {
@@ -1473,7 +1473,7 @@ fn bindgen_test_layout_io_uring_params() {
         );
     }
     test_field_wq_fd();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv() {
         assert_eq!(
             unsafe {
@@ -1491,7 +1491,7 @@ fn bindgen_test_layout_io_uring_params() {
         );
     }
     test_field_resv();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_sq_off() {
         assert_eq!(
             unsafe {
@@ -1509,7 +1509,7 @@ fn bindgen_test_layout_io_uring_params() {
         );
     }
     test_field_sq_off();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_cq_off() {
         assert_eq!(
             unsafe {
@@ -1562,7 +1562,7 @@ fn bindgen_test_layout_io_uring_files_update() {
         8usize,
         concat!("Alignment of ", stringify!(io_uring_files_update))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_offset() {
         assert_eq!(
             unsafe {
@@ -1580,7 +1580,7 @@ fn bindgen_test_layout_io_uring_files_update() {
         );
     }
     test_field_offset();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv() {
         assert_eq!(
             unsafe {
@@ -1598,7 +1598,7 @@ fn bindgen_test_layout_io_uring_files_update() {
         );
     }
     test_field_resv();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_fds() {
         assert_eq!(
             unsafe {
@@ -1637,7 +1637,7 @@ fn bindgen_test_layout_io_uring_probe_op() {
         4usize,
         concat!("Alignment of ", stringify!(io_uring_probe_op))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_op() {
         assert_eq!(
             unsafe {
@@ -1655,7 +1655,7 @@ fn bindgen_test_layout_io_uring_probe_op() {
         );
     }
     test_field_op();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv() {
         assert_eq!(
             unsafe {
@@ -1673,7 +1673,7 @@ fn bindgen_test_layout_io_uring_probe_op() {
         );
     }
     test_field_resv();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_flags() {
         assert_eq!(
             unsafe {
@@ -1691,7 +1691,7 @@ fn bindgen_test_layout_io_uring_probe_op() {
         );
     }
     test_field_flags();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv2() {
         assert_eq!(
             unsafe {
@@ -1731,7 +1731,7 @@ fn bindgen_test_layout_io_uring_probe() {
         4usize,
         concat!("Alignment of ", stringify!(io_uring_probe))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_last_op() {
         assert_eq!(
             unsafe {
@@ -1749,7 +1749,7 @@ fn bindgen_test_layout_io_uring_probe() {
         );
     }
     test_field_last_op();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_ops_len() {
         assert_eq!(
             unsafe {
@@ -1767,7 +1767,7 @@ fn bindgen_test_layout_io_uring_probe() {
         );
     }
     test_field_ops_len();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv() {
         assert_eq!(
             unsafe {
@@ -1785,7 +1785,7 @@ fn bindgen_test_layout_io_uring_probe() {
         );
     }
     test_field_resv();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv2() {
         assert_eq!(
             unsafe {
@@ -1803,7 +1803,7 @@ fn bindgen_test_layout_io_uring_probe() {
         );
     }
     test_field_resv2();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_ops() {
         assert_eq!(
             unsafe {
@@ -1852,7 +1852,7 @@ fn bindgen_test_layout_io_uring_restriction__bindgen_ty_1() {
             stringify!(io_uring_restriction__bindgen_ty_1)
         )
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_register_op() {
         assert_eq!(
             unsafe {
@@ -1871,7 +1871,7 @@ fn bindgen_test_layout_io_uring_restriction__bindgen_ty_1() {
         );
     }
     test_field_register_op();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_sqe_op() {
         assert_eq!(
             unsafe {
@@ -1890,7 +1890,7 @@ fn bindgen_test_layout_io_uring_restriction__bindgen_ty_1() {
         );
     }
     test_field_sqe_op();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_sqe_flags() {
         assert_eq!(
             unsafe {
@@ -1911,7 +1911,7 @@ fn bindgen_test_layout_io_uring_restriction__bindgen_ty_1() {
     test_field_sqe_flags();
 }
 impl Default for io_uring_restriction__bindgen_ty_1 {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -1932,7 +1932,7 @@ fn bindgen_test_layout_io_uring_restriction() {
         4usize,
         concat!("Alignment of ", stringify!(io_uring_restriction))
     );
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_opcode() {
         assert_eq!(
             unsafe {
@@ -1950,7 +1950,7 @@ fn bindgen_test_layout_io_uring_restriction() {
         );
     }
     test_field_opcode();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv() {
         assert_eq!(
             unsafe {
@@ -1968,7 +1968,7 @@ fn bindgen_test_layout_io_uring_restriction() {
         );
     }
     test_field_resv();
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn test_field_resv2() {
         assert_eq!(
             unsafe {
@@ -1988,7 +1988,7 @@ fn bindgen_test_layout_io_uring_restriction() {
     test_field_resv2();
 }
 impl Default for io_uring_restriction {
-    #[tracing::instrument(level = "trace", skip())]
+    #[tracing::instrument(level = "info", skip())]
     fn default() -> Self {
         let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
         unsafe {
