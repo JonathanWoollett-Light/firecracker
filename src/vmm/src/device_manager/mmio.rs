@@ -398,7 +398,7 @@ impl MMIODeviceManager {
 
     /// Artificially kick devices as if they had external events.
     pub fn kick_devices(&self) {
-        info!("Artificially kick devices.");
+        info!("");
         // We only kick virtio devices for now.
         let _: Result<(), MmioError> =
             self.for_each_virtio_device(|virtio_type, id, _info, dev| {
@@ -445,7 +445,7 @@ impl MMIODeviceManager {
                     TYPE_RNG => {
                         let entropy = virtio.as_mut_any().downcast_mut::<Entropy>().unwrap();
                         if entropy.is_activated() {
-                            info!("kick entropy {id}.");
+                            info!("");
                             entropy.process_virtio_queues();
                         }
                     }

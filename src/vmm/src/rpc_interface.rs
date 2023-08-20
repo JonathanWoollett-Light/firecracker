@@ -370,7 +370,7 @@ impl<'a> PrebootApiController<'a> {
                     crate::FcExitCode::GenericError
                 })?;
 
-            info!("Successfully added metadata to mmds from file");
+            info!("");
         }
 
         let mut preboot_controller = PrebootApiController::new(

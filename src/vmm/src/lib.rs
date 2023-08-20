@@ -872,7 +872,7 @@ impl Vmm {
         // Vmm initiated teardown starts from `pub fn Vmm::stop()` (step 4).
         // Once `vmm.shutdown_exit_code` becomes `Some(exit_code)`, it is the upper layer's
         // responsibility to break main event loop and propagate the exit code value.
-        info!("Vmm is stopping.");
+        info!("");
 
         // We send a "Finish" event.  If a VCPU has already exited, this is the only
         // message it will accept... but running and paused will take it as well.
@@ -959,7 +959,7 @@ impl Drop for Vmm {
         }
 
         if !self.vcpus_handles.is_empty() {
-            error!("Failed to tear down Vmm: the vcpu threads have not finished execution.");
+            error!("");
         }
     }
 }
@@ -992,7 +992,7 @@ impl MutEventSubscriber for Vmm {
             }
             self.stop(exit_code.unwrap_or(FcExitCode::Ok));
         } else {
-            error!("Spurious EventManager event for handler: Vmm");
+            error!("");
         }
     }
 

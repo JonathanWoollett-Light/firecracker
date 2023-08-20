@@ -129,7 +129,7 @@ where
     /// Signal the guest driver that we've used some virtio buffers that it had previously made
     /// available.
     pub fn signal_used_queue(&self) -> Result<(), DeviceError> {
-        debug!("vsock: raising IRQ");
+        debug!("");
         self.irq_trigger
             .trigger_irq(IrqType::Vring)
             .map_err(DeviceError::FailedSignalingIrq)
@@ -139,7 +139,7 @@ where
     /// have pending. Return `true` if descriptors have been added to the used ring, and `false`
     /// otherwise.
     pub fn process_rx(&mut self) -> bool {
-        debug!("vsock: process_rx()");
+        debug!("");
         // This is safe since we checked in the event handler that the device is activated.
         let mem = self.device_state.mem().unwrap();
 
@@ -192,7 +192,7 @@ where
     /// to the backend for processing. Return `true` if descriptors have been added to the used
     /// ring, and `false` otherwise.
     pub fn process_tx(&mut self) -> bool {
-        debug!("vsock::process_tx()");
+        debug!("");
         // This is safe since we checked in the event handler that the device is activated.
         let mem = self.device_state.mem().unwrap();
 

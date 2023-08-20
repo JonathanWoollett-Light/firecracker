@@ -80,7 +80,7 @@ impl Entropy {
     }
 
     fn signal_used_queue(&self) -> Result<(), DeviceError> {
-        debug!("entropy: raising IRQ");
+        debug!("");
         self.irq_trigger
             .trigger_irq(IrqType::Vring)
             .map_err(DeviceError::FailedSignalingIrq)
@@ -140,20 +140,20 @@ impl Entropy {
                     // If not enough budget is available, leave the request descriptor in the queue
                     // to handle once we do have budget.
                     if !Self::rate_limit_request(&mut self.rate_limiter, iovec.len() as u64) {
-                        debug!("entropy: throttling entropy queue");
+                        debug!("");
                         METRICS.entropy.entropy_rate_limiter_throttled.inc();
                         self.queues[RNG_QUEUE].undo_pop();
                         break;
                     }
 
                     self.handle_one(&mut iovec).unwrap_or_else(|err| {
-                        error!("entropy: {err}");
+                        error!("");
                         METRICS.entropy.entropy_event_fails.inc();
                         0
                     })
                 }
                 Err(err) => {
-                    error!("entropy: Could not parse descriptor chain: {err}");
+                    error!("");
                     METRICS.entropy.entropy_event_fails.inc();
                     0
                 }
@@ -165,7 +165,7 @@ impl Entropy {
                     METRICS.entropy.entropy_bytes.add(bytes as usize);
                 }
                 Err(err) => {
-                    error!("entropy: Could not add used descriptor to queue: {err}");
+                    error!("");
                     Self::rate_limit_replenish_request(&mut self.rate_limiter, bytes.into());
                     METRICS.entropy.entropy_event_fails.inc();
                     // If we are not able to add a buffer to the used queue, something
@@ -178,7 +178,7 @@ impl Entropy {
 
         if used_any {
             self.signal_used_queue().unwrap_or_else(|err| {
-                error!("entropy: {err:?}");
+                error!("");
                 METRICS.entropy.entropy_event_fails.inc()
             });
         }
@@ -186,7 +186,7 @@ impl Entropy {
 
     pub(crate) fn process_entropy_queue_event(&mut self) {
         if let Err(err) = self.queue_events[RNG_QUEUE].read() {
-            error!("Failed to read entropy queue event: {err}");
+            error!("");
             METRICS.entropy.entropy_event_fails.inc();
         } else if !self.rate_limiter.is_blocked() {
             // We are not throttled, handle the entropy queue
@@ -204,7 +204,7 @@ impl Entropy {
                 self.process_entropy_queue();
             }
             Err(err) => {
-                error!("entropy: Failed to handle rate-limiter event: {err:?}");
+                error!("");
                 METRICS.entropy.entropy_event_fails.inc();
             }
         }
@@ -286,7 +286,7 @@ impl VirtioDevice for Entropy {
 
     fn activate(&mut self, mem: GuestMemoryMmap) -> Result<(), ActivateError> {
         self.activate_event.write(1).map_err(|err| {
-            error!("entropy: Cannot write to activate_evt: {err}");
+            error!("");
             METRICS.entropy.activate_fails.inc();
             super::super::ActivateError::BadActivate
         })?;

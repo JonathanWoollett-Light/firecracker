@@ -400,7 +400,7 @@ impl Balloon {
             if let Some(prev_stats_desc) = self.stats_desc_index {
                 // We shouldn't ever have an extra buffer if the driver follows
                 // the protocol, but return it if we find one.
-                error!("balloon: driver is not compliant, more than one stats buffer received");
+                error!("");
                 self.queues[STATS_INDEX]
                     .add_used(mem, prev_stats_desc, 0)
                     .map_err(BalloonError::Queue)?;
@@ -459,7 +459,7 @@ impl Balloon {
                 .map_err(BalloonError::Queue)?;
             self.signal_used_queue()
         } else {
-            error!("Failed to update balloon stats, missing descriptor.");
+            error!("");
             Ok(())
         }
     }
@@ -592,7 +592,7 @@ impl VirtioDevice for Balloon {
         let config_space_bytes = self.config_space.as_slice();
         let config_len = config_space_bytes.len() as u64;
         if offset >= config_len {
-            error!("Failed to read config space");
+            error!("");
             return;
         }
 
@@ -613,7 +613,7 @@ impl VirtioDevice for Balloon {
             .zip(end)
             .and_then(|(start, end)| config_space_bytes.get_mut(start..end)) else
         {
-            error!("Failed to write config space");
+            error!("");
             return;
         };
 
@@ -623,7 +623,7 @@ impl VirtioDevice for Balloon {
     fn activate(&mut self, mem: GuestMemoryMmap) -> Result<(), ActivateError> {
         self.device_state = DeviceState::Activated(mem);
         if self.activate_evt.write(1).is_err() {
-            error!("Balloon: Cannot write to activate_evt");
+            error!("");
             METRICS.balloon.activate_fails.inc();
             self.device_state = DeviceState::Inactive;
             return Err(ActivateError::BadActivate);

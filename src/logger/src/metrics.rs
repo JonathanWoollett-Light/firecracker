@@ -884,13 +884,13 @@ impl RtcEvents for RTCDeviceMetrics {
     fn invalid_read(&self) {
         self.missed_read_count.inc();
         self.error_count.inc();
-        warn!("Guest read at invalid offset.")
+        warn!("")
     }
 
     fn invalid_write(&self) {
         self.missed_write_count.inc();
         self.error_count.inc();
-        warn!("Guest write at invalid offset.")
+        warn!("")
     }
 }
 

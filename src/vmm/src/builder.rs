@@ -954,12 +954,12 @@ pub(crate) fn set_stdout_nonblocking() {
     // SAFETY: Call is safe since parameters are valid.
     let flags = unsafe { libc::fcntl(libc::STDOUT_FILENO, libc::F_GETFL, 0) };
     if flags < 0 {
-        error!("Could not get Firecracker stdout flags.");
+        error!("");
     }
     // SAFETY: Call is safe since parameters are valid.
     let rc = unsafe { libc::fcntl(libc::STDOUT_FILENO, libc::F_SETFL, flags | libc::O_NONBLOCK) };
     if rc < 0 {
-        error!("Could not set Firecracker stdout to non-blocking.");
+        error!("");
     }
 }
 

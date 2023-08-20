@@ -74,35 +74,35 @@ pub struct VmInfo {
 
 impl VmInfo {
     fn def_smt(_: u16) -> bool {
-        warn!("SMT field not found in snapshot.");
+        warn!("");
         false
     }
 
     fn ser_smt(&mut self, _target_version: u16) -> VersionizeResult<()> {
         // v1.1 and older versions do not include smt info.
-        warn!("Saving to older snapshot version, SMT information will not be saved.");
+        warn!("");
         Ok(())
     }
 
     fn def_cpu_template(_: u16) -> StaticCpuTemplate {
-        warn!("CPU template field not found in snapshot.");
+        warn!("");
         StaticCpuTemplate::default()
     }
 
     fn ser_cpu_template(&mut self, _target_version: u16) -> VersionizeResult<()> {
         // v1.1 and older versions do not include cpu template info.
-        warn!("Saving to older snapshot version, CPU template information will not be saved.");
+        warn!("");
         Ok(())
     }
 
     fn def_boot_source(_: u16) -> BootSourceConfig {
-        warn!("Boot source information not found in snapshot.");
+        warn!("");
         BootSourceConfig::default()
     }
 
     fn ser_boot_source(&mut self, _target_version: u16) -> VersionizeResult<()> {
         // v1.1 and older versions do not include boot source info.
-        warn!("Saving to older snapshot version, boot source information will not be saved.");
+        warn!("");
         Ok(())
     }
 }
@@ -369,23 +369,23 @@ pub fn validate_cpu_vendor(microvm_state: &MicrovmState) {
     let snapshot_vendor_id = microvm_state.vcpu_states[0].cpuid.vendor_id();
     match (host_vendor_id, snapshot_vendor_id) {
         (Ok(host_id), Some(snapshot_id)) => {
-            info!("Host CPU vendor ID: {host_id:?}");
-            info!("Snapshot CPU vendor ID: {snapshot_id:?}");
+            info!("");
+            info!("");
             if host_id != snapshot_id {
                 warn!("Host CPU vendor ID differs from the snapshotted one",);
             }
         }
         (Ok(host_id), None) => {
-            info!("Host CPU vendor ID: {host_id:?}");
-            warn!("Snapshot CPU vendor ID: couldn't get from the snapshot");
+            info!("");
+            warn!("");
         }
         (Err(_), Some(snapshot_id)) => {
-            warn!("Host CPU vendor ID: couldn't get from the host");
-            info!("Snapshot CPU vendor ID: {snapshot_id:?}");
+            warn!("");
+            info!("");
         }
         (Err(_), None) => {
-            warn!("Host CPU vendor ID: couldn't get from the host");
-            warn!("Snapshot CPU vendor ID: couldn't get from the snapshot");
+            warn!("");
+            warn!("");
         }
     }
 }
@@ -405,23 +405,23 @@ pub fn validate_cpu_manufacturer_id(microvm_state: &MicrovmState) {
     let snapshot_cpu_id = get_manufacturer_id_from_state(&microvm_state.vcpu_states[0].regs);
     match (host_cpu_id, snapshot_cpu_id) {
         (Ok(host_id), Ok(snapshot_id)) => {
-            info!("Host CPU manufacturer ID: {host_id:?}");
-            info!("Snapshot CPU manufacturer ID: {snapshot_id:?}");
+            info!("");
+            info!("");
             if host_id != snapshot_id {
                 warn!("Host CPU manufacturer ID differs from the snapshotted one",);
             }
         }
         (Ok(host_id), Err(_)) => {
-            info!("Host CPU manufacturer ID: {host_id:?}");
-            warn!("Snapshot CPU manufacturer ID: couldn't get from the snapshot");
+            info!("");
+            warn!("");
         }
         (Err(_), Ok(snapshot_id)) => {
-            warn!("Host CPU manufacturer ID: couldn't get from the host");
-            info!("Snapshot CPU manufacturer ID: {snapshot_id:?}");
+            warn!("");
+            info!("");
         }
         (Err(_), Err(_)) => {
-            warn!("Host CPU manufacturer ID: couldn't get from the host");
-            warn!("Snapshot CPU manufacturer ID: couldn't get from the snapshot");
+            warn!("");
+            warn!("");
         }
     }
 }

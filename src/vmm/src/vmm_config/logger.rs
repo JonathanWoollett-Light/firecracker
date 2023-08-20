@@ -174,7 +174,7 @@ mod tests {
         assert!(init_logger(desc, &default_instance_info).is_err());
 
         // Validate logfile works.
-        warn!("this is a test");
+        warn!("");
 
         let mut reader = BufReader::new(log_file.into_file());
 

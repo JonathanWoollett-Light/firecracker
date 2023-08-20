@@ -78,7 +78,7 @@ impl From<MainError> for ExitCode {
 fn main() -> ExitCode {
     let result = main_exec();
     if let Err(err) = result {
-        error!("{err}");
+        error!("");
         eprintln!("Error: {err:?}");
         ExitCode::from(err)
     } else {
@@ -428,7 +428,7 @@ pub fn enable_ssbd_mitigation() {
             last_error
         );
         if last_error == libc::EINVAL {
-            error!("The host does not support SSBD mitigation through prctl.");
+            error!("");
         }
     }
 }
@@ -508,7 +508,7 @@ fn build_microvm_from_json(
     )
     .map_err(BuildFromJsonError::StartMicroVM)?;
 
-    info!("Successfully started microvm that was configured from one single json");
+    info!("");
 
     Ok((vm_resources, vmm))
 }

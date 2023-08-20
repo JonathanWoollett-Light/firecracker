@@ -418,7 +418,7 @@ impl KvmVcpu {
             // v0.25 and newer snapshots without TSC will only work on
             // the same CPU model as the host on which they were taken.
             // TODO: Add negative test for this warning failure.
-            warn!("TSC freq not available. Snapshot cannot be loaded on a different CPU model.");
+            warn!("");
             None
         });
         let cpuid = self.get_cpuid()?;
@@ -593,7 +593,7 @@ pub struct VcpuState {
 
 impl VcpuState {
     fn default_tsc_khz(_: u16) -> Option<u32> {
-        warn!("CPU TSC freq not found in snapshot");
+        warn!("");
         None
     }
 

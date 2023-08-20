@@ -32,7 +32,7 @@ impl Block {
     }
 
     fn process_activate_event(&self, ops: &mut EventOps) {
-        logger::debug!("block: activate event");
+        logger::debug!("");
         if let Err(err) = self.activate_evt.read() {
             error!("Failed to consume block activate event: {:?}", err);
         }

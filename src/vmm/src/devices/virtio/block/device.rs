@@ -156,7 +156,7 @@ impl DiskProperties {
         let mut default_id = [0; VIRTIO_BLK_ID_BYTES as usize];
         match Self::build_device_id(disk_file) {
             Err(_) => {
-                warn!("Could not generate device id. We'll use a default.");
+                warn!("");
             }
             Ok(disk_id_string) => {
                 // The kernel only knows to read a maximum of VIRTIO_BLK_ID_BYTES.
@@ -222,7 +222,7 @@ macro_rules! unwrap_async_file_engine_or_return {
         match $file_engine {
             FileEngine::Async(engine) => engine,
             FileEngine::Sync(_) => {
-                error!("The block device doesn't use an async IO engine");
+                error!("");
                 return;
             }
         }
@@ -577,7 +577,7 @@ impl VirtioDevice for Block {
     fn read_config(&self, offset: u64, mut data: &mut [u8]) {
         let config_len = self.config_space.len() as u64;
         if offset >= config_len {
-            error!("Failed to read config space");
+            error!("");
             METRICS.block.cfg_fails.inc();
             return;
         }
@@ -595,7 +595,7 @@ impl VirtioDevice for Block {
             .zip(end)
             .and_then(|(start, end)| self.config_space.get_mut(start..end)) else
         {
-            error!("Failed to write config space");
+            error!("");
             METRICS.block.cfg_fails.inc();
             return;
         };
@@ -612,7 +612,7 @@ impl VirtioDevice for Block {
         }
 
         if self.activate_evt.write(1).is_err() {
-            error!("Block: Cannot write to activate_evt");
+            error!("");
             return Err(super::super::ActivateError::BadActivate);
         }
         self.device_state = DeviceState::Activated(mem);

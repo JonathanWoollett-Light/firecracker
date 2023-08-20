@@ -362,7 +362,7 @@ impl Net {
             next_descriptor = descriptor.next_descriptor();
         }
 
-        warn!("Receiving buffer is too small to hold frame of current size");
+        warn!("");
         Err(FrontendError::DescriptorChainTooSmall)
     }
 
@@ -432,13 +432,13 @@ impl Net {
         // Read the frame headers from the IoVecBuffer. This will return None
         // if the frame_iovec is empty.
         let header_len = frame_iovec.read_at(headers, 0).ok_or_else(|| {
-            error!("Received empty TX buffer");
+            error!("");
             METRICS.net.tx_malformed_frames.inc();
             NetError::VnetHeaderMissing
         })?;
 
         let headers = frame_bytes_from_buf(&headers[..header_len]).map_err(|e| {
-            error!("VNET headers missing in TX frame");
+            error!("");
             METRICS.net.tx_malformed_frames.inc();
             e
         })?;
@@ -794,7 +794,7 @@ impl VirtioDevice for Net {
         let config_space_bytes = self.config_space.as_slice();
         let config_len = config_space_bytes.len() as u64;
         if offset >= config_len {
-            error!("Failed to read config space");
+            error!("");
             METRICS.net.cfg_fails.inc();
             return;
         }
@@ -815,7 +815,7 @@ impl VirtioDevice for Net {
             .zip(end)
             .and_then(|(start, end)| config_space_bytes.get_mut(start..end)) else
         {
-            error!("Failed to write config space");
+            error!("");
             METRICS.net.cfg_fails.inc();
             return;
         };
@@ -834,7 +834,7 @@ impl VirtioDevice for Net {
         }
 
         if self.activate_evt.write(1).is_err() {
-            error!("Net: Cannot write to activate_evt");
+            error!("");
             return Err(super::super::ActivateError::BadActivate);
         }
         self.device_state = DeviceState::Activated(mem);

@@ -13,22 +13,22 @@ use crate::devices::virtio::VirtioDevice;
 impl Entropy {
     fn register_runtime_events(&self, ops: &mut EventOps) {
         if let Err(err) = ops.add(Events::new(&self.queue_events()[RNG_QUEUE], EventSet::IN)) {
-            error!("entropy: Failed to register queue event: {err}");
+            error!("");
         }
         if let Err(err) = ops.add(Events::new(self.rate_limiter(), EventSet::IN)) {
-            error!("entropy: Failed to register rate-limiter event: {err}");
+            error!("");
         }
     }
 
     fn register_activate_event(&self, ops: &mut EventOps) {
         if let Err(err) = ops.add(Events::new(self.activate_event(), EventSet::IN)) {
-            error!("entropy: Failed to register activate event: {err}");
+            error!("");
         }
     }
 
     fn process_activate_event(&self, ops: &mut EventOps) {
         if let Err(err) = self.activate_event().read() {
-            error!("entropy: Failed to consume activate event: {err}");
+            error!("");
         }
 
         // Register runtime events
@@ -36,7 +36,7 @@ impl Entropy {
 
         // Remove activate event
         if let Err(err) = ops.remove(Events::new(self.activate_event(), EventSet::IN)) {
-            error!("entropy: Failed to un-register activate event: {err}");
+            error!("");
         }
     }
 }
@@ -59,12 +59,12 @@ impl MutEventSubscriber for Entropy {
         let source = events.fd();
 
         if !event_set.contains(EventSet::IN) {
-            warn!("entropy: Received unknown event: {event_set:?} from source {source}");
+            warn!("");
             return;
         }
 
         if !self.is_activated() {
-            warn!("entropy: The device is not activated yet. Spurious event received: {source}");
+            warn!("");
             return;
         }
 
@@ -75,7 +75,7 @@ impl MutEventSubscriber for Entropy {
         } else if source == self.activate_event().as_raw_fd() {
             self.process_activate_event(ops)
         } else {
-            warn!("entropy: Unknown event received: {source}");
+            warn!("");
         }
     }
 }

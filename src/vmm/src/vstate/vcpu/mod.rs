@@ -484,11 +484,11 @@ impl Vcpu {
                     Ok(VcpuEmulation::Handled)
                 }
                 VcpuExit::Hlt => {
-                    info!("Received KVM_EXIT_HLT signal");
+                    info!("");
                     Ok(VcpuEmulation::Stopped)
                 }
                 VcpuExit::Shutdown => {
-                    info!("Received KVM_EXIT_SHUTDOWN signal");
+                    info!("");
                     Ok(VcpuEmulation::Stopped)
                 }
                 // Documentation specifies that below kvm exits are considered
@@ -508,7 +508,7 @@ impl Vcpu {
                 VcpuExit::InternalError => {
                     // Failure from the Linux KVM subsystem rather than from the hardware.
                     METRICS.vcpu.failures.inc();
-                    error!("Received KVM_EXIT_INTERNAL_ERROR signal");
+                    error!("");
                     Err(VcpuError::FaultyKvmExit(format!(
                         "{:?}",
                         VcpuExit::InternalError

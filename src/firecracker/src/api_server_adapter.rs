@@ -113,14 +113,14 @@ impl MutEventSubscriber for ApiServerAdapter {
                     }
                 }
                 Err(TryRecvError::Empty) => {
-                    warn!("Got a spurious notification from api thread");
+                    warn!("");
                 }
                 Err(TryRecvError::Disconnected) => {
                     panic!("The channel's sending half was disconnected. Cannot receive data.");
                 }
             };
         } else {
-            error!("Spurious EventManager event for handler: ApiServerAdapter");
+            error!("");
         }
     }
 

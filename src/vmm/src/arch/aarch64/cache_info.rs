@@ -299,7 +299,7 @@ pub(crate) fn read_cache_config(
                 let level = cache.level;
                 append_cache_level(cache_l1, cache_non_l1, cache);
                 if !msg.is_empty() && !logged_missing_attr {
-                    warn!("Could not read the {msg} for cache level {level}.");
+                    warn!("");
                     logged_missing_attr = true;
                 }
             }

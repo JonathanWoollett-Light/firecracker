@@ -244,7 +244,7 @@ impl Queue {
         let used_ring = self.used_ring;
         let used_ring_size = 6 + 8 * queue_size;
         if !self.ready {
-            error!("attempt to use virtio queue that is not marked ready");
+            error!("");
             false
         } else if self.size > self.max_size || self.size == 0 || (self.size & (self.size - 1)) != 0
         {
@@ -281,13 +281,13 @@ impl Queue {
             );
             false
         } else if desc_table.raw_value() & 0xf != 0 {
-            error!("virtio queue descriptor table breaks alignment constraints");
+            error!("");
             false
         } else if avail_ring.raw_value() & 0x1 != 0 {
-            error!("virtio queue available ring breaks alignment constraints");
+            error!("");
             false
         } else if used_ring.raw_value() & 0x3 != 0 {
-            error!("virtio queue used ring breaks alignment constraints");
+            error!("");
             false
         } else if self.len(mem) > self.max_size {
             error!(

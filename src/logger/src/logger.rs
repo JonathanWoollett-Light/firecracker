@@ -29,8 +29,8 @@
 //!     println!("Could not configure the log subsystem: {}", err);
 //!     return;
 //! }
-//! warn!("this is a warning");
-//! error!("this is an error");
+//! warn!("");
+//! error!("");
 //! ```
 //! ## Example for logging to a `File`:
 //!
@@ -47,8 +47,8 @@
 //!     .init("Running Firecracker v.x".to_string(), Box::new(logs),)
 //!     .is_ok());
 //! // The following messages should appear in the in-memory buffer `logs`.
-//! warn!("this is a warning");
-//! error!("this is an error");
+//! warn!("");
+//! error!("");
 //! ```
 
 //! # Plain log format
@@ -174,7 +174,7 @@ impl Logger {
     /// let l = LOGGER.deref();
     /// l.set_include_level(true);
     /// assert!(l.configure(Some("MY-INSTANCE".to_string())).is_ok());
-    /// warn!("A warning log message with level included");
+    /// warn!("");
     /// ```
     /// The code above will more or less print:
     /// ```bash
@@ -206,7 +206,7 @@ impl Logger {
     /// l.set_include_origin(false, false);
     /// assert!(l.configure(Some("MY-INSTANCE".to_string())).is_ok());
     ///
-    /// warn!("A warning log message with log origin disabled");
+    /// warn!("");
     /// ```
     /// The code above will more or less print:
     /// ```bash
@@ -245,8 +245,8 @@ impl Logger {
     /// let l = LOGGER.deref();
     /// l.set_max_level(log::LevelFilter::Warn);
     /// assert!(l.configure(Some("MY-INSTANCE".to_string())).is_ok());
-    /// info!("An informational log message");
-    /// warn!("A test warning message");
+    /// info!("");
+    /// warn!("");
     /// ```
     /// The code above will more or less print:
     /// ```bash
@@ -762,7 +762,7 @@ mod tests {
 
         let mut reader = LOGGER.mock_init();
 
-        info!("info");
+        info!("");
         validate_log(&mut Box::new(&mut reader), "info\n");
     }
 

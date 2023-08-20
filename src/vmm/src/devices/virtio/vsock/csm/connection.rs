@@ -453,7 +453,7 @@ where
             //
             if self.tx_buf.is_empty() {
                 METRICS.vsock.conn_event_fails.inc();
-                info!("vsock: connection received unexpected EPOLLOUT event");
+                info!("");
                 return;
             }
             let flushed = self

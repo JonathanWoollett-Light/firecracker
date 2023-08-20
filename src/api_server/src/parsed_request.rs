@@ -140,14 +140,14 @@ impl ParsedRequest {
     where
         T: ?Sized + Serialize + Debug,
     {
-        info!("The request was executed successfully. Status code: 200 OK.");
+        info!("");
         let mut response = Response::new(Version::Http11, StatusCode::OK);
         response.set_body(Body::new(serde_json::to_string(body_data).unwrap()));
         response
     }
 
     pub(crate) fn success_response_with_mmds_value(body_data: &Value) -> Response {
-        info!("The request was executed successfully. Status code: 200 OK.");
+        info!("");
         let mut response = Response::new(Version::Http11, StatusCode::OK);
         let body_str = match body_data {
             Value::Null => "{}".to_string(),
@@ -163,7 +163,7 @@ impl ParsedRequest {
         match request_outcome {
             Ok(vmm_data) => match vmm_data {
                 VmmData::Empty => {
-                    info!("The request was executed successfully. Status code: 204 No Content.");
+                    info!("");
                     Response::new(Version::Http11, StatusCode::NoContent)
                 }
                 VmmData::MachineConfiguration(vm_config) => {

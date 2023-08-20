@@ -139,7 +139,7 @@ impl MmioTransport {
 
     fn reset(&mut self) {
         if self.locked_device().is_activated() {
-            warn!("reset device while it's still in active state");
+            warn!("");
         }
         self.features_select = 0;
         self.acked_features_select = 0;
@@ -313,7 +313,7 @@ impl MmioTransport {
                 if self.check_device_status(device_status::DRIVER, device_status::FAILED) {
                     self.locked_device().write_config(offset - 0x100, data)
                 } else {
-                    warn!("can not write to device config data area before driver is ready");
+                    warn!("");
                 }
             }
             _ => {

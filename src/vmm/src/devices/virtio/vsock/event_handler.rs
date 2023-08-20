@@ -40,7 +40,7 @@ where
     B: Debug + VsockBackend + 'static,
 {
     pub fn handle_rxq_event(&mut self, evset: EventSet) -> bool {
-        debug!("vsock: RX queue event");
+        debug!("");
 
         if evset != EventSet::IN {
             warn!("vsock: rxq unexpected event {:?}", evset);
@@ -60,7 +60,7 @@ where
     }
 
     pub fn handle_txq_event(&mut self, evset: EventSet) -> bool {
-        debug!("vsock: TX queue event");
+        debug!("");
 
         if evset != EventSet::IN {
             warn!("vsock: txq unexpected event {:?}", evset);
@@ -86,7 +86,7 @@ where
     }
 
     pub fn handle_evq_event(&mut self, evset: EventSet) -> bool {
-        debug!("vsock: event queue event");
+        debug!("");
 
         if evset != EventSet::IN {
             warn!("vsock: evq unexpected event {:?}", evset);
@@ -103,7 +103,7 @@ where
 
     /// Notify backend of new events.
     pub fn notify_backend(&mut self, evset: EventSet) -> bool {
-        debug!("vsock: backend event");
+        debug!("");
 
         self.backend.notify(evset);
         // After the backend has been kicked, it might've freed up some resources, so we
@@ -140,7 +140,7 @@ where
     }
 
     fn handle_activate_event(&self, ops: &mut EventOps) {
-        debug!("vsock: activate event");
+        debug!("");
         if let Err(err) = self.activate_evt.read() {
             error!("Failed to consume net activate event: {:?}", err);
         }

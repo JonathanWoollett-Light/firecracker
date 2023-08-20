@@ -121,7 +121,7 @@ impl<I: Read + AsRawFd + Send + Debug> SerialWrapper<EventFdTrigger, SerialEvent
         let buffer_ready_fd = self.buffer_ready_evt_fd();
         let input_fd = self.serial_input_fd();
         if input_fd < 0 || buffer_ready_fd < 0 {
-            error!("Serial does not have a configured input source.");
+            error!("");
             return;
         }
         match ops.add(Events::new(&input_fd, EventSet::IN)) {
@@ -202,7 +202,7 @@ impl<I: Read + AsRawFd + Send + Debug> MutEventSubscriber
         let input_fd = self.serial_input_fd();
         let buffer_ready_fd = self.buffer_ready_evt_fd();
         if input_fd < 0 || buffer_ready_fd < 0 {
-            error!("Serial does not have a configured input source.");
+            error!("");
             return;
         }
 
@@ -231,7 +231,7 @@ impl<I: Read + AsRawFd + Send + Debug> MutEventSubscriber
                 if input_fd == event.fd() && count == 0 {
                     unregister_source(ops, &input_fd);
                     unregister_source(ops, &buffer_ready_fd);
-                    warn!("Detached the serial input due to peer close/error.");
+                    warn!("");
                 }
             }
             Err(err) => {
@@ -243,7 +243,7 @@ impl<I: Read + AsRawFd + Send + Debug> MutEventSubscriber
                         self.handle_ewouldblock(ops);
                     }
                     Some(errno) if errno == libc::ENOTTY => {
-                        error!("The serial device does not have the input source attached.");
+                        error!("");
                         unregister_source(ops, &input_fd);
                         unregister_source(ops, &buffer_ready_fd);
                     }
@@ -251,7 +251,7 @@ impl<I: Read + AsRawFd + Send + Debug> MutEventSubscriber
                         // Unknown error, detach the serial input source.
                         unregister_source(ops, &input_fd);
                         unregister_source(ops, &buffer_ready_fd);
-                        warn!("Detached the serial input due to peer close/error.");
+                        warn!("");
                     }
                 }
             }

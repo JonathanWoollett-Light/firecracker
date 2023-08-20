@@ -38,7 +38,7 @@ pub struct NetConfigSpaceState {
 impl NetConfigSpaceState {
     fn de_guest_mac_v2(&mut self, version: u16) -> VersionizeResult<()> {
         // v1.1 and older versions do not have optional MAC address.
-        warn!("Optional MAC address will be set to older version.");
+        warn!("");
         if version < 2 {
             self.guest_mac_v2 = Some(self.guest_mac.into());
         }
@@ -47,7 +47,7 @@ impl NetConfigSpaceState {
 
     fn ser_guest_mac_v2(&mut self, _target_version: u16) -> VersionizeResult<()> {
         // v1.1 and older versions do not have optional MAC address.
-        warn!("Saving to older snapshot version, optional MAC address will not be saved.");
+        warn!("");
         match self.guest_mac_v2 {
             Some(mac) => self.guest_mac = mac.into(),
             None => self.guest_mac = Default::default(),

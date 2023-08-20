@@ -132,7 +132,7 @@ pub trait VirtioDevice: AsAny + Send {
             // Get the upper 32-bits of the features bitfield.
             1 => (avail_features >> 32) as u32,
             _ => {
-                warn!("Received request for unknown features page.");
+                warn!("");
                 0u32
             }
         }

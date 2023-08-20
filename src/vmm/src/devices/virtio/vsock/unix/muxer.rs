@@ -276,7 +276,7 @@ impl VsockEpollListener for VsockMuxer {
 
     /// Notify the muxer about a pending event having occured under its nested epoll FD.
     fn notify(&mut self, _: EventSet) {
-        debug!("vsock: muxer received kick");
+        debug!("");
 
         let mut epoll_events = vec![EpollEvent::new(EventSet::empty(), 0); 32];
         match self.epoll.wait(0, epoll_events.as_mut_slice()) {
@@ -359,7 +359,7 @@ impl VsockMuxer {
                 if self.conn_map.len() == defs::MAX_CONNECTIONS {
                     // If we're already maxed-out on connections, we'll just accept and
                     // immediately discard this potentially new one.
-                    warn!("vsock: connection limit reached; refusing new host connection");
+                    warn!("");
                     self.host_sock.accept().map(|_| 0).unwrap_or(0);
                     return;
                 }
@@ -663,7 +663,7 @@ impl VsockMuxer {
                         // If we can't write a dozen bytes to a pristine connection something
                         // must be really wrong. Killing it.
                         conn.kill();
-                        warn!("vsock: unable to fully write connection ack msg.");
+                        warn!("");
                     }
                     Err(err) => {
                         conn.kill();

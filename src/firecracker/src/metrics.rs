@@ -80,7 +80,7 @@ impl MutEventSubscriber for PeriodicMetrics {
             self.write_metrics_event_fd.read();
             self.write_metrics();
         } else {
-            error!("Spurious METRICS event!");
+            error!("");
         }
     }
 
