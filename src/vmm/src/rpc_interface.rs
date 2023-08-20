@@ -135,68 +135,68 @@ pub enum VmmAction {
 #[derive(Debug, thiserror::Error, derive_more::From)]
 pub enum VmmActionError {
     /// The action `SetBalloonDevice` failed because of bad user input.
-    #[error("{0}")]
+    #[error("")]
     BalloonConfig(BalloonConfigError),
     /// The action `ConfigureBootSource` failed because of bad user input.
-    #[error("{0}")]
+    #[error("")]
     BootSource(BootSourceConfigError),
     /// The action `CreateSnapshot` failed.
-    #[error("{0}")]
+    #[error("")]
     CreateSnapshot(CreateSnapshotError),
     /// The action `ConfigureCpu` failed.
-    #[error("{0}")]
+    #[error("")]
     ConfigureCpu(GuestConfigError),
     /// One of the actions `InsertBlockDevice` or `UpdateBlockDevicePath`
     /// failed because of bad user input.
-    #[error("{0}")]
+    #[error("")]
     DriveConfig(DriveError),
     /// `SetEntropyDevice` action failed because of bad user input.
-    #[error("{0}")]
+    #[error("")]
     EntropyDevice(EntropyDeviceError),
     /// Internal Vmm error.
-    #[error("Internal Vmm error: {0}")]
+    #[error("")]
     InternalVmm(VmmError),
     /// Loading a microVM snapshot failed.
-    #[error("Load microVM snapshot error: {0}")]
+    #[error("")]
     LoadSnapshot(LoadSnapshotError),
     /// The action `ConfigureLogger` failed because of bad user input.
-    #[error("{0}")]
+    #[error("")]
     Logger(LoggerConfigError),
     /// One of the actions `GetVmConfiguration` or `UpdateVmConfiguration` failed because of bad
     /// input.
-    #[error("{0}")]
+    #[error("")]
     MachineConfig(VmConfigError),
     /// The action `ConfigureMetrics` failed because of bad user input.
-    #[error("{0}")]
+    #[error("")]
     Metrics(MetricsConfigError),
     /// One of the `GetMmds`, `PutMmds` or `PatchMmds` actions failed.
     #[from(ignore)]
-    #[error("{0}")]
+    #[error("")]
     Mmds(data_store::Error),
     /// The action `SetMmdsConfiguration` failed because of bad user input.
-    #[error("{0}")]
+    #[error("")]
     MmdsConfig(MmdsConfigError),
     /// Mmds contents update failed due to exceeding the data store limit.
     #[from(ignore)]
-    #[error("{0}")]
+    #[error("")]
     MmdsLimitExceeded(data_store::Error),
     /// The action `InsertNetworkDevice` failed because of bad user input.
-    #[error("{0}")]
+    #[error("")]
     NetworkConfig(NetworkInterfaceError),
     /// The requested operation is not supported.
-    #[error("The requested operation is not supported: {0}")]
+    #[error("")]
     NotSupported(String),
     /// The requested operation is not supported after starting the microVM.
-    #[error("The requested operation is not supported after starting the microVM.")]
+    #[error("")]
     OperationNotSupportedPostBoot,
     /// The requested operation is not supported before starting the microVM.
-    #[error("The requested operation is not supported before starting the microVM.")]
+    #[error("")]
     OperationNotSupportedPreBoot,
     /// The action `StartMicroVm` failed because of an internal error.
-    #[error("{0}")]
+    #[error("")]
     StartMicrovm(StartMicrovmError),
     /// The action `SetVsockDevice` failed because of bad user input.
-    #[error("{0}")]
+    #[error("")]
     VsockConfig(VsockConfigError),
 }
 
@@ -298,13 +298,13 @@ impl MmdsRequestHandler for PrebootApiController<'_> {
 #[derive(Debug, thiserror::Error)]
 pub enum LoadSnapshotError {
     /// Loading a microVM snapshot not allowed after configuring boot-specific resources.
-    #[error("Loading a microVM snapshot not allowed after configuring boot-specific resources.")]
+    #[error("")]
     LoadSnapshotNotAllowed,
     /// Failed to restore from snapshot.
-    #[error("Failed to restore from snapshot: {0}")]
+    #[error("")]
     RestoreFromSnapshot(#[from] RestoreFromSnapshotError),
     /// Failed to resume microVM.
-    #[error("Failed to resume microVM: {0}")]
+    #[error("")]
     ResumeMicrovm(#[from] VmmError),
 }
 

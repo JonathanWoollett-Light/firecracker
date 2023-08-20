@@ -31,16 +31,16 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 pub enum GetCpuTemplateError {
     #[cfg(target_arch = "x86_64")]
     /// Failed to get CPU vendor information.
-    #[error("Failed to get CPU vendor information: {0}")]
+    #[error("")]
     GetCpuVendor(crate::cpu_config::x86_64::cpuid::common::GetCpuidError),
     /// CPU Vendor mismatched between the actual CPU and CPU template.
-    #[error("CPU vendor mismatched between actual CPU and CPU template.")]
+    #[error("")]
     CpuVendorMismatched,
     /// Invalid static CPU template.
-    #[error("Invalid static CPU template: {0}")]
+    #[error("")]
     InvalidStaticCpuTemplate(StaticCpuTemplate),
     /// Invalid CPU model.
-    #[error("The current CPU model is not permitted to apply the CPU template.")]
+    #[error("")]
     InvalidCpuModel,
 }
 

@@ -27,10 +27,10 @@ const IFACE_NAME_MAX_LEN: usize = 16;
 #[derive(Debug, thiserror::Error)]
 pub enum TapError {
     /// Couldn't open /dev/net/tun
-    #[error("Couldn't open /dev/net/tun: {0}")]
+    #[error("")]
     OpenTun(IoError),
     /// Invalid interface name
-    #[error("Invalid interface name")]
+    #[error("")]
     InvalidIfname,
     /// Error while creating ifreq structure
     #[error(
@@ -39,10 +39,10 @@ pub enum TapError {
     )]
     IfreqExecuteError(IoError, String),
     /// Error while setting the offload flags
-    #[error("Error while setting the offload flags: {0}")]
+    #[error("")]
     SetOffloadFlags(IoError),
     /// Error while setting size of the vnet header
-    #[error("Error while setting size of the vnet header: {0}")]
+    #[error("")]
     SetSizeOfVnetHdr(IoError),
 }
 

@@ -41,23 +41,23 @@ const MMDS_CONTENT_ARG: &str = "metadata";
 
 #[derive(Debug, thiserror::Error)]
 enum MainError {
-    #[error("Failed to register signal handlers: {0}")]
+    #[error("")]
     RegisterSignalHandlers(#[source] utils::errno::Error),
-    #[error("Arguments parsing error: {0} \n\nFor more information try --help.")]
+    #[error("")]
     ParseArguments(#[from] utils::arg_parser::Error),
-    #[error("When printing Snapshot Data format: {0}")]
+    #[error("")]
     PrintSnapshotDataFormat(#[from] SnapshotVersionError),
-    #[error("Invalid value for logger level: {0}.Possible values: [Error, Warning, Info, Debug]")]
+    #[error("")]
     InvalidLogLevel(LoggerConfigError),
-    #[error("Could not initialize logger: {0}")]
+    #[error("")]
     LoggerInitialization(LoggerConfigError),
-    #[error("Could not initialize metrics: {0:?}")]
+    #[error("")]
     MetricsInitialization(MetricsConfigError),
-    #[error("Seccomp error: {0}")]
+    #[error("")]
     SeccompFilter(FilterError),
-    #[error("RunWithApiError error: {0}")]
+    #[error("")]
     RunWithApi(ApiServerError),
-    #[error("RunWithoutApiError error: {0}")]
+    #[error("")]
     RunWithoutApiError(RunWithoutApiError),
 }
 
@@ -453,11 +453,11 @@ fn print_supported_snapshot_versions() {
 
 #[derive(Debug, thiserror::Error)]
 enum SnapshotVersionError {
-    #[error("Unable to open snapshot state file: {0}")]
+    #[error("")]
     OpenSnapshot(io::Error),
-    #[error("Invalid data format version of snapshot file: {0}")]
+    #[error("")]
     SnapshotVersion(SnapshotError),
-    #[error("Cannot translate snapshot data version {0} to Firecracker microVM version")]
+    #[error("")]
     FirecrackerVersion(u16),
 }
 
@@ -480,9 +480,9 @@ fn print_snapshot_data_format(snapshot_path: &str) -> Result<(), SnapshotVersion
 
 #[derive(Debug, thiserror::Error)]
 pub enum BuildFromJsonError {
-    #[error("Configuration for VMM from one single json failed: {0}")]
+    #[error("")]
     ParseFromJson(vmm::resources::ResourcesError),
-    #[error("Could not Start MicroVM from one single json: {0}")]
+    #[error("")]
     StartMicroVM(StartMicrovmError),
 }
 
@@ -515,9 +515,9 @@ fn build_microvm_from_json(
 
 #[derive(Debug, thiserror::Error)]
 enum RunWithoutApiError {
-    #[error("MicroVMStopped without an error: {0:?}")]
+    #[error("")]
     Shutdown(FcExitCode),
-    #[error("Failed to build MicroVM from Json: {0}")]
+    #[error("")]
     BuildMicroVMFromJson(BuildFromJsonError),
 }
 

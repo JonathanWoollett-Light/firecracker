@@ -41,10 +41,10 @@ impl MmdsConfig {
 #[derive(Debug, thiserror::Error)]
 pub enum MmdsConfigError {
     /// The network interfaces list provided is empty.
-    #[error("The list of network interface IDs that allow forwarding MMDS requests is empty.")]
+    #[error("")]
     EmptyNetworkIfaceList,
     /// The provided IPv4 address is not link-local valid.
-    #[error("The MMDS IPv4 address is not link local.")]
+    #[error("")]
     InvalidIpv4Addr,
     /// The network interfaces list provided contains IDs that
     /// does not correspond to any existing network interface.
@@ -54,6 +54,6 @@ pub enum MmdsConfigError {
     )]
     InvalidNetworkInterfaceId,
     /// MMDS version could not be configured.
-    #[error("The MMDS could not be configured to version {0}: {1}")]
+    #[error("")]
     MmdsVersion(MmdsVersion, data_store::Error),
 }

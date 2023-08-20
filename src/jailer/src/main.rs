@@ -22,53 +22,53 @@ const JAILER_VERSION: &str = env!("FIRECRACKER_VERSION");
 
 #[derive(Debug, thiserror::Error)]
 pub enum JailerError {
-    #[error("Failed to parse arguments: {0}")]
+    #[error("")]
     ArgumentParsing(ParsingError),
     #[error("{}", format!("Failed to canonicalize path {:?}: {}", .0, .1).replace('\"', ""))]
     Canonicalize(PathBuf, io::Error),
     #[error("{}", format!("Failed to inherit cgroups configurations from file {} in path {:?}", .1, .0).replace('\"', ""))]
     CgroupInheritFromParent(PathBuf, String),
-    #[error("{1} configurations not found in {0}")]
+    #[error("")]
     CgroupLineNotFound(String, String),
-    #[error("Cgroup invalid file: {0}")]
+    #[error("")]
     CgroupInvalidFile(String),
-    #[error("Expected value {0} for {2}. Current value: {1}")]
+    #[error("")]
     CgroupWrite(String, String, String),
-    #[error("Invalid format for cgroups: {0}")]
+    #[error("")]
     CgroupFormat(String),
-    #[error("Hierarchy not found: {0}")]
+    #[error("")]
     CgroupHierarchyMissing(String),
-    #[error("Controller {0} is unavailable")]
+    #[error("")]
     CgroupControllerUnavailable(String),
-    #[error("{0} is an invalid cgroup version specifier")]
+    #[error("")]
     CgroupInvalidVersion(String),
-    #[error("Parent cgroup path is invalid. Path should not be absolute or contain '..' or '.'")]
+    #[error("")]
     CgroupInvalidParentPath(),
-    #[error("Failed to change owner for {0:?}: {1}")]
+    #[error("")]
     ChangeFileOwner(PathBuf, io::Error),
-    #[error("Failed to chdir into chroot directory: {0}")]
+    #[error("")]
     ChdirNewRoot(io::Error),
-    #[error("Failed to change permissions on {0:?}: {1}")]
+    #[error("")]
     Chmod(PathBuf, io::Error),
-    #[error("Failed cloning into a new child process: {0}")]
+    #[error("")]
     Clone(io::Error),
-    #[error("Failed to close netns fd: {0}")]
+    #[error("")]
     CloseNetNsFd(io::Error),
-    #[error("Failed to close /dev/null fd: {0}")]
+    #[error("")]
     CloseDevNullFd(io::Error),
-    #[error("Failed to call close range syscall: {0}")]
+    #[error("")]
     CloseRange(io::Error),
     #[error("{}", format!("Failed to copy {:?} to {:?}: {}", .0, .1, .2).replace('\"', ""))]
     Copy(PathBuf, PathBuf, io::Error),
     #[error("{}", format!("Failed to create directory {:?}: {}", .0, .1).replace('\"', ""))]
     CreateDir(PathBuf, io::Error),
-    #[error("Encountered interior \\0 while parsing a string")]
+    #[error("")]
     CStringParsing(NulError),
-    #[error("Failed to open directory {0}: {1}")]
+    #[error("")]
     DirOpen(String, String),
-    #[error("Failed to duplicate fd: {0}")]
+    #[error("")]
     Dup2(io::Error),
-    #[error("Failed to exec into Firecracker: {0}")]
+    #[error("")]
     Exec(io::Error),
     #[error(
         "Invalid filename. The filename of `--exec-file` option must contain \"firecracker\": {0}"
@@ -78,67 +78,67 @@ pub enum JailerError {
     ExtractFileName(PathBuf),
     #[error("{}", format!("Failed to open file {:?}: {}", .0, .1).replace('\"', ""))]
     FileOpen(PathBuf, io::Error),
-    #[error("Failed to decode string from byte array: {0}")]
+    #[error("")]
     FromBytesWithNul(std::ffi::FromBytesWithNulError),
-    #[error("Failed to get flags from fd: {0}")]
+    #[error("")]
     GetOldFdFlags(io::Error),
-    #[error("Invalid gid: {0}")]
+    #[error("")]
     Gid(String),
-    #[error("Invalid instance ID: {0}")]
+    #[error("")]
     InvalidInstanceId(validators::Error),
     #[error("{}", format!("File {:?} doesn't have a parent", .0).replace('\"', ""))]
     MissingParent(PathBuf),
-    #[error("Failed to create the jail root directory before pivoting root: {0}")]
+    #[error("")]
     MkdirOldRoot(io::Error),
-    #[error("Failed to create {1} via mknod inside the jail: {0}")]
+    #[error("")]
     MknodDev(io::Error, &'static str),
-    #[error("Failed to bind mount the jail root directory: {0}")]
+    #[error("")]
     MountBind(io::Error),
-    #[error("Failed to change the propagation type to slave: {0}")]
+    #[error("")]
     MountPropagationSlave(io::Error),
     #[error("{}", format!("{:?} is not a file", .0).replace('\"', ""))]
     NotAFile(PathBuf),
     #[error("{}", format!("{:?} is not a directory", .0).replace('\"', ""))]
     NotADirectory(PathBuf),
-    #[error("Failed to open /dev/null: {0}")]
+    #[error("")]
     OpenDevNull(io::Error),
     #[error("{}", format!("Failed to parse path {:?} into an OsString", .0).replace('\"', ""))]
     OsStringParsing(PathBuf, OsString),
-    #[error("Failed to pivot root: {0}")]
+    #[error("")]
     PivotRoot(io::Error),
     #[error("{}", format!("Failed to read line from {:?}: {}", .0, .1).replace('\"', ""))]
     ReadLine(PathBuf, io::Error),
     #[error("{}", format!("Failed to read file {:?} into a string: {}", .0, .1).replace('\"', ""))]
     ReadToString(PathBuf, io::Error),
-    #[error("Regex failed: {0:?}")]
+    #[error("")]
     RegEx(regex::Error),
-    #[error("Invalid resource argument: {0}")]
+    #[error("")]
     ResLimitArgument(String),
-    #[error("Invalid format for resources limits: {0}")]
+    #[error("")]
     ResLimitFormat(String),
-    #[error("Invalid limit value for resource: {0}: {1}")]
+    #[error("")]
     ResLimitValue(String, String),
-    #[error("Failed to remove old jail root directory: {0}")]
+    #[error("")]
     RmOldRootDir(io::Error),
-    #[error("Failed to change current directory: {0}")]
+    #[error("")]
     SetCurrentDir(io::Error),
-    #[error("Failed to join network namespace: netns: {0}")]
+    #[error("")]
     SetNetNs(io::Error),
-    #[error("Failed to set limit for resource: {0}")]
+    #[error("")]
     Setrlimit(String),
-    #[error("Failed to daemonize: setsid: {0}")]
+    #[error("")]
     SetSid(io::Error),
-    #[error("Invalid uid: {0}")]
+    #[error("")]
     Uid(String),
-    #[error("Failed to unmount the old jail root: {0}")]
+    #[error("")]
     UmountOldRoot(io::Error),
-    #[error("Unexpected value for the socket listener fd: {0}")]
+    #[error("")]
     UnexpectedListenerFd(i32),
-    #[error("Failed to unshare into new mount namespace: {0}")]
+    #[error("")]
     UnshareNewNs(io::Error),
-    #[error("Failed to unset the O_CLOEXEC flag on the socket fd: {0}")]
+    #[error("")]
     UnsetCloexec(io::Error),
-    #[error("Slice contains invalid UTF-8 data : {0}")]
+    #[error("")]
     UTF8Parsing(std::str::Utf8Error),
     #[error("{}", format!("Failed to write to {:?}: {}", .0, .1).replace('\"', ""))]
     Write(PathBuf, io::Error),

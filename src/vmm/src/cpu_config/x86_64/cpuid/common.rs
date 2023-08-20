@@ -6,10 +6,10 @@
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum GetCpuidError {
     /// Invalid leaf.
-    #[error("Un-supported leaf: {0}")]
+    #[error("")]
     UnsupportedLeaf(u32),
     /// Invalid subleaf.
-    #[error("Invalid subleaf: {0}")]
+    #[error("")]
     InvalidSubleaf(u32),
 }
 

@@ -26,21 +26,21 @@ use crate::vstate::vm::Vm;
 /// Errors associated with the wrappers over KVM ioctls.
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
 pub enum KvmVcpuError {
-    #[error("Error configuring the vcpu registers: {0}")]
+    #[error("")]
     ConfigureRegisters(ArchError),
-    #[error("Error creating vcpu: {0}")]
+    #[error("")]
     CreateVcpu(kvm_ioctls::Error),
-    #[error("Failed to dump CPU configuration: {0}")]
+    #[error("")]
     DumpCpuConfig(ArchError),
-    #[error("Error getting the vcpu preferred target: {0}")]
+    #[error("")]
     GetPreferredTarget(kvm_ioctls::Error),
-    #[error("Error initializing the vcpu: {0}")]
+    #[error("")]
     Init(kvm_ioctls::Error),
-    #[error("Error applying template: {0}")]
+    #[error("")]
     ApplyCpuTemplate(ArchError),
-    #[error("Failed to restore the state of the vcpu: {0}")]
+    #[error("")]
     RestoreState(ArchError),
-    #[error("Failed to save the state of the vcpu: {0}")]
+    #[error("")]
     SaveState(ArchError),
 }
 

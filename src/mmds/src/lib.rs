@@ -21,20 +21,20 @@ use crate::token_headers::REJECTED_HEADER;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("MMDS token not valid.")]
+    #[error("")]
     InvalidToken,
-    #[error("Invalid URI.")]
+    #[error("")]
     InvalidURI,
-    #[error("Not allowed HTTP method.")]
+    #[error("")]
     MethodNotAllowed,
-    #[error("No MMDS token provided. Use `X-metadata-token` header to specify the session token.")]
+    #[error("")]
     NoTokenProvided,
     #[error(
         "Token time to live value not found. Use `X-metadata-token-ttl-seconds` header to specify \
          the token's lifetime."
     )]
     NoTtlProvided,
-    #[error("Resource not found: {0}.")]
+    #[error("")]
     ResourceNotFound(String),
 }
 

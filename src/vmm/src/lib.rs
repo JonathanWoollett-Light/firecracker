@@ -190,89 +190,89 @@ pub const HTTP_MAX_PAYLOAD_SIZE: usize = 51200;
 #[derive(Debug, thiserror::Error)]
 pub enum VmmError {
     #[cfg(target_arch = "aarch64")]
-    #[error("Invalid cmdline")]
+    #[error("")]
     /// Invalid command line error.
     Cmdline,
     /// Device manager error.
-    #[error("{0}")]
+    #[error("")]
     DeviceManager(device_manager::mmio::MmioError),
     /// Cannot fetch the KVM dirty bitmap.
-    #[error("Error getting the KVM dirty bitmap. {0}")]
+    #[error("")]
     DirtyBitmap(kvm_ioctls::Error),
     /// Cannot read from an Event file descriptor.
-    #[error("Event fd error: {0}")]
+    #[error("")]
     EventFd(io::Error),
     /// I8042 Error.
-    #[error("I8042 error: {0}")]
+    #[error("")]
     I8042Error(devices::legacy::I8042DeviceError),
     /// Cannot access kernel file.
-    #[error("Cannot access kernel file: {0}")]
+    #[error("")]
     KernelFile(io::Error),
     /// Cannot open /dev/kvm. Either the host does not have KVM or Firecracker does not have
     /// permission to open the file descriptor.
-    #[error("Failed to validate KVM support: {0}")]
+    #[error("")]
     KvmContext(vstate::system::SystemError),
     /// Cannot add devices to the Legacy I/O Bus.
     #[cfg(target_arch = "x86_64")]
-    #[error("Cannot add devices to the legacy I/O Bus. {0}")]
+    #[error("")]
     LegacyIOBus(device_manager::legacy::LegacyDeviceError),
     /// Internal metrics system error.
-    #[error("Metrics error: {0}")]
+    #[error("")]
     Metrics(MetricsError),
     /// Cannot add a device to the MMIO Bus.
-    #[error("Cannot add a device to the MMIO Bus. {0}")]
+    #[error("")]
     RegisterMMIODevice(device_manager::mmio::MmioError),
     /// Cannot install seccomp filters.
-    #[error("Cannot install seccomp filters: {0}")]
+    #[error("")]
     SeccompFilters(seccompiler::InstallationError),
     /// Write to the serial console failed.
-    #[error("Error writing to the serial console: {0}")]
+    #[error("")]
     Serial(io::Error),
     /// Cannot create Timer file descriptor.
-    #[error("Error creating timer fd: {0}")]
+    #[error("")]
     TimerFd(io::Error),
     /// Vcpu configuration error.
-    #[error("Error configuring the vcpu for boot: {0}")]
+    #[error("")]
     VcpuConfigure(KvmVcpuConfigureError),
     /// Vcpu create error.
-    #[error("Error creating the vcpu: {0}")]
+    #[error("")]
     VcpuCreate(vstate::vcpu::VcpuError),
     /// Cannot send event to vCPU.
-    #[error("Cannot send event to vCPU. {0}")]
+    #[error("")]
     VcpuEvent(vstate::vcpu::VcpuError),
     /// Cannot create a vCPU handle.
-    #[error("Cannot create a vCPU handle. {0}")]
+    #[error("")]
     VcpuHandle(vstate::vcpu::VcpuError),
     /// Vcpu init error.
     #[cfg(target_arch = "aarch64")]
-    #[error("Error initializing the vcpu: {0}")]
+    #[error("")]
     VcpuInit(vstate::vcpu::KvmVcpuError),
     /// vCPU start error.
-    #[error("Failed to start vCPUs")]
+    #[error("")]
     VcpuStart(StartVcpusError),
     /// vCPU pause failed.
-    #[error("Failed to pause the vCPUs.")]
+    #[error("")]
     VcpuPause,
     /// vCPU exit failed.
-    #[error("Failed to exit the vCPUs.")]
+    #[error("")]
     VcpuExit,
     /// vCPU resume failed.
-    #[error("Failed to resume the vCPUs.")]
+    #[error("")]
     VcpuResume,
     /// Vcpu send message failed.
-    #[error("Failed to message the vCPUs.")]
+    #[error("")]
     VcpuMessage,
     /// Cannot spawn a new Vcpu thread.
-    #[error("Cannot spawn Vcpu thread: {0}")]
+    #[error("")]
     VcpuSpawn(io::Error),
     /// Vm error.
-    #[error("Vm error: {0}")]
+    #[error("")]
     Vm(vstate::vm::VmError),
     /// Error thrown by observer object on Vmm initialization.
-    #[error("Error thrown by observer object on Vmm initialization: {0}")]
+    #[error("")]
     VmmObserverInit(utils::errno::Error),
     /// Error thrown by observer object on Vmm teardown.
-    #[error("Error thrown by observer object on Vmm teardown: {0}")]
+    #[error("")]
     VmmObserverTeardown(utils::errno::Error),
 }
 
@@ -286,17 +286,17 @@ pub(crate) fn mem_size_mib(guest_memory: &GuestMemoryMmap) -> u64 {
 
 /// Error type for [`Vmm::emulate_serial_init`].
 #[derive(Debug, derive_more::From, thiserror::Error)]
-#[error("Emulate serial init error: {0}")]
+#[error("")]
 pub struct EmulateSerialInitError(std::io::Error);
 
 /// Error type for [`Vmm::start_vcpus`].
 #[derive(Debug, thiserror::Error)]
 pub enum StartVcpusError {
     /// Vmm observer init error.
-    #[error("{0}")]
+    #[error("")]
     VmmObserverInit(#[from] utils::errno::Error),
     /// vCPU handle error.
-    #[error("{0}")]
+    #[error("")]
     VcpuHandle(#[from] StartThreadedError),
 }
 
@@ -304,19 +304,19 @@ pub enum StartVcpusError {
 #[derive(Debug, thiserror::Error)]
 pub enum RestoreVcpusError {
     /// Invalid input.
-    #[error("Invalid input.")]
+    #[error("")]
     InvalidInput,
     /// Failed to send event.
-    #[error("Failed to send event: {0}")]
+    #[error("")]
     SendEvent(#[from] VcpuSendEventError),
     /// Vcpu is in unexpected state.
-    #[error("Unexpected vCPU response.")]
+    #[error("")]
     UnexpectedVcpuResponse,
     /// Failed to restore vCPU state.
-    #[error("Failed to restore vCPU state: {0}")]
+    #[error("")]
     RestoreVcpuState(#[from] vcpu::VcpuError),
     /// Not allowed.
-    #[error("Not allowed: {0}")]
+    #[error("")]
     NotAllowed(String),
 }
 
@@ -324,16 +324,16 @@ pub enum RestoreVcpusError {
 #[derive(Debug, thiserror::Error)]
 pub enum DumpCpuConfigError {
     /// Failed to send an event to vcpu thread.
-    #[error("Failed to send event to vcpu thread: {0:?}")]
+    #[error("")]
     SendEvent(#[from] VcpuSendEventError),
     /// Got an unexpected response from vcpu thread.
-    #[error("Got unexpected response from vcpu thread.")]
+    #[error("")]
     UnexpectedResponse,
     /// Failed to dump CPU config.
-    #[error("Failed to dump CPU config: {0}")]
+    #[error("")]
     DumpCpuConfig(#[from] vcpu::VcpuError),
     /// Operation not allowed.
-    #[error("Operation not allowed: {0}")]
+    #[error("")]
     NotAllowed(String),
 }
 

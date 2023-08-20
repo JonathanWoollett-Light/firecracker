@@ -60,42 +60,42 @@ use crate::{device_manager, EventManager, RestoreVcpusError, Vmm, VmmError};
 #[derive(Debug, thiserror::Error)]
 pub enum StartMicrovmError {
     /// Unable to attach block device to Vmm.
-    #[error("Unable to attach block device to Vmm: {0}")]
+    #[error("")]
     AttachBlockDevice(io::Error),
     /// This error is thrown by the minimal boot loader implementation.
-    #[error("System configuration error: {0:?}")]
+    #[error("")]
     ConfigureSystem(crate::arch::ConfigurationError),
     /// Error using CPU template to configure vCPUs
-    #[error("Failed to create guest config: {0:?}")]
+    #[error("")]
     CreateGuestConfig(#[from] GuestConfigError),
     /// Internal errors are due to resource exhaustion.
     #[error("Cannot create network device. {}", format!("{:?}", .0).replace('\"', ""))]
     CreateNetDevice(crate::devices::virtio::net::NetError),
     /// Failed to create a `RateLimiter` object.
-    #[error("Cannot create RateLimiter: {0}")]
+    #[error("")]
     CreateRateLimiter(io::Error),
     /// Legacy devices work with Event file descriptors and the creation can fail because
     /// of resource exhaustion.
     #[cfg(target_arch = "x86_64")]
-    #[error("Error creating legacy device: {0}")]
+    #[error("")]
     CreateLegacyDevice(device_manager::legacy::LegacyDeviceError),
     /// Memory regions are overlapping or mmap fails.
     #[error("Invalid Memory Configuration: {}", format!("{:?}", .0).replace('\"', ""))]
     GuestMemoryMmap(utils::vm_memory::Error),
     /// Cannot load initrd due to an invalid memory configuration.
-    #[error("Cannot load initrd due to an invalid memory configuration.")]
+    #[error("")]
     InitrdLoad,
     /// Cannot load initrd due to an invalid image.
-    #[error("Cannot load initrd due to an invalid image: {0}")]
+    #[error("")]
     InitrdRead(io::Error),
     /// Internal error encountered while starting a microVM.
-    #[error("Internal error while starting microVM: {0}")]
+    #[error("")]
     Internal(VmmError),
     /// Failed to get CPU template.
-    #[error("Failed to get CPU template: {0}")]
+    #[error("")]
     GetCpuTemplate(#[from] GetCpuTemplateError),
     /// The kernel command line is invalid.
-    #[error("Invalid kernel command line: {0}")]
+    #[error("")]
     KernelCmdline(String),
     /// Cannot load kernel due to invalid memory configuration or invalid kernel image.
     #[error(
@@ -107,16 +107,16 @@ pub enum StartMicrovmError {
     #[error("Cannot load command line string: {}", format!("{}", .0).replace('\"', ""))]
     LoadCommandline(linux_loader::loader::Error),
     /// Cannot start the VM because the kernel builder was not configured.
-    #[error("Cannot start microvm without kernel configuration.")]
+    #[error("")]
     MissingKernelConfig,
     /// Cannot start the VM because the size of the guest memory  was not specified.
-    #[error("Cannot start microvm without guest mem_size config.")]
+    #[error("")]
     MissingMemSizeConfig,
     /// The seccomp filter map is missing a key.
-    #[error("No seccomp filter for thread category: {0}")]
+    #[error("")]
     MissingSeccompFilters(String),
     /// The net device configuration is missing the tap device.
-    #[error("The net device configuration is missing the tap device.")]
+    #[error("")]
     NetDeviceNotConfigured,
     /// Cannot open the block device backing file.
     #[error("Cannot open the block device backing file: {}", format!("{:?}", .0).replace('\"', ""))]
@@ -128,13 +128,13 @@ pub enum StartMicrovmError {
     )]
     RegisterMmioDevice(device_manager::mmio::MmioError),
     /// Cannot restore microvm state.
-    #[error("Cannot restore microvm state: {0}")]
+    #[error("")]
     RestoreMicrovmState(MicrovmStateError),
     /// Unable to set VmResources.
-    #[error("Cannot set vm resources: {0}")]
+    #[error("")]
     SetVmResources(VmConfigError),
     /// Failed to create an Entropy device
-    #[error("Cannot create the entropy device: {0}")]
+    #[error("")]
     CreateEntropyDevice(crate::devices::virtio::rng::EntropyError),
 }
 
@@ -372,51 +372,51 @@ pub fn build_and_boot_microvm(
 #[derive(Debug, thiserror::Error)]
 pub enum BuildMicrovmFromSnapshotError {
     /// Failed to create microVM and vCPUs.
-    #[error("Failed to create microVM and vCPUs: {0}")]
+    #[error("")]
     CreateMicrovmAndVcpus(#[from] StartMicrovmError),
     /// Only 255 vCPU state are supported, but {0} states where given.
-    #[error("Only 255 vCPU state are supported, but {0} states where given.")]
+    #[error("")]
     TooManyVCPUs(usize),
     /// Could not access KVM.
-    #[error("Could not access KVM: {0}")]
+    #[error("")]
     KvmAccess(#[from] utils::errno::Error),
     /// Error configuring the TSC, frequency not present in the given snapshot.
-    #[error("Error configuring the TSC, frequency not present in the given snapshot.")]
+    #[error("")]
     TscFrequencyNotPresent,
     /// Could not get TSC to check if TSC scaling was required with the snapshot.
     #[cfg(target_arch = "x86_64")]
-    #[error("Could not get TSC to check if TSC scaling was required with the snapshot: {0}")]
+    #[error("")]
     GetTsc(#[from] crate::vstate::vcpu::GetTscError),
     /// Could not set TSC scaling within the snapshot.
     #[cfg(target_arch = "x86_64")]
-    #[error("Could not set TSC scaling within the snapshot: {0}")]
+    #[error("")]
     SetTsc(#[from] crate::vstate::vcpu::SetTscError),
     /// Failed to restore microVM state.
-    #[error("Failed to restore microVM state: {0}")]
+    #[error("")]
     RestoreState(#[from] crate::vstate::vm::RestoreStateError),
     /// Failed to update microVM configuration.
-    #[error("Failed to update microVM configuration: {0}")]
+    #[error("")]
     VmUpdateConfig(#[from] VmConfigError),
     /// Failed to restore MMIO device.
-    #[error("Failed to restore MMIO device: {0}")]
+    #[error("")]
     RestoreMmioDevice(#[from] MicrovmStateError),
     /// Failed to emulate MMIO serial.
-    #[error("Failed to emulate MMIO serial: {0}")]
+    #[error("")]
     EmulateSerialInit(#[from] crate::EmulateSerialInitError),
     /// Failed to start vCPUs as no vCPU seccomp filter found.
-    #[error("Failed to start vCPUs as no vCPU seccomp filter found.")]
+    #[error("")]
     MissingVcpuSeccompFilters,
     /// Failed to start vCPUs.
-    #[error("Failed to start vCPUs: {0}")]
+    #[error("")]
     StartVcpus(#[from] crate::StartVcpusError),
     /// Failed to restore vCPUs.
-    #[error("Failed to restore vCPUs: {0}")]
+    #[error("")]
     RestoreVcpus(#[from] RestoreVcpusError),
     /// Failed to apply VMM secccomp filter as none found.
-    #[error("Failed to apply VMM secccomp filter as none found.")]
+    #[error("")]
     MissingVmmSeccompFilters,
     /// Failed to apply VMM secccomp filter.
-    #[error("Failed to apply VMM secccomp filter: {0}")]
+    #[error("")]
     SeccompFiltersInternal(#[from] seccompiler::InstallationError),
 }
 

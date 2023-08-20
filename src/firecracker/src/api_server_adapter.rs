@@ -24,15 +24,15 @@ use vmm::{EventManager, FcExitCode, Vmm};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ApiServerError {
-    #[error("MicroVMStopped without an error: {0:?}")]
+    #[error("")]
     MicroVMStoppedWithoutError(FcExitCode),
-    #[error("MicroVMStopped with an error: {0:?}")]
+    #[error("")]
     MicroVMStoppedWithError(FcExitCode),
-    #[error("Failed to open the API socket at: {0}. Check that it is not already used.")]
+    #[error("")]
     FailedToBindSocket(String),
-    #[error("Failed to bind and run the HTTP server: {0}")]
+    #[error("")]
     FailedToBindAndRunHttpServer(ServerError),
-    #[error("Failed to build MicroVM from Json: {0}")]
+    #[error("")]
     BuildFromJson(crate::BuildFromJsonError),
 }
 

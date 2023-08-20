@@ -6,9 +6,9 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 /// Errors associated with the `Init` struct.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("The component is already initialized.")]
+    #[error("")]
     AlreadyInitialized,
-    #[error("The component is initializing. Can't perform the requested action right now.")]
+    #[error("")]
     InitializationInProgress,
 }
 

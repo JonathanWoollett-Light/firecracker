@@ -13,22 +13,22 @@ use crate::cpu_config::x86_64::cpuid::{
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum NormalizeCpuidError {
     /// Failed to set deterministic cache leaf.
-    #[error("Failed to set deterministic cache leaf: {0}")]
+    #[error("")]
     DeterministicCache(#[from] DeterministicCacheError),
     /// Leaf 0x6 is missing from CPUID.
-    #[error("Leaf 0x6 is missing from CPUID.")]
+    #[error("")]
     MissingLeaf6,
     /// Leaf 0x7 / subleaf 0 is missing from CPUID.
-    #[error("Leaf 0x7 / subleaf 0 is missing from CPUID.")]
+    #[error("")]
     MissingLeaf7,
     /// Leaf 0xA is missing from CPUID.
-    #[error("Leaf 0xA is missing from CPUID.")]
+    #[error("")]
     MissingLeafA,
     /// Failed to get brand string.
-    #[error("Failed to get brand string: {0}")]
+    #[error("")]
     GetBrandString(DefaultBrandStringError),
     /// Failed to set brand string.
-    #[error("Failed to set brand string: {0}")]
+    #[error("")]
     ApplyBrandString(MissingBrandStringLeaves),
 }
 
@@ -253,13 +253,13 @@ impl super::IntelCpuid {
 #[derive(Debug, Eq, PartialEq, thiserror::Error)]
 pub enum DefaultBrandStringError {
     /// Missing frequency.
-    #[error("Missing frequency: {0:?}.")]
+    #[error("")]
     MissingFrequency([u8; BRAND_STRING_LENGTH]),
     /// Missing space.
-    #[error("Missing space: {0:?}.")]
+    #[error("")]
     MissingSpace([u8; BRAND_STRING_LENGTH]),
     /// Insufficient space in brand string.
-    #[error("Insufficient space in brand string.")]
+    #[error("")]
     Overflow,
 }
 

@@ -66,19 +66,19 @@ where
 #[derive(Debug, thiserror::Error)]
 pub enum SnapshotMemoryError {
     /// Cannot access file.
-    #[error("Cannot access file: {0:?}")]
+    #[error("")]
     FileHandle(#[from] std::io::Error),
     /// Cannot create memory.
-    #[error("Cannot create memory: {0:?}")]
+    #[error("")]
     CreateMemory(#[from] utils::vm_memory::Error),
     /// Cannot create region.
-    #[error("Cannot create memory region: {0:?}")]
+    #[error("")]
     CreateRegion(#[from] utils::vm_memory::MmapRegionError),
     /// Cannot fetch system's page size.
-    #[error("Cannot fetch system's page size: {0:?}")]
+    #[error("")]
     PageSize(#[from] errno::Error),
     /// Cannot dump memory.
-    #[error("Cannot dump memory: {0:?}")]
+    #[error("")]
     WriteMemory(#[from] GuestMemoryError),
 }
 

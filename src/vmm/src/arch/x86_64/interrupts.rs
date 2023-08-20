@@ -13,10 +13,10 @@ use utils::byte_order;
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum InterruptError {
     /// Failure in getting the LAPIC configuration.
-    #[error("Failure in getting the LAPIC configuration: {0}")]
+    #[error("")]
     GetLapic(kvm_ioctls::Error),
     /// Failure in setting the LAPIC configuration.
-    #[error("Failure in setting the LAPIC configuration: {0}")]
+    #[error("")]
     SetLapic(kvm_ioctls::Error),
 }
 

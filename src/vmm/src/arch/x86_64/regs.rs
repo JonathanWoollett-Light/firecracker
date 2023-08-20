@@ -22,37 +22,37 @@ const PDE_START: u64 = 0xb000;
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum RegsError {
     /// Failed to get SREGs for this CPU.
-    #[error("Failed to get SREGs for this CPU: {0}")]
+    #[error("")]
     GetStatusRegisters(kvm_ioctls::Error),
     /// Failed to set base registers for this CPU.
-    #[error("Failed to set base registers for this CPU: {0}")]
+    #[error("")]
     SetBaseRegisters(kvm_ioctls::Error),
     /// Failed to configure the FPU.
-    #[error("Failed to configure the FPU: {0}")]
+    #[error("")]
     SetFPURegisters(kvm_ioctls::Error),
     /// Failed to set SREGs for this CPU.
-    #[error("Failed to set SREGs for this CPU: {0}")]
+    #[error("")]
     SetStatusRegisters(kvm_ioctls::Error),
     /// Writing the GDT to RAM failed.
-    #[error("Writing the GDT to RAM failed.")]
+    #[error("")]
     WriteGDT,
     /// Writing the IDT to RAM failed.
-    #[error("Writing the IDT to RAM failed")]
+    #[error("")]
     WriteIDT,
     /// Writing PDPTE to RAM failed.
-    #[error("WritePDPTEAddress")]
+    #[error("")]
     WritePDPTEAddress,
     /// Writing PDE to RAM failed.
-    #[error("WritePDEAddress")]
+    #[error("")]
     WritePDEAddress,
     /// Writing PML4 to RAM failed.
-    #[error("WritePML4Address")]
+    #[error("")]
     WritePML4Address,
 }
 
 /// Error type for [`setup_fpu`].
 #[derive(Debug, derive_more::From, PartialEq, Eq, thiserror::Error)]
-#[error("Failed to setup FPU: {0}")]
+#[error("")]
 pub struct SetupFpuError(utils::errno::Error);
 
 /// Configure Floating-Point Unit (FPU) registers for a given CPU.
@@ -76,7 +76,7 @@ pub fn setup_fpu(vcpu: &VcpuFd) -> Result<(), SetupFpuError> {
 
 /// Error type of [`setup_regs`].
 #[derive(Debug, derive_more::From, PartialEq, Eq, thiserror::Error)]
-#[error("Failed to setup registers: {0}")]
+#[error("")]
 pub struct SetupRegistersError(utils::errno::Error);
 
 /// Configure base registers for a given CPU.
@@ -112,16 +112,16 @@ pub fn setup_regs(vcpu: &VcpuFd, boot_ip: u64) -> Result<(), SetupRegistersError
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum SetupSpecialRegistersError {
     /// Failed to get special registers
-    #[error("Failed to get special registers: {0}")]
+    #[error("")]
     GetSpecialRegisters(utils::errno::Error),
     /// Failed to configure segments and special registers
-    #[error("Failed to configure segments and special registers: {0}")]
+    #[error("")]
     ConfigureSegmentsAndSpecialRegisters(RegsError),
     /// Failed to setup page tables
-    #[error("Failed to setup page tables: {0}")]
+    #[error("")]
     SetupPageTables(RegsError),
     /// Failed to set special registers
-    #[error("Failed to set special registers: {0}")]
+    #[error("")]
     SetSpecialRegisters(utils::errno::Error),
 }
 

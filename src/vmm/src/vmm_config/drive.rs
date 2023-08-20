@@ -21,19 +21,19 @@ use crate::VmmError;
 #[derive(Debug, thiserror::Error)]
 pub enum DriveError {
     /// Could not create a Block Device.
-    #[error("Unable to create the block device: {0:?}")]
+    #[error("")]
     CreateBlockDevice(BlockError),
     /// Failed to create a `RateLimiter` object.
-    #[error("Cannot create RateLimiter: {0}")]
+    #[error("")]
     CreateRateLimiter(io::Error),
     /// Error during block device update (patch).
-    #[error("Unable to patch the block device: {0}")]
+    #[error("")]
     DeviceUpdate(VmmError),
     /// The block device path is invalid.
-    #[error("Invalid block device path: {0}")]
+    #[error("")]
     InvalidBlockDevicePath(String),
     /// A root block device was already added.
-    #[error("A root block device already exists!")]
+    #[error("")]
     RootBlockDeviceAlreadyAdded,
 }
 

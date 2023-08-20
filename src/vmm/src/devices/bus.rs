@@ -15,7 +15,7 @@ use std::sync::{Arc, Mutex};
 #[derive(Debug, thiserror::Error)]
 pub enum BusError {
     /// The insertion failed because the new device overlapped with an old device.
-    #[error("New device overlaps with an old device.")]
+    #[error("")]
     Overlap,
 }
 

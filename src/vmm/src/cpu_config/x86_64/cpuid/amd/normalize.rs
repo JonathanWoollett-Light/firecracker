@@ -15,31 +15,31 @@ use crate::cpu_config::x86_64::cpuid::{
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum NormalizeCpuidError {
     /// Provided `cpu_bits` is >=8.
-    #[error("Provided `cpu_bits` is >=8: {0}.")]
+    #[error("")]
     CpuBits(u8),
     /// Failed to passthrough cache topology.
-    #[error("Failed to passthrough cache topology: {0}")]
+    #[error("")]
     PassthroughCacheTopology(#[from] PassthroughCacheTopologyError),
     /// Missing leaf 0x7 / subleaf 0.
-    #[error("Missing leaf 0x7 / subleaf 0.")]
+    #[error("")]
     MissingLeaf0x7Subleaf0,
     /// Missing leaf 0x80000000.
-    #[error("Missing leaf 0x80000000.")]
+    #[error("")]
     MissingLeaf0x80000000,
     /// Missing leaf 0x80000001.
-    #[error("Missing leaf 0x80000001.")]
+    #[error("")]
     MissingLeaf0x80000001,
     /// Failed to set feature entry leaf.
-    #[error("Failed to set feature entry leaf: {0}")]
+    #[error("")]
     FeatureEntry(#[from] FeatureEntryError),
     /// Failed to set extended cache topology leaf.
-    #[error("Failed to set extended cache topology leaf: {0}")]
+    #[error("")]
     ExtendedCacheTopology(#[from] ExtendedCacheTopologyError),
     /// Failed to set extended APIC ID leaf.
-    #[error("Failed to set extended APIC ID leaf: {0}")]
+    #[error("")]
     ExtendedApicId(#[from] ExtendedApicIdError),
     /// Failed to set brand string.
-    #[error("Failed to set brand string: {0}")]
+    #[error("")]
     BrandString(MissingBrandStringLeaves),
 }
 
@@ -47,10 +47,10 @@ pub enum NormalizeCpuidError {
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum PassthroughCacheTopologyError {
     /// Failed to get the host vendor id.
-    #[error("Failed to get the host vendor id: {0}")]
+    #[error("")]
     NoVendorId(GetCpuidError),
     /// The host vendor id does not match AMD.
-    #[error("The host vendor id does not match AMD.")]
+    #[error("")]
     BadVendorId,
 }
 
@@ -58,13 +58,13 @@ pub enum PassthroughCacheTopologyError {
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum FeatureEntryError {
     /// Missing leaf 0x80000008.
-    #[error("Missing leaf 0x80000008.")]
+    #[error("")]
     MissingLeaf0x80000008,
     /// Failed to set `nt` (number of physical threads) due to overflow.
-    #[error("Failed to set `nt` (number of physical threads) due to overflow.")]
+    #[error("")]
     NumberOfPhysicalThreadsOverflow,
     /// Failed to set `nt` (number of physical threads).
-    #[error("Failed to set `nt` (number of physical threads).")]
+    #[error("")]
     NumberOfPhysicalThreads(CheckedAssignError),
 }
 
@@ -72,13 +72,13 @@ pub enum FeatureEntryError {
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum ExtendedCacheTopologyError {
     /// Missing leaf 0x8000001d.
-    #[error("Missing leaf 0x8000001d.")]
+    #[error("")]
     MissingLeaf0x8000001d,
     /// Failed to set `num_sharing_cache` due to overflow.
-    #[error("Failed to set `num_sharing_cache` due to overflow.")]
+    #[error("")]
     NumSharingCacheOverflow,
     /// Failed to set `num_sharing_cache`.
-    #[error("Failed to set `num_sharing_cache`: {0}")]
+    #[error("")]
     NumSharingCache(CheckedAssignError),
 }
 
@@ -86,16 +86,16 @@ pub enum ExtendedCacheTopologyError {
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum ExtendedApicIdError {
     /// Missing leaf 0x8000001d.
-    #[error("Missing leaf 0x8000001e.")]
+    #[error("")]
     MissingLeaf0x8000001e,
     /// Failed to set `extended_apic_id`.
-    #[error("Failed to set `extended_apic_id`: {0}")]
+    #[error("")]
     ExtendedApicId(CheckedAssignError),
     /// Failed to set `compute_unit_id`.
-    #[error("Failed to set `compute_unit_id`: {0}")]
+    #[error("")]
     ComputeUnitId(CheckedAssignError),
     /// Failed to set `threads_per_compute_unit`.
-    #[error("Failed to set `threads_per_compute_unit`: {0}")]
+    #[error("")]
     ThreadPerComputeUnit(CheckedAssignError),
 }
 

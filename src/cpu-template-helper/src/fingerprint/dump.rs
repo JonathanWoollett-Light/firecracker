@@ -11,16 +11,16 @@ use crate::fingerprint::Fingerprint;
 #[derive(Debug, thiserror::Error)]
 pub enum FingerprintDumpError {
     /// Failed to dump CPU configuration.
-    #[error("Failed to dump CPU config: {0}")]
+    #[error("")]
     DumpCpuConfig(#[from] crate::template::dump::DumpError),
     /// Failed to read sysfs file.
-    #[error("Failed to read {0}: {1}")]
+    #[error("")]
     ReadSysfsFile(String, std::io::Error),
     /// Failed to get kernel version.
-    #[error("Failed to get kernel version: {0}")]
+    #[error("")]
     GetKernelVersion(std::io::Error),
     /// Shell command failed.
-    #[error("`{0}` failed: {1}")]
+    #[error("")]
     ShellCommand(String, String),
 }
 

@@ -35,13 +35,13 @@ use crate::syscall_table::SyscallTable;
 #[derive(Debug, PartialEq, thiserror::Error)]
 pub(crate) enum CompilationError {
     /// Filter and default actions are equal.
-    #[error("`filter_action` and `default_action` are equal.")]
+    #[error("")]
     IdenticalActions,
     /// Error from the SeccompFilter.
-    #[error("{0}")]
+    #[error("")]
     Filter(#[from] FilterError),
     /// Invalid syscall name for the given arch.
-    #[error("Invalid syscall name: {0} for given arch: {1:?}.")]
+    #[error("")]
     SyscallName(String, TargetArch),
 }
 

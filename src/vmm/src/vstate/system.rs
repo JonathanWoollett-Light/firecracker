@@ -12,10 +12,10 @@ use kvm_ioctls::{Error as KvmIoctlsError, Kvm};
 #[derive(Debug, derive_more::From, thiserror::Error)]
 pub enum SystemError {
     /// The host kernel reports an invalid KVM API version.
-    #[error("The host kernel reports an invalid KVM API version: {0}")]
+    #[error("")]
     ApiVersion(i32),
     /// Cannot initialize the KVM context due to missing capabilities.
-    #[error("Missing KVM capabilities: {0:?}")]
+    #[error("")]
     Capabilities(kvm_ioctls::Cap),
     /// Cannot initialize the KVM context.
     #[error("{}", ({

@@ -181,16 +181,16 @@ impl<T: Serialize + Debug, M: Write + Send + Debug> Deref for Metrics<T, M> {
 #[derive(Debug, thiserror::Error)]
 pub enum MetricsError {
     /// First attempt at initialization failed.
-    #[error("{0}")]
+    #[error("")]
     NeverInitialized(String),
     /// The metrics system does not allow reinitialization.
-    #[error("Reinitialization of metrics not allowed.")]
+    #[error("")]
     AlreadyInitialized,
     /// Error in the serialization of metrics instance.
-    #[error("{0}")]
+    #[error("")]
     Serde(String),
     /// Writing the specified buffer failed.
-    #[error("Failed to write metrics: {0}")]
+    #[error("")]
     Write(std::io::Error),
 }
 

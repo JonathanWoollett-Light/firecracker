@@ -17,19 +17,19 @@ use crate::cpu_config::x86_64::cpuid::VENDOR_ID_AMD;
 /// MSR related errors.
 pub enum MsrError {
     /// Failed to create [`vmm_sys_util::fam::FamStructWrapper`] for MSRs.
-    #[error("Failed to create `vmm_sys_util::fam::FamStructWrapper` for MSRs")]
+    #[error("")]
     Fam(#[from] utils::fam::Error),
     /// Failed to get MSR index list.
-    #[error("Failed to get MSR index list: {0}")]
+    #[error("")]
     GetMsrIndexList(kvm_ioctls::Error),
     /// Invalid vendor.
-    #[error("Invalid CPU vendor: {0}")]
+    #[error("")]
     InvalidVendor(#[from] GetCpuidError),
     /// Failed to set MSRs.
-    #[error("Failed to set MSRs: {0}")]
+    #[error("")]
     SetMsrs(kvm_ioctls::Error),
     /// Not all given MSRs were set.
-    #[error("Not all given MSRs were set.")]
+    #[error("")]
     SetMsrsIncomplete,
 }
 

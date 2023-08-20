@@ -22,10 +22,10 @@ use crate::devices::legacy::{EventFdTrigger, SerialDevice, SerialEventsWrapper};
 #[derive(Debug, derive_more::From, thiserror::Error)]
 pub enum LegacyDeviceError {
     /// Cannot add legacy device to Bus.
-    #[error("Failed to add legacy device to Bus: {0}")]
+    #[error("")]
     BusError(crate::devices::BusError),
     /// Cannot create EventFd.
-    #[error("Failed to create EventFd: {0}")]
+    #[error("")]
     EventFd(std::io::Error),
 }
 

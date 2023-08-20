@@ -28,10 +28,10 @@ pub(super) const VIRTQ_DESC_F_WRITE: u16 = 0x2;
 #[derive(Debug, thiserror::Error)]
 pub enum QueueError {
     /// Descriptor index out of bounds.
-    #[error("Descriptor index out of bounds: {0}.")]
+    #[error("")]
     DescIndexOutOfBounds(u16),
     /// Attempted an invalid write into the used ring.
-    #[error("Failed to write value into the virtio queue used ring: {0}")]
+    #[error("")]
     UsedRing(#[from] GuestMemoryError),
 }
 

@@ -41,21 +41,21 @@ pub enum NetQueue {
 #[derive(Debug, thiserror::Error)]
 pub enum NetError {
     /// Open tap device failed
-    #[error("Open tap device failed: {0}")]
+    #[error("")]
     TapOpen(TapError),
     /// Setting tap interface offload flags failed
-    #[error("Setting tap interface offload flags failed: {0}")]
+    #[error("")]
     TapSetOffload(TapError),
     /// Setting vnet header size failed
-    #[error("Setting vnet header size failed: {0}")]
+    #[error("")]
     TapSetVnetHdrSize(TapError),
     /// EventFd error
-    #[error("EventFd error: {0}")]
+    #[error("")]
     EventFd(io::Error),
     /// IO error
-    #[error("IO error: {0}")]
+    #[error("")]
     IO(io::Error),
     /// The VNET header is missing from the frame
-    #[error("The VNET header is missing from the frame")]
+    #[error("")]
     VnetHeaderMissing,
 }

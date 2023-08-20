@@ -14,10 +14,10 @@ type MutexVsockUnix = Arc<Mutex<Vsock<VsockUnixBackend>>>;
 #[derive(Debug, derive_more::From, thiserror::Error)]
 pub enum VsockConfigError {
     /// Failed to create the backend for the vsock device.
-    #[error("Cannot create backend for vsock device: {0:?}")]
+    #[error("")]
     CreateVsockBackend(VsockUnixBackendError),
     /// Failed to create the vsock device.
-    #[error("Cannot create vsock device: {0:?}")]
+    #[error("")]
     CreateVsockDevice(VsockError),
 }
 

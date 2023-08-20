@@ -44,28 +44,28 @@ pub(crate) const VCPU_RTSIG_OFFSET: i32 = 0;
 #[derive(Debug, thiserror::Error)]
 pub enum VcpuError {
     /// Error creating vcpu config.
-    #[error("Error creating vcpu config: {0}")]
+    #[error("")]
     VcpuConfig(GuestConfigError),
     /// Error triggered by the KVM subsystem.
-    #[error("Received error signaling kvm exit: {0}")]
+    #[error("")]
     FaultyKvmExit(String),
     /// Failed to signal Vcpu.
-    #[error("Failed to signal vcpu: {0}")]
+    #[error("")]
     SignalVcpu(utils::errno::Error),
     /// Kvm Exit is not handled by our implementation.
-    #[error("Unexpected kvm exit received: {0}")]
+    #[error("")]
     UnhandledKvmExit(String),
     /// Wrapper over error triggered by some vcpu action.
-    #[error("Failed to run action on vcpu: {0}")]
+    #[error("")]
     VcpuResponse(KvmVcpuError),
     /// Cannot spawn a new vCPU thread.
-    #[error("Cannot spawn a new vCPU thread: {0}")]
+    #[error("")]
     VcpuSpawn(io::Error),
     /// Cannot cleanly initialize vcpu TLS.
-    #[error("Cannot clean init vcpu TLS")]
+    #[error("")]
     VcpuTlsInit,
     /// Vcpu not present in TLS.
-    #[error("Vcpu not present in TLS")]
+    #[error("")]
     VcpuTlsNotPresent,
 }
 
@@ -85,7 +85,7 @@ type VcpuCell = Cell<Option<*const Vcpu>>;
 
 /// Error type for [`Vcpu::start_threaded`].
 #[derive(Debug, derive_more::From, thiserror::Error)]
-#[error("Failed to spawn vCPU thread: {0}")]
+#[error("")]
 pub struct StartThreadedError(std::io::Error);
 
 /// A wrapper around creating and using a vcpu.
@@ -641,7 +641,7 @@ pub struct VcpuHandle {
 
 /// Error type for [`VcpuHandle::send_event`].
 #[derive(Debug, derive_more::From, thiserror::Error)]
-#[error("Failed to signal vCPU: {0}")]
+#[error("")]
 pub struct VcpuSendEventError(pub utils::errno::Error);
 
 impl VcpuHandle {

@@ -55,19 +55,19 @@ const DEFAULT_OUTPUT_FILENAME: &str = "seccomp_binary_filter.out";
 
 #[derive(Debug, thiserror::Error)]
 enum SeccompError {
-    #[error("Bincode (de)serialization failed: {0}")]
+    #[error("")]
     Bincode(BincodeError),
-    #[error("{0}")]
+    #[error("")]
     Compilation(CompilationError),
     #[error("{}", format!("Failed to open file {:?}: {1}", .0, .1).replace('\"', ""))]
     FileOpen(PathBuf, std::io::Error),
-    #[error("Error parsing JSON: {0}")]
+    #[error("")]
     Json(JSONError),
-    #[error("Missing input file.")]
+    #[error("")]
     MissingInputFile,
-    #[error("Missing target arch.")]
+    #[error("")]
     MissingTargetArch,
-    #[error("{0}")]
+    #[error("")]
     Arch(#[from] TargetArchError),
 }
 
@@ -161,11 +161,11 @@ fn compile(args: &Arguments) -> Result<(), SeccompError> {
 
 #[derive(Debug, thiserror::Error)]
 enum SeccompilerError {
-    #[error("Argument Parsing Error: {0}")]
+    #[error("")]
     ArgParsing(ArgParserError),
-    #[error("{0} \n\nFor more information try --help.")]
+    #[error("")]
     InvalidArgumentValue(SeccompError),
-    #[error("{0}")]
+    #[error("")]
     Error(SeccompError),
 }
 

@@ -405,7 +405,7 @@ impl Logger {
 #[derive(Debug, thiserror::Error)]
 pub enum LoggerError {
     /// Initialization Error.
-    #[error("Logger initialization failure: {0}")]
+    #[error("")]
     Init(init::Error),
 }
 

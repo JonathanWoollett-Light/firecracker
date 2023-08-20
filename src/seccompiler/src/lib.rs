@@ -36,7 +36,7 @@ pub type BpfProgramRef<'a> = &'a [sock_filter];
 #[derive(Debug, thiserror::Error)]
 pub enum DeserializationError {
     /// Error when doing bincode deserialization.
-    #[error("Bincode deserialization failed: {0}")]
+    #[error("")]
     Bincode(BincodeError),
 }
 
@@ -44,10 +44,10 @@ pub enum DeserializationError {
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
 pub enum InstallationError {
     /// Filter exceeds the maximum number of instructions that a BPF program can have.
-    #[error("Filter length exceeds the maximum size of {BPF_MAX_LEN} instructions ")]
+    #[error("")]
     FilterTooLarge,
     /// Error returned by `prctl`.
-    #[error("`prctl` syscall failed with error code: {0}")]
+    #[error("")]
     Prctl(i32),
 }
 

@@ -8,10 +8,10 @@ use crate::fingerprint::{Fingerprint, FingerprintField};
 #[derive(Debug, thiserror::Error)]
 pub enum FingerprintCompareError {
     /// Difference detected between source and target.
-    #[error("Difference detected between source and target:\n{0}")]
+    #[error("")]
     DiffDetected(String),
     /// Failed to serialize/deserialize JSON.
-    #[error("Failed to serialize/deserialize JSON: {0}")]
+    #[error("")]
     Serde(#[from] serde_json::Error),
 }
 

@@ -10,25 +10,25 @@ use crate::cpu_config::x86_64::cpuid::{
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum NormalizeCpuidError {
     /// Provided `cpu_bits` is >=8.
-    #[error("Provided `cpu_bits` is >=8: {0}.")]
+    #[error("")]
     CpuBits(u8),
     /// Failed to apply modifications to Intel CPUID.
-    #[error("Failed to apply modifications to Intel CPUID: {0}")]
+    #[error("")]
     Intel(#[from] crate::cpu_config::x86_64::cpuid::intel::NormalizeCpuidError),
     /// Failed to apply modifications to AMD CPUID.
-    #[error("Failed to apply modifications to AMD CPUID: {0}")]
+    #[error("")]
     Amd(#[from] crate::cpu_config::x86_64::cpuid::amd::NormalizeCpuidError),
     /// Failed to set feature information leaf.
-    #[error("Failed to set feature information leaf: {0}")]
+    #[error("")]
     FeatureInformation(#[from] FeatureInformationError),
     /// Failed to set extended topology leaf.
-    #[error("Failed to set extended topology leaf: {0}")]
+    #[error("")]
     ExtendedTopology(#[from] ExtendedTopologyError),
     /// Failed to set extended cache features leaf.
-    #[error("Failed to set extended cache features leaf: {0}")]
+    #[error("")]
     ExtendedCacheFeatures(#[from] ExtendedCacheFeaturesError),
     /// Failed to set vendor ID in leaf 0x0.
-    #[error("Failed to set vendor ID in leaf 0x0: {0}")]
+    #[error("")]
     VendorId(#[from] VendorIdError),
 }
 
@@ -36,7 +36,7 @@ pub enum NormalizeCpuidError {
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum VendorIdError {
     /// Leaf 0x0 is missing from CPUID.
-    #[error("Leaf 0x0 is missing from CPUID.")]
+    #[error("")]
     MissingLeaf0,
 }
 
@@ -44,19 +44,19 @@ pub enum VendorIdError {
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum FeatureInformationError {
     /// Leaf 0x1 is missing from CPUID.
-    #[error("Leaf 0x1 is missing from CPUID.")]
+    #[error("")]
     MissingLeaf1,
     /// Failed to set `Initial APIC ID`.
-    #[error("Failed to set `Initial APIC ID`: {0}")]
+    #[error("")]
     InitialApicId(CheckedAssignError),
     /// Failed to set `CLFLUSH line size`.
-    #[error("Failed to set `CLFLUSH line size`: {0}")]
+    #[error("")]
     Clflush(CheckedAssignError),
     /// Failed to get max CPUs per package.
-    #[error("Failed to get max CPUs per package: {0}")]
+    #[error("")]
     GetMaxCpusPerPackage(GetMaxCpusPerPackageError),
     /// Failed to set max CPUs per package.
-    #[error("Failed to set max CPUs per package: {0}")]
+    #[error("")]
     SetMaxCpusPerPackage(CheckedAssignError),
 }
 
@@ -64,10 +64,10 @@ pub enum FeatureInformationError {
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum GetMaxCpusPerPackageError {
     /// Failed to get max CPUs per package as `cpu_count == 0`.
-    #[error("Failed to get max CPUs per package as `cpu_count == 0`")]
+    #[error("")]
     Underflow,
     /// Failed to get max CPUs per package as `cpu_count > 128`.
-    #[error("Failed to get max CPUs per package as `cpu_count > 128`")]
+    #[error("")]
     Overflow,
 }
 
@@ -82,16 +82,16 @@ pub enum ExtendedTopologyError {
     )]
     ApicId(CheckedAssignError),
     /// Failed to set `Number of logical processors at this level type`.
-    #[error("Failed to set `Number of logical processors at this level type`: {0}")]
+    #[error("")]
     LogicalProcessors(CheckedAssignError),
     /// Failed to set `Level Type`.
-    #[error("Failed to set `Level Type`: {0}")]
+    #[error("")]
     LevelType(CheckedAssignError),
     /// Failed to set `Level Number`.
-    #[error("Failed to set `Level Number`: {0}")]
+    #[error("")]
     LevelNumber(CheckedAssignError),
     /// Failed to set all leaves, as more than `u32::MAX` sub-leaves are present.
-    #[error("Failed to set all leaves, as more than `u32::MAX` sub-leaves are present: {0}")]
+    #[error("")]
     Overflow(<u32 as TryFrom<usize>>::Error),
 }
 
@@ -99,16 +99,16 @@ pub enum ExtendedTopologyError {
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum ExtendedCacheFeaturesError {
     /// Leaf 0x80000005 is missing from CPUID.
-    #[error("Leaf 0x80000005 is missing from CPUID.")]
+    #[error("")]
     MissingLeaf0x80000005,
     /// Leaf 0x80000006 is missing from CPUID.
-    #[error("Leaf 0x80000006 is missing from CPUID.")]
+    #[error("")]
     MissingLeaf0x80000006,
 }
 
 /// Error type for setting a bit range.
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
-#[error("Given value is greater than maximum storable value in bit range.")]
+#[error("")]
 pub struct CheckedAssignError;
 
 /// Sets a given bit to a true or false (1 or 0).

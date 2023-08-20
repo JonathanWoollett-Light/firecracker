@@ -32,43 +32,43 @@ use crate::vmm_config::vsock::*;
 #[derive(Debug, thiserror::Error, derive_more::From)]
 pub enum ResourcesError {
     /// Balloon device configuration error.
-    #[error("Balloon device error: {0}")]
+    #[error("")]
     BalloonDevice(BalloonConfigError),
     /// Block device configuration error.
-    #[error("Block device error: {0}")]
+    #[error("")]
     BlockDevice(DriveError),
     /// Boot source configuration error.
-    #[error("Boot source error: {0}")]
+    #[error("")]
     BootSource(BootSourceConfigError),
     /// File operation error.
-    #[error("File operation error: {0}")]
+    #[error("")]
     File(std::io::Error),
     /// JSON is invalid.
-    #[error("Invalid JSON: {0}")]
+    #[error("")]
     InvalidJson(serde_json::Error),
     /// Logger configuration error.
-    #[error("Logger error: {0}")]
+    #[error("")]
     Logger(LoggerConfigError),
     /// Metrics system configuration error.
-    #[error("Metrics error: {0}")]
+    #[error("")]
     Metrics(MetricsConfigError),
     /// MMDS error.
-    #[error("MMDS error: {0}")]
+    #[error("")]
     Mmds(mmds::data_store::Error),
     /// MMDS configuration error.
-    #[error("MMDS config error: {0}")]
+    #[error("")]
     MmdsConfig(MmdsConfigError),
     /// Net device configuration error.
-    #[error("Network device error: {0}")]
+    #[error("")]
     NetDevice(NetworkInterfaceError),
     /// microVM vCpus or memory configuration error.
-    #[error("VM config error: {0}")]
+    #[error("")]
     VmConfig(VmConfigError),
     /// Vsock device configuration error.
-    #[error("Vsock device error: {0}")]
+    #[error("")]
     VsockDevice(VsockConfigError),
     /// Entropy device configuration error.
-    #[error("Entropy device error: {0}")]
+    #[error("")]
     EntropyDevice(EntropyDeviceError),
 }
 

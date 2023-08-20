@@ -14,7 +14,7 @@ use crate::arch::aarch64::vcpu::VcpuError as ArchError;
 
 /// Errors thrown while configuring templates.
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
-#[error("Failed to create a guest cpu configuration: {0}")]
+#[error("")]
 pub struct CpuConfigurationError(#[from] pub ArchError);
 
 /// CPU configuration for aarch64

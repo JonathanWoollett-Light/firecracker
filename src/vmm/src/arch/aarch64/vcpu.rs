@@ -18,25 +18,25 @@ use super::regs::*;
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
 pub enum VcpuError {
     /// Failed to get a register value.
-    #[error("Failed to get register {0}: {1}")]
+    #[error("")]
     GetOneReg(u64, kvm_ioctls::Error),
     /// Failed to set a register value.
-    #[error("Failed to set register {0}: {1}")]
+    #[error("")]
     SetOneReg(u64, kvm_ioctls::Error),
     /// Failed to get the register list.
-    #[error("Failed to retrieve list of registers: {0}")]
+    #[error("")]
     GetRegList(kvm_ioctls::Error),
     /// Failed to get multiprocessor state.
-    #[error("Failed to get multiprocessor state: {0}")]
+    #[error("")]
     GetMp(kvm_ioctls::Error),
     /// Failed to Set multiprocessor state.
-    #[error("Failed to set multiprocessor state: {0}")]
+    #[error("")]
     SetMp(kvm_ioctls::Error),
     /// A FamStructWrapper operation has failed.
-    #[error("Failed FamStructWrapper operation: {0:?}")]
+    #[error("")]
     Fam(utils::fam::Error),
     /// Failed to get midr_el1 from host.
-    #[error("{0}")]
+    #[error("")]
     GetMidrEl1(String),
 }
 

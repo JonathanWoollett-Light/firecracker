@@ -20,16 +20,16 @@ use crate::cpu_config::x86_64::cpuid::{Cpuid, CpuidKey};
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
 pub enum CpuConfigurationError {
     /// Failure in processing the CPUID in template for x86_64 CPU configuration.
-    #[error("Template changes a CPUID entry not supported by KVM: Leaf: {0:0x}, Subleaf: {1:0x}")]
+    #[error("")]
     CpuidFeatureNotSupported(u32, u32),
     /// Failure in processing the MSRs in template for x86_64 CPU configuration.
-    #[error("Template changes an MSR entry not supported by KVM: Register Address: {0:0x}")]
+    #[error("")]
     MsrNotSupported(u32),
     /// Can create cpuid from raw.
-    #[error("Can create cpuid from raw: {0}")]
+    #[error("")]
     CpuidFromKvmCpuid(crate::cpu_config::x86_64::cpuid::CpuidTryFromKvmCpuid),
     /// KVM vcpu ioctls failed.
-    #[error("KVM vcpu ioctl failed: {0}")]
+    #[error("")]
     VcpuIoctl(crate::vstate::vcpu::KvmVcpuError),
 }
 

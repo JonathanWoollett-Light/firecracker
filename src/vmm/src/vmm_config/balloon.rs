@@ -15,26 +15,26 @@ type MutexBalloon = Arc<Mutex<Balloon>>;
 #[derive(Debug, derive_more::From, thiserror::Error)]
 pub enum BalloonConfigError {
     /// The user made a request on an inexistent balloon device.
-    #[error("No balloon device found.")]
+    #[error("")]
     DeviceNotFound,
     /// Device not activated yet.
-    #[error("Device is inactive, check if balloon driver is enabled in guest kernel.")]
+    #[error("")]
     DeviceNotActive,
     /// The user tried to enable/disable the statistics after boot.
-    #[error("Cannot enable/disable the statistics after boot.")]
+    #[error("")]
     InvalidStatsUpdate,
     /// Amount of pages requested is too large.
-    #[error("Amount of pages requested is too large.")]
+    #[error("")]
     TooManyPagesRequested,
     /// The user polled the statistics of a balloon device that
     /// does not have the statistics enabled.
-    #[error("Statistics for the balloon device are not enabled")]
+    #[error("")]
     StatsNotFound,
     /// Failed to create a balloon device.
-    #[error("Error creating the balloon device: {0:?}")]
+    #[error("")]
     CreateFailure(crate::devices::virtio::balloon::BalloonError),
     /// Failed to update the configuration of the ballon device.
-    #[error("Error updating the balloon device configuration: {0:?}")]
+    #[error("")]
     UpdateFailure(std::io::Error),
 }
 

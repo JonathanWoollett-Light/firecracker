@@ -157,34 +157,34 @@ pub struct GuestRegionUffdMapping {
 #[derive(Debug, thiserror::Error)]
 pub enum MicrovmStateError {
     /// Compatibility checks failed.
-    #[error("Compatibility checks failed: {0}")]
+    #[error("")]
     IncompatibleState(String),
     /// Provided MicroVM state is invalid.
-    #[error("Provided MicroVM state is invalid.")]
+    #[error("")]
     InvalidInput,
     /// Operation not allowed.
-    #[error("Operation not allowed: {0}")]
+    #[error("")]
     NotAllowed(String),
     /// Failed to restore devices.
-    #[error("Cannot restore devices: {0:?}")]
+    #[error("")]
     RestoreDevices(DevicePersistError),
     /// Failed to restore Vcpu state.
-    #[error("Cannot restore Vcpu state: {0:?}")]
+    #[error("")]
     RestoreVcpuState(vstate::vcpu::VcpuError),
     /// Failed to restore VM state.
-    #[error("Cannot restore Vm state: {0:?}")]
+    #[error("")]
     RestoreVmState(vstate::vm::VmError),
     /// Failed to save Vcpu state.
-    #[error("Cannot save Vcpu state: {0:?}")]
+    #[error("")]
     SaveVcpuState(vstate::vcpu::VcpuError),
     /// Failed to save VM state.
-    #[error("Cannot save Vm state: {0:?}")]
+    #[error("")]
     SaveVmState(vstate::vm::VmError),
     /// Failed to send event.
-    #[error("Cannot signal Vcpu: {0:?}")]
+    #[error("")]
     SignalVcpu(VcpuSendEventError),
     /// Vcpu is in unexpected state.
-    #[error("Vcpu is in unexpected state.")]
+    #[error("")]
     UnexpectedVcpuResponse,
 }
 
@@ -192,7 +192,7 @@ pub enum MicrovmStateError {
 #[derive(Debug, thiserror::Error)]
 pub enum CreateSnapshotError {
     /// Failed to get dirty bitmap.
-    #[error("Cannot get dirty bitmap: {0}")]
+    #[error("")]
     DirtyBitmap(VmmError),
     /// The virtio devices uses a features that is incompatible with older versions of Firecracker.
     #[error(
@@ -201,25 +201,25 @@ pub enum CreateSnapshotError {
     )]
     IncompatibleVirtioFeature(&'static str),
     /// Invalid microVM version format
-    #[error("Invalid microVM version format")]
+    #[error("")]
     InvalidVersionFormat,
     /// MicroVM version does not support snapshot.
-    #[error("Cannot translate microVM version to snapshot data version")]
+    #[error("")]
     UnsupportedVersion,
     /// Failed to write memory to snapshot.
-    #[error("Cannot write memory file: {0}")]
+    #[error("")]
     Memory(memory_snapshot::SnapshotMemoryError),
     /// Failed to open memory backing file.
-    #[error("Cannot perform {0} on the memory backing file: {1}")]
+    #[error("")]
     MemoryBackingFile(&'static str, io::Error),
     /// Failed to save MicrovmState.
-    #[error("Cannot save the microVM state: {0}")]
+    #[error("")]
     MicrovmState(MicrovmStateError),
     /// Failed to serialize microVM state.
-    #[error("Cannot serialize the microVM state: {0}")]
+    #[error("")]
     SerializeMicrovmState(snapshot::Error),
     /// Failed to open the snapshot backing file.
-    #[error("Cannot perform {0} on the snapshot backing file: {1}")]
+    #[error("")]
     SnapshotBackingFile(&'static str, io::Error),
     /// Number of devices exceeds the maximum supported devices for the snapshot data version.
     #[cfg(target_arch = "x86_64")]
@@ -429,10 +429,10 @@ pub fn validate_cpu_manufacturer_id(microvm_state: &MicrovmState) {
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum SnapShotStateSanityCheckError {
     /// Invalid vCPU count.
-    #[error("Invalid vCPU count.")]
+    #[error("")]
     InvalidVcpuCount,
     /// No memory region defined.
-    #[error("No memory region defined.")]
+    #[error("")]
     NoMemory,
 }
 
@@ -466,16 +466,16 @@ pub fn snapshot_state_sanity_check(
 #[derive(Debug, thiserror::Error)]
 pub enum RestoreFromSnapshotError {
     /// Failed to get snapshot state from file.
-    #[error("Failed to get snapshot state from file: {0}")]
+    #[error("")]
     File(#[from] SnapshotStateFromFileError),
     /// Invalid snapshot state.
-    #[error("Invalid snapshot state: {0}")]
+    #[error("")]
     Invalid(#[from] SnapShotStateSanityCheckError),
     /// Failed to load guest memory
-    #[error("Failed to load guest memory: {0}")]
+    #[error("")]
     GuestMemory(#[from] RestoreFromSnapshotGuestMemoryError),
     /// Failed to build microVM from snapshot.
-    #[error("Failed to build microVM from snapshot: {0}")]
+    #[error("")]
     Build(#[from] BuildMicrovmFromSnapshotError),
 }
 /// Sub-Error type for [`restore_from_snapshot`] to contain either [`GuestMemoryFromFileError`] or
@@ -483,10 +483,10 @@ pub enum RestoreFromSnapshotError {
 #[derive(Debug, thiserror::Error)]
 pub enum RestoreFromSnapshotGuestMemoryError {
     /// Error creating guest memory from file.
-    #[error("Error creating guest memory from file: {0}")]
+    #[error("")]
     File(#[from] GuestMemoryFromFileError),
     /// Error creating guest memory from uffd.
-    #[error("Error creating guest memory from uffd: {0}")]
+    #[error("")]
     Uffd(#[from] GuestMemoryFromUffdError),
 }
 
@@ -541,13 +541,13 @@ pub fn restore_from_snapshot(
 #[derive(Debug, thiserror::Error)]
 pub enum SnapshotStateFromFileError {
     /// Failed to open snapshot file.
-    #[error("Failed to open snapshot file: {0}")]
+    #[error("")]
     Open(std::io::Error),
     /// Failed to read snapshot file metadata.
-    #[error("Failed to read snapshot file metadata: {0}")]
+    #[error("")]
     Meta(std::io::Error),
     /// Failed to load snapshot state from file.
-    #[error("Failed to load snapshot state from file: {0}")]
+    #[error("")]
     Load(#[from] snapshot::Error),
 }
 
@@ -567,10 +567,10 @@ fn snapshot_state_from_file(
 #[derive(Debug, thiserror::Error)]
 pub enum GuestMemoryFromFileError {
     /// Failed to load guest memory.
-    #[error("Failed to load guest memory: {0}")]
+    #[error("")]
     File(#[from] std::io::Error),
     /// Failed to restore guest memory.
-    #[error("Failed to restore guest memory: {0}")]
+    #[error("")]
     Restore(#[from] crate::memory_snapshot::SnapshotMemoryError),
 }
 
@@ -588,19 +588,19 @@ fn guest_memory_from_file(
 #[derive(Debug, thiserror::Error)]
 pub enum GuestMemoryFromUffdError {
     /// Failed to restore guest memory.
-    #[error("Failed to restore guest memory: {0}")]
+    #[error("")]
     Restore(#[from] crate::memory_snapshot::SnapshotMemoryError),
     /// Failed to UFFD object.
-    #[error("Failed to UFFD object: {0}")]
+    #[error("")]
     Create(userfaultfd::Error),
     /// Failed to register memory address range with the userfaultfd object.
-    #[error("Failed to register memory address range with the userfaultfd object: {0}")]
+    #[error("")]
     Register(userfaultfd::Error),
     /// Failed to connect to UDS Unix stream.
-    #[error("Failed to connect to UDS Unix stream: {0}")]
+    #[error("")]
     Connect(#[from] std::io::Error),
     /// Failed to send file descriptor.
-    #[error("Failed to sends file descriptor: {0}")]
+    #[error("")]
     Send(#[from] utils::errno::Error),
 }
 

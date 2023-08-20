@@ -19,7 +19,7 @@ use crate::template::dump::x86_64::config_to_template;
 #[derive(Debug, thiserror::Error)]
 pub enum DumpError {
     /// Failed to dump CPU configuration.
-    #[error("Failed to dump CPU config: {0}")]
+    #[error("")]
     DumpCpuConfig(#[from] DumpCpuConfigError),
 }
 

@@ -15,13 +15,13 @@ use utils::eventfd::EventFd;
 #[derive(Debug, thiserror::Error)]
 pub enum I8042Error {
     /// Internal i8042 buffer is full.
-    #[error("i8042 internal buffer full.")]
+    #[error("")]
     InternalBufferFull,
     /// Failure in triggering the keyboard interrupt.
-    #[error("Keyboard interrupt disabled by guest driver.")]
+    #[error("")]
     KbdInterruptDisabled,
     /// Failure in triggering the keyboard interrupt (guest disabled).
-    #[error("Could not trigger keyboard interrupt: {0}.")]
+    #[error("")]
     KbdInterruptFailure(io::Error),
 }
 

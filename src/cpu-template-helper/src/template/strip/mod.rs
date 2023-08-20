@@ -21,7 +21,7 @@ pub use x86_64::strip;
 #[derive(Debug, thiserror::Error)]
 pub enum StripError {
     /// The number of inputs should be two or more.
-    #[error("The number of inputs should be two or more.")]
+    #[error("")]
     NumberOfInputs,
 }
 

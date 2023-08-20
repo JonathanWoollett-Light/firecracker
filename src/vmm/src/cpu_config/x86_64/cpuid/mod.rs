@@ -288,14 +288,14 @@ impl CpuidTrait for kvm_bindings::CpuId {
 
 /// Error type for [`apply_brand_string`].
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
-#[error("Missing brand string leaves 0x80000002, 0x80000003 and 0x80000004.")]
+#[error("")]
 pub struct MissingBrandStringLeaves;
 
 /// Error type for [`Cpuid::kvm_get_supported_cpuid`].
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum KvmGetSupportedCpuidError {
     /// Could not access KVM.
-    #[error("Could not access KVM: {0}")]
+    #[error("")]
     KvmAccess(#[from] utils::errno::Error),
 }
 
@@ -303,7 +303,7 @@ pub enum KvmGetSupportedCpuidError {
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum CpuidTryFromKvmCpuid {
     /// Leaf 0 not found in the given `kvm_bindings::CpuId`.
-    #[error("Leaf 0 not found in the given `kvm_bindings::CpuId`.")]
+    #[error("")]
     MissingLeaf0,
     /// Unsupported CPUID manufacturer id.
     #[error(

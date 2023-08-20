@@ -11,15 +11,15 @@ const MAX_CACHE_LEVEL: u8 = 7;
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum CacheInfoError {
-    #[error("Failed to read cache information: {0}")]
+    #[error("")]
     FailedToReadCacheInfo(#[from] io::Error),
-    #[error("Invalid cache configuration found for {0}: {1}")]
+    #[error("")]
     InvalidCacheAttr(String, String),
-    #[error("Cannot read cache level.")]
+    #[error("")]
     MissingCacheLevel,
-    #[error("Cannot read cache type.")]
+    #[error("")]
     MissingCacheType,
-    #[error("{0}")]
+    #[error("")]
     MissingOptionalAttr(String, CacheEntry),
 }
 

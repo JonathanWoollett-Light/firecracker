@@ -47,25 +47,25 @@ const BASE_MAGIC_ID: u64 = 0x0710_1984_AAAA_0000u64;
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum Error {
     /// CRC64 validation failed.
-    #[error("CRC64 validation failed: {0}")]
+    #[error("")]
     Crc64(u64),
     /// Invalid data version.
-    #[error("Invalid data version: {0}")]
+    #[error("")]
     InvalidDataVersion(u16),
     /// Invalid format version.
-    #[error("Invalid format version: {0}")]
+    #[error("")]
     InvalidFormatVersion(u16),
     /// Magic value does not match arch.
-    #[error("Magic value does not match arch: {0}")]
+    #[error("")]
     InvalidMagic(u64),
     /// Snapshot file is smaller than CRC length.
-    #[error("Snapshot file is smaller than CRC length.")]
+    #[error("")]
     InvalidSnapshotSize,
     /// An IO error occurred.
-    #[error("An IO error occurred: {0}")]
+    #[error("")]
     Io(i32),
     /// A versioned serialization/deserialization error occurred.
-    #[error("A versioned serialization/deserialization error occurred: {0}")]
+    #[error("")]
     Versionize(versionize::VersionizeError),
 }
 

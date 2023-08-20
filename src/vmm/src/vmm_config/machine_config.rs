@@ -21,7 +21,7 @@ pub enum VmConfigError {
     )]
     IncompatibleBalloonSize,
     /// The memory size is invalid. The memory can only be an unsigned integer.
-    #[error("The memory size (MiB) is invalid.")]
+    #[error("")]
     InvalidMemorySize,
     /// The vcpu count is invalid. When SMT is enabled, the `cpu_count` must be either
     /// 1 or an even number.

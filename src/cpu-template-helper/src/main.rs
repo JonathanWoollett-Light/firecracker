@@ -15,23 +15,23 @@ mod utils;
 
 #[derive(Debug, thiserror::Error)]
 enum HelperError {
-    #[error("Failed to operate file: {0}")]
+    #[error("")]
     FileIo(#[from] std::io::Error),
-    #[error("{0}")]
+    #[error("")]
     FingerprintCompare(#[from] fingerprint::compare::FingerprintCompareError),
-    #[error("{0}")]
+    #[error("")]
     FingerprintDump(#[from] fingerprint::dump::FingerprintDumpError),
-    #[error("CPU template is not specified: {0}")]
+    #[error("")]
     NoCpuTemplate(#[from] GetCpuTemplateError),
-    #[error("Failed to serialize/deserialize JSON file: {0}")]
+    #[error("")]
     Serde(#[from] serde_json::Error),
-    #[error("{0}")]
+    #[error("")]
     Utils(#[from] UtilsError),
-    #[error("{0}")]
+    #[error("")]
     TemplateDump(#[from] template::dump::DumpError),
-    #[error("{0}")]
+    #[error("")]
     TemplateStrip(#[from] template::strip::StripError),
-    #[error("{0}")]
+    #[error("")]
     TemplateVerify(#[from] template::verify::VerifyError),
 }
 

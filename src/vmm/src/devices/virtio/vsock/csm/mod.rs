@@ -26,13 +26,13 @@ pub mod defs {
 #[derive(Debug, thiserror::Error)]
 pub enum VsockCsmError {
     /// Attempted to push data to a full TX buffer.
-    #[error("Attempted to push data to a full TX buffer")]
+    #[error("")]
     TxBufFull,
     /// An I/O error occurred, when attempting to flush the connection TX buffer.
-    #[error("An I/O error occurred, when attempting to flush the connection TX buffer: {0}")]
+    #[error("")]
     TxBufFlush(std::io::Error),
     /// An I/O error occurred, when attempting to write data to the host-side stream.
-    #[error("An I/O error occurred, when attempting to write data to the host-side stream: {0}")]
+    #[error("")]
     StreamWrite(std::io::Error),
 }
 

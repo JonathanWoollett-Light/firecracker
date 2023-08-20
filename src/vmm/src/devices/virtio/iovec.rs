@@ -11,13 +11,13 @@ use crate::devices::virtio::DescriptorChain;
 #[derive(Debug, thiserror::Error)]
 pub enum IoVecError {
     /// We found a write-only descriptor where read-only was expected
-    #[error("Tried to create an `IoVec` from a write-only descriptor chain")]
+    #[error("")]
     WriteOnlyDescriptor,
     /// We found a read-only descriptor where write-only was expected
-    #[error("Tried to create an 'IoVecMut` from a read-only descriptor chain")]
+    #[error("")]
     ReadOnlyDescriptor,
     /// An error happened with guest memory handling
-    #[error("Guest memory error: {0}")]
+    #[error("")]
     GuestMemory(#[from] utils::vm_memory::GuestMemoryError),
 }
 

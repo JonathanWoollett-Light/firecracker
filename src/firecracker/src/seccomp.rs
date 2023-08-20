@@ -20,16 +20,16 @@ const DESERIALIZATION_BYTES_LIMIT: Option<u64> = Some(100_000);
 #[derive(Debug, thiserror::Error)]
 pub enum FilterError {
     /// Filter deserialitaion error.
-    #[error("Filter deserialization failed: {0}")]
+    #[error("")]
     Deserialization(DeserializationError),
     /// Invalid thread categories.
-    #[error("Invalid thread categories: {0}")]
+    #[error("")]
     ThreadCategories(String),
     /// Missing Thread Category.
-    #[error("Missing thread category: {0}")]
+    #[error("")]
     MissingThreadCategory(String),
     /// File open error.
-    #[error("Filter file open error: {0}")]
+    #[error("")]
     FileOpen(std::io::Error),
 }
 

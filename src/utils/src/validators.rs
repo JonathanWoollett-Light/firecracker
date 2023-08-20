@@ -8,9 +8,9 @@ const MIN_INSTANCE_ID_LEN: usize = 1;
 
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
 pub enum Error {
-    #[error("Invalid char ({0}) at position {1}")]
+    #[error("")]
     InvalidChar(char, usize), // (char, position)
-    #[error("Invalid len ({0});  the length must be between {1} and {2}")]
+    #[error("")]
     InvalidLen(usize, usize, usize), // (length, min, max)
 }
 

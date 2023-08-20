@@ -15,29 +15,29 @@ const DIFF_FILE: &str = "diff-file";
 
 #[derive(Debug, thiserror::Error)]
 enum FileError {
-    #[error("Invalid base file: {0:?}")]
+    #[error("")]
     InvalidBaseFile(std::io::Error),
-    #[error("Invalid diff file: {0:?}")]
+    #[error("")]
     InvalidDiffFile(std::io::Error),
-    #[error("Failed to seek data: {0:?}")]
+    #[error("")]
     SeekData(std::io::Error),
-    #[error("Failed to seek hole: {0:?}")]
+    #[error("")]
     SeekHole(std::io::Error),
-    #[error("Failed to seek: {0:?}")]
+    #[error("")]
     Seek(std::io::Error),
-    #[error("Failed to send the file: {0:?}")]
+    #[error("")]
     SendFile(std::io::Error),
-    #[error("Failed to get metadata: {0:?}")]
+    #[error("")]
     Metadata(std::io::Error),
 }
 
 #[derive(Debug, thiserror::Error)]
 enum RebaseSnapError {
-    #[error("Arguments parsing error: {0} \n\nFor more information try --help.")]
+    #[error("")]
     ArgParse(ArgError),
-    #[error("Error parsing the cmd line args: {0}")]
+    #[error("")]
     SnapFile(FileError),
-    #[error("Error merging the files: {0}")]
+    #[error("")]
     RebaseFiles(FileError),
 }
 

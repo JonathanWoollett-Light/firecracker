@@ -35,31 +35,31 @@ use crate::devices::BusDevice;
 #[derive(Debug, thiserror::Error)]
 pub enum MmioError {
     /// Allocation logic error.
-    #[error("Failed to allocate requested resource: {0}")]
+    #[error("")]
     Allocator(vm_allocator::Error),
     /// Failed to insert device on the bus.
-    #[error("Failed to insert device on the bus: {0}")]
+    #[error("")]
     BusInsert(crate::devices::BusError),
     /// Appending to kernel command line failed.
-    #[error("Failed to allocate requested resourc: {0}")]
+    #[error("")]
     Cmdline(linux_loader::cmdline::Error),
     /// The device couldn't be found on the bus.
-    #[error("Failed to find the device on the bus.")]
+    #[error("")]
     DeviceNotFound,
     /// Incorrect device type.
-    #[error("Invalid device type found on the MMIO bus.")]
+    #[error("")]
     InvalidDeviceType,
     /// Internal device error.
-    #[error("{0}")]
+    #[error("")]
     InternalDeviceError(String),
     /// Invalid configuration attempted.
-    #[error("Invalid MMIO IRQ configuration.")]
+    #[error("")]
     InvalidIrqConfig,
     /// Registering an IO Event failed.
-    #[error("Failed to register IO event: {0}")]
+    #[error("")]
     RegisterIoEvent(kvm_ioctls::Error),
     /// Registering an IRQ FD failed.
-    #[error("Failed to register irqfd: {0}")]
+    #[error("")]
     RegisterIrqFd(kvm_ioctls::Error),
 }
 

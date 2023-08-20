@@ -278,19 +278,19 @@ pub(crate) fn method_to_error(method: Method) -> Result<ParsedRequest, Error> {
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum Error {
     // The resource ID is empty.
-    #[error("The ID cannot be empty.")]
+    #[error("")]
     EmptyID,
     // A generic error, with a given status code and message to be turned into a fault message.
-    #[error("{1}")]
+    #[error("")]
     Generic(StatusCode, String),
     // The resource ID must only contain alphanumeric characters and '_'.
-    #[error("API Resource IDs can only contain alphanumeric characters and underscores.")]
+    #[error("")]
     InvalidID,
     // The HTTP method & request path combination is not valid.
     #[error("Invalid request method and/or path: {} {0}.", std::str::from_utf8(.1.raw()).expect("Cannot convert from UTF-8"))]
     InvalidPathMethod(String, Method),
     // An error occurred when deserializing the json body of a request.
-    #[error("An error occurred when deserializing the json body of a request: {0}.")]
+    #[error("")]
     SerdeJson(#[from] serde_json::Error),
 }
 

@@ -34,135 +34,135 @@ const TSC_KHZ_TOL: f64 = 250.0 / 1_000_000.0;
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
 pub enum KvmVcpuError {
     /// Failed to convert CPUID type.
-    #[error("Failed to convert `kvm_bindings::CpuId` to `Cpuid`: {0}")]
+    #[error("")]
     ConvertCpuidType(#[from] cpuid::CpuidTryFromKvmCpuid),
     /// A FamStructWrapper operation has failed.
-    #[error("Failed FamStructWrapper operation: {0:?}")]
+    #[error("")]
     Fam(#[from] utils::fam::Error),
     /// Error configuring the floating point related registers
-    #[error("Error configuring the floating point related registers: {0:?}")]
+    #[error("")]
     FpuConfiguration(crate::arch::x86_64::regs::RegsError),
     /// Failed to get dumpable MSR index list.
-    #[error("Failed to get dumpable MSR index list: {0}")]
+    #[error("")]
     GetMsrsToDump(#[from] crate::arch::x86_64::msr::MsrError),
     /// Cannot set the local interruption due to bad configuration.
-    #[error("Cannot set the local interruption due to bad configuration: {0:?}")]
+    #[error("")]
     LocalIntConfiguration(crate::arch::x86_64::interrupts::InterruptError),
     /// Error configuring the general purpose registers
-    #[error("Error configuring the general purpose registers: {0:?}")]
+    #[error("")]
     RegsConfiguration(crate::arch::x86_64::regs::RegsError),
     /// Error configuring the special registers
-    #[error("Error configuring the special registers: {0:?}")]
+    #[error("")]
     SregsConfiguration(crate::arch::x86_64::regs::RegsError),
     /// Cannot open the VCPU file descriptor.
-    #[error("Cannot open the VCPU file descriptor: {0}")]
+    #[error("")]
     VcpuFd(kvm_ioctls::Error),
     /// Failed to get KVM vcpu debug regs.
-    #[error("Failed to get KVM vcpu debug regs: {0}")]
+    #[error("")]
     VcpuGetDebugRegs(kvm_ioctls::Error),
     /// Failed to get KVM vcpu lapic.
-    #[error("Failed to get KVM vcpu lapic: {0}")]
+    #[error("")]
     VcpuGetLapic(kvm_ioctls::Error),
     /// Failed to get KVM vcpu mp state.
-    #[error("Failed to get KVM vcpu mp state: {0}")]
+    #[error("")]
     VcpuGetMpState(kvm_ioctls::Error),
     /// The number of MSRS returned by the kernel is unexpected.
-    #[error("Unexpected number of MSRS reported by the kernel")]
+    #[error("")]
     VcpuGetMsrsIncomplete,
     /// Failed to get KVM vcpu msrs.
-    #[error("Failed to get KVM vcpu msrs: {0}")]
+    #[error("")]
     VcpuGetMsrs(kvm_ioctls::Error),
     /// Failed to get KVM vcpu regs.
-    #[error("Failed to get KVM vcpu regs: {0}")]
+    #[error("")]
     VcpuGetRegs(kvm_ioctls::Error),
     /// Failed to get KVM vcpu sregs.
-    #[error("Failed to get KVM vcpu sregs: {0}")]
+    #[error("")]
     VcpuGetSregs(kvm_ioctls::Error),
     /// Failed to get KVM vcpu event.
-    #[error("Failed to get KVM vcpu event: {0}")]
+    #[error("")]
     VcpuGetVcpuEvents(kvm_ioctls::Error),
     /// Failed to get KVM vcpu xcrs.
-    #[error("Failed to get KVM vcpu xcrs: {0}")]
+    #[error("")]
     VcpuGetXcrs(kvm_ioctls::Error),
     /// Failed to get KVM vcpu xsave.
-    #[error("Failed to get KVM vcpu xsave: {0}")]
+    #[error("")]
     VcpuGetXsave(kvm_ioctls::Error),
     /// Failed to get KVM vcpu cpuid.
-    #[error("Failed to get KVM vcpu cpuid: {0}")]
+    #[error("")]
     VcpuGetCpuid(kvm_ioctls::Error),
     /// Failed to get KVM TSC freq.
-    #[error("Failed to get KVM TSC frequency: {0}")]
+    #[error("")]
     VcpuGetTsc(kvm_ioctls::Error),
     /// Failed to set KVM vcpu cpuid.
-    #[error("Failed to set KVM vcpu cpuid: {0}")]
+    #[error("")]
     VcpuSetCpuid(kvm_ioctls::Error),
     /// Failed to set KVM vcpu debug regs.
-    #[error("Failed to set KVM vcpu debug regs: {0}")]
+    #[error("")]
     VcpuSetDebugRegs(kvm_ioctls::Error),
     /// Failed to set KVM vcpu lapic.
-    #[error("Failed to set KVM vcpu lapic: {0}")]
+    #[error("")]
     VcpuSetLapic(kvm_ioctls::Error),
     /// Failed to set KVM vcpu mp state.
-    #[error("Failed to set KVM vcpu mp state: {0}")]
+    #[error("")]
     VcpuSetMpState(kvm_ioctls::Error),
     /// Failed to set KVM vcpu msrs.
-    #[error("Failed to set KVM vcpu msrs: {0}")]
+    #[error("")]
     VcpuSetMsrs(kvm_ioctls::Error),
     /// Failed to set all KVM vcpu MSRs. Only a partial set was done.
-    #[error("Failed to set all KVM MSRs for this vCPU. Only a partial write was done.")]
+    #[error("")]
     VcpuSetMsrsIncomplete,
     /// Failed to set KVM vcpu regs.
-    #[error("Failed to set KVM vcpu regs: {0}")]
+    #[error("")]
     VcpuSetRegs(kvm_ioctls::Error),
     /// Failed to set KVM vcpu sregs.
-    #[error("Failed to set KVM vcpu sregs: {0}")]
+    #[error("")]
     VcpuSetSregs(kvm_ioctls::Error),
     /// Failed to set KVM vcpu event.
-    #[error("Failed to set KVM vcpu event: {0}")]
+    #[error("")]
     VcpuSetVcpuEvents(kvm_ioctls::Error),
     /// Failed to set KVM vcpu xcrs.
-    #[error("Failed to set KVM vcpu xcrs: {0}")]
+    #[error("")]
     VcpuSetXcrs(kvm_ioctls::Error),
     /// Failed to set KVM vcpu xsave.
-    #[error("Failed to set KVM vcpu xsave: {0}")]
+    #[error("")]
     VcpuSetXsave(kvm_ioctls::Error),
     /// Failed to set KVM TSC freq.
-    #[error("Failed to set KVM TSC frequency: {0}")]
+    #[error("")]
     VcpuSetTsc(kvm_ioctls::Error),
     /// Failed to apply CPU template.
-    #[error("Failed to apply CPU template")]
+    #[error("")]
     VcpuTemplateError,
 }
 
 /// Error type for [`KvmVcpu::get_tsc_khz`] and [`KvmVcpu::is_tsc_scaling_required`].
 #[derive(Debug, thiserror::Error, derive_more::From, Eq, PartialEq)]
-#[error("{0}")]
+#[error("")]
 pub struct GetTscError(utils::errno::Error);
 
 /// Error type for [`KvmVcpu::set_tsc_khz`].
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
-#[error("{0}")]
+#[error("")]
 pub struct SetTscError(#[from] kvm_ioctls::Error);
 
 /// Error type for [`KvmVcpu::configure`].
 #[derive(Debug, thiserror::Error, Eq, PartialEq)]
 pub enum KvmVcpuConfigureError {
-    #[error("Failed to convert `Cpuid` to `kvm_bindings::CpuId`: {0}")]
+    #[error("")]
     ConvertCpuidType(#[from] utils::fam::Error),
     /// Failed to apply modifications to CPUID.
-    #[error("Failed to apply modifications to CPUID: {0}")]
+    #[error("")]
     NormalizeCpuidError(#[from] cpuid::NormalizeCpuidError),
-    #[error("Failed to set CPUID: {0}")]
+    #[error("")]
     SetCpuid(#[from] utils::errno::Error),
-    #[error("Failed to set MSRs: {0}")]
+    #[error("")]
     SetMsrs(#[from] MsrError),
-    #[error("Failed to setup registers: {0}")]
+    #[error("")]
     SetupRegisters(#[from] SetupRegistersError),
-    #[error("Failed to setup FPU: {0}")]
+    #[error("")]
     SetupFpu(#[from] SetupFpuError),
-    #[error("Failed to setup special registers: {0}")]
+    #[error("")]
     SetupSpecialRegisters(#[from] SetupSpecialRegistersError),
-    #[error("Failed to configure LAPICs: {0}")]
+    #[error("")]
     SetLint(#[from] interrupts::InterruptError),
 }
 

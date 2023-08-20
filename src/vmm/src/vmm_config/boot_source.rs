@@ -40,13 +40,13 @@ pub struct BootSourceConfig {
 #[derive(Debug, thiserror::Error)]
 pub enum BootSourceConfigError {
     /// The kernel file cannot be opened.
-    #[error("The kernel file cannot be opened: {0}")]
+    #[error("")]
     InvalidKernelPath(io::Error),
     /// The initrd file cannot be opened.
-    #[error("The initrd file cannot be opened due to invalid path or invalid permissions. {0}")]
+    #[error("")]
     InvalidInitrdPath(io::Error),
     /// The kernel command line is invalid.
-    #[error("The kernel command line is invalid: {0}")]
+    #[error("")]
     InvalidKernelCommandLine(String),
 }
 
