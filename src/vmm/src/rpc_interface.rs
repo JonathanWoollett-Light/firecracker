@@ -2051,6 +2051,8 @@ mod tests {
                 level: Some(logger::LevelFilter::Debug),
                 show_level: Some(false),
                 show_log_origin: Some(false),
+                file: None,
+                module: None,
             }),
             VmmActionError::OperationNotSupportedPostBoot,
         );
