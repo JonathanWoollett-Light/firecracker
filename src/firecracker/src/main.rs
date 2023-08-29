@@ -222,6 +222,16 @@ fn main_exec() -> Result<(), MainError> {
                     .help("Set the logger level."),
             )
             .arg(
+                Argument::new("file")
+                    .takes_value(true)
+                    .help("Set the logger file filter."),
+            )
+            .arg(
+                Argument::new("module")
+                    .takes_value(true)
+                    .help("Set the logger module filter."),
+            )
+            .arg(
                 Argument::new("show-level")
                     .takes_value(false)
                     .help("Whether or not to output the level in the logs."),
@@ -310,12 +320,16 @@ fn main_exec() -> Result<(), MainError> {
         .map_err(MainError::InvalidLogLevel)?;
     let show_level = arguments.flag_present("show-level").then_some(true);
     let show_log_origin = arguments.flag_present("show-level").then_some(true);
+    let file = arguments.single_value("file").cloned();
+    let module = arguments.single_value("module").cloned();
     LOGGER
         .update(LoggerConfig {
             log_path,
             level,
             show_level,
             show_log_origin,
+            file,
+            module,
         })
         .map_err(MainError::LoggerInitialization)?;
 
