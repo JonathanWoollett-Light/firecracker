@@ -19,6 +19,7 @@ bench = false
 bincode = "1.2.1"
 displaydoc = "0.2.4"
 libc = "0.2.148"
+log-instrument = "0.2.0"
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.107"
 thiserror = "1.0.48"

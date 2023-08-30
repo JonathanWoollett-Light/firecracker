@@ -12,6 +12,7 @@ bench = false
 [dependencies]
 displaydoc = "0.2.4"
 libc = "0.2.148"
+log-instrument = "0.2.0"
 thiserror = "1.0.48"
 
 utils = { path = "../utils" }

@@ -19,6 +19,7 @@ thiserror = "1.0.32"
 displaydoc = "0.2.4"
 versionize = "0.1.10"
 versionize_derive = "0.1.5"
+log-instrument = "0.2.0"
 
 dumbo = { path = "../dumbo" }
 logger = { path = "../logger" }

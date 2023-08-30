@@ -106,6 +106,7 @@ version = "0.1.0"
 dependencies = [
  "displaydoc",
  "libc",
+ "log-instrument",
  "logger",
  "micro_http",
  "mmds",
@@ -182,7 +183,7 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex",
- "syn 2.0.28",
+ "syn 2.0.29",
 ]
 
 [[package]]
@@ -204,7 +205,7 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex",
- "syn 2.0.28",
+ "syn 2.0.29",
  "which",
 ]
 
@@ -354,7 +355,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 2.0.28",
+ "syn 2.0.29",
 ]
 
 [[package]]
@@ -385,6 +386,7 @@ dependencies = [
  "clap",
  "displaydoc",
  "libc",
+ "log-instrument",
  "serde",
  "serde_json",
  "thiserror",
@@ -494,6 +496,7 @@ version = "0.1.0"
 dependencies = [
  "bitflags 1.3.2",
  "derive_more",
+ "log-instrument",
  "logger",
  "micro_http",
  "serde_json",
@@ -559,7 +562,7 @@ dependencies = [
  "displaydoc",
  "event-manager",
  "libc",
- "log",
+ "log-instrument",
  "logger",
  "mmds",
  "regex",
@@ -696,7 +699,8 @@ name = "jailer"
 version = "1.5.0-dev"
 dependencies = [
  "libc",
- "nix",
+ "log-instrument",
+ "nix 0.27.1",
  "regex",
  "thiserror",
  "utils",
@@ -783,6 +787,30 @@ name = "log"
 version = "0.4.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "log-instrument"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d31be702d55bd22a9410c94911c1622d22bacf5c6fdb5472f83c135b79eedbee"
+dependencies = [
+ "log",
+ "log-instrument-macros",
+]
+
+[[package]]
+name = "log-instrument-macros"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64860ae60b51788d332351feb17aca069f3e7e8a8fcd9235d5537e6fb48dc23c"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.29",
+]
 
 [[package]]
 name = "logger"
@@ -836,6 +864,7 @@ dependencies = [
  "derive_more",
  "displaydoc",
  "dumbo",
+ "log-instrument",
  "logger",
  "micro_http",
  "serde",
@@ -937,7 +966,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c64d9ba0963cdcea2e1b2230fbae2bab30eb25a174be395c41e764bfb65dd62"
 dependencies = [
  "proc-macro2",
- "syn 2.0.28",
+ "syn 2.0.29",
 ]
 
 [[package]]
@@ -1020,6 +1049,7 @@ version = "1.5.0-dev"
 dependencies = [
  "displaydoc",
  "libc",
+ "log-instrument",
  "thiserror",
  "utils",
 ]
@@ -1114,6 +1144,7 @@ dependencies = [
  "bincode",
  "displaydoc",
  "libc",
+ "log-instrument",
  "serde",
  "serde_json",
  "thiserror",
@@ -1146,7 +1177,7 @@ checksum = "4eca7ac642d82aa35b60049a6eccb4be6be75e599bd2e9adb5f875a737654af2"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.28",
+ "syn 2.0.29",
 ]
 
 [[package]]
@@ -1182,6 +1213,7 @@ dependencies = [
  "criterion",
  "displaydoc",
  "libc",
+ "log-instrument",
  "thiserror",
  "versionize",
  "versionize_derive",
@@ -1195,6 +1227,7 @@ dependencies = [
  "clap-num",
  "displaydoc",
  "libc",
+ "log-instrument",
  "snapshot",
  "thiserror",
  "utils",
@@ -1226,9 +1259,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.28"
+version = "2.0.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04361975b3f5e348b2189d8dc55bc942f278b2d482a6a0365de5bdd62d351567"
+checksum = "c324c494eba9d92503e6f1ef2e6df781e78f6a7705a0202d9801b198807d518a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1252,7 +1285,7 @@ checksum = "49922ecae66cc8a249b77e68d1d0623c1b2c514f0060c27cdc68bd62a1219d35"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.28",
+ "syn 2.0.29",
 ]
 
 [[package]]
@@ -1380,6 +1413,7 @@ dependencies = [
  "derive_more",
  "displaydoc",
  "libc",
+ "log",
  "net_gen",
  "serde",
  "serde_json",
@@ -1478,6 +1512,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "linux-loader",
+ "log-instrument",
  "logger",
  "mmds",
  "net_gen",
