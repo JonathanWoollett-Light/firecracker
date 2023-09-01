@@ -11,7 +11,7 @@ bench = false
 [dependencies]
 lazy_static = "1.4.0"
 libc = "0.2.117"
-log = { version = "0.4.14", features = ["std"] }
+log = { version = "0.4.20", features = ["serde", "max_level_debug"] }
 serde = { version = "1.0.136", features = ["derive", "rc"] }
 serde_json = "1.0.78"
 thiserror = "1.0.32"
