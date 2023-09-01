@@ -235,12 +235,6 @@ def _test_log_config(microvm, log_level="Info", show_level=True, show_origin=Tru
 
     lines = microvm.log_data.splitlines()
 
-    # Check for `Running Firecracker` message.
-    configured_level_no = LOG_LEVELS.index(to_formal_log_level(log_level))
-    info_level_no = LOG_LEVELS.index("INFO")
-    if info_level_no <= configured_level_no:
-        assert "Running Firecracker" in lines[0]
-
     # Check format of messages
     for line in lines:
         check_log_message_format(line, microvm.id, log_level, show_level, show_origin)

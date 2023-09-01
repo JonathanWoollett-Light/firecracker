@@ -105,7 +105,6 @@ fn main() -> ExitCode {
 fn main_exec() -> Result<(), MainError> {
     // Initialize the logger.
     LOGGER.init().map_err(MainError::SetLogger)?;
-    info!("Running Firecracker v{FIRECRACKER_VERSION}");
 
     register_signal_handlers().map_err(MainError::RegisterSignalHandlers)?;
 
