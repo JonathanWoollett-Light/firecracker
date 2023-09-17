@@ -72,12 +72,14 @@ impl Persist<'_> for VsockUnixBackend {
     type ConstructorArgs = VsockUdsConstructorArgs;
     type Error = VsockUnixBackendError;
 
+    #[log_instrument::instrument]
     fn save(&self) -> Self::State {
         VsockBackendState::Uds(VsockUdsState {
             path: self.host_sock_path.clone(),
         })
     }
 
+    #[log_instrument::instrument]
     fn restore(
         constructor_args: Self::ConstructorArgs,
         state: &Self::State,
@@ -99,6 +101,7 @@ where
     type ConstructorArgs = VsockConstructorArgs<B>;
     type Error = VsockError;
 
+    #[log_instrument::instrument]
     fn save(&self) -> Self::State {
         VsockFrontendState {
             cid: self.cid(),
@@ -106,6 +109,7 @@ where
         }
     }
 
+    #[log_instrument::instrument]
     fn restore(
         constructor_args: Self::ConstructorArgs,
         state: &Self::State,
@@ -150,12 +154,14 @@ pub(crate) mod tests {
         type ConstructorArgs = VsockUdsConstructorArgs;
         type Error = VsockUnixBackendError;
 
+        #[log_instrument::instrument]
         fn save(&self) -> Self::State {
             VsockBackendState::Uds(VsockUdsState {
                 path: "test".to_owned(),
             })
         }
 
+        #[log_instrument::instrument]
         fn restore(_: Self::ConstructorArgs, state: &Self::State) -> Result<Self, Self::Error> {
             match state {
                 VsockBackendState::Uds(_) => Ok(TestBackend::new()),

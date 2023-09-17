@@ -64,6 +64,7 @@ pub struct KvmVcpu {
 }
 
 impl KvmVcpu {
+    #[log_instrument::instrument]
     /// Constructs a new kvm vcpu with arch specific functionality.
     ///
     /// # Arguments
@@ -85,11 +86,13 @@ impl KvmVcpu {
         })
     }
 
+    #[log_instrument::instrument]
     /// Gets the MPIDR register value.
     pub fn get_mpidr(&self) -> u64 {
         self.mpidr
     }
 
+    #[log_instrument::instrument]
     /// Configures an aarch64 specific vcpu for booting Linux.
     ///
     /// # Arguments
@@ -122,6 +125,7 @@ impl KvmVcpu {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Initializes an aarch64 specific vcpu for booting Linux.
     ///
     /// # Arguments
@@ -150,6 +154,7 @@ impl KvmVcpu {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Creates default kvi struct based on vcpu index.
     pub fn default_kvi(
         vm_fd: &VmFd,
@@ -171,6 +176,7 @@ impl KvmVcpu {
         Ok(kvi)
     }
 
+    #[log_instrument::instrument]
     /// Save the KVM internal state.
     pub fn save_state(&self) -> Result<VcpuState, KvmVcpuError> {
         let mut state = VcpuState {
@@ -183,6 +189,7 @@ impl KvmVcpu {
         Ok(state)
     }
 
+    #[log_instrument::instrument]
     /// Use provided state to populate KVM internal state.
     pub fn restore_state(&mut self, vm_fd: &VmFd, state: &VcpuState) -> Result<(), KvmVcpuError> {
         let kvi = match state.kvi {
@@ -198,6 +205,7 @@ impl KvmVcpu {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Dumps CPU configuration.
     pub fn dump_cpu_config(&self) -> Result<CpuConfiguration, KvmVcpuError> {
         let mut reg_list = get_all_registers_ids(&self.fd).map_err(KvmVcpuError::DumpCpuConfig)?;
@@ -223,6 +231,7 @@ impl KvmVcpu {
         Ok(CpuConfiguration { regs })
     }
 
+    #[log_instrument::instrument]
     /// Runs the vCPU in KVM context and handles the kvm exit reason.
     ///
     /// Returns error or enum specifying whether emulation was handled or interrupted.
@@ -234,6 +243,7 @@ impl KvmVcpu {
         Err(VcpuError::UnhandledKvmExit(format!("{:?}", exit)))
     }
 
+    #[log_instrument::instrument]
     /// Initializes internal vcpufd.
     /// Does additional check for SVE and calls `vcpu_finalize` if
     /// SVE is enabled.
@@ -272,14 +282,17 @@ pub struct VcpuState {
 }
 
 impl VcpuState {
+    #[log_instrument::instrument]
     fn default_old_regs(_: u16) -> Vec<Aarch64RegisterOld> {
         Vec::default()
     }
 
+    #[log_instrument::instrument]
     fn default_kvi(_: u16) -> Option<kvm_bindings::kvm_vcpu_init> {
         None
     }
 
+    #[log_instrument::instrument]
     fn de_regs(&mut self, _source_version: u16) -> VersionizeResult<()> {
         let mut regs = Aarch64RegisterVec::default();
         for reg in self.old_regs.iter() {
@@ -292,6 +305,7 @@ impl VcpuState {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     fn ser_regs(&mut self, _target_version: u16) -> VersionizeResult<()> {
         self.old_regs = self
             .regs
@@ -319,6 +333,7 @@ mod tests {
     use crate::vstate::vm::tests::setup_vm;
     use crate::vstate::vm::Vm;
 
+    #[log_instrument::instrument]
     fn setup_vcpu(mem_size: usize) -> (Vm, KvmVcpu, GuestMemoryMmap) {
         let (mut vm, vm_mem) = setup_vm(mem_size);
         let mut vcpu = KvmVcpu::new(0, &vm).unwrap();

@@ -63,6 +63,7 @@ pub struct BlockDeviceConfig {
 }
 
 impl From<&Block> for BlockDeviceConfig {
+    #[log_instrument::instrument]
     fn from(block: &Block) -> Self {
         let rl: RateLimiterConfig = block.rate_limiter().into();
         BlockDeviceConfig {
@@ -103,6 +104,7 @@ pub struct BlockBuilder {
 }
 
 impl BlockBuilder {
+    #[log_instrument::instrument]
     /// Constructor for BlockDevices. It initializes an empty LinkedList.
     pub fn new() -> Self {
         Self {
@@ -110,6 +112,7 @@ impl BlockBuilder {
         }
     }
 
+    #[log_instrument::instrument]
     /// Specifies whether there is a root block device already present in the list.
     fn has_root_device(&self) -> bool {
         // If there is a root device, it would be at the top of the list.
@@ -120,6 +123,7 @@ impl BlockBuilder {
         }
     }
 
+    #[log_instrument::instrument]
     /// Gets the index of the device with the specified `drive_id` if it exists in the list.
     fn get_index_of_drive_id(&self, drive_id: &str) -> Option<usize> {
         self.list
@@ -127,6 +131,7 @@ impl BlockBuilder {
             .position(|b| b.lock().expect("Poisoned lock").id().eq(drive_id))
     }
 
+    #[log_instrument::instrument]
     /// Inserts an existing block device.
     pub fn add_device(&mut self, block_device: Arc<Mutex<Block>>) {
         if block_device.lock().expect("Poisoned lock").is_root_device() {
@@ -136,6 +141,7 @@ impl BlockBuilder {
         }
     }
 
+    #[log_instrument::instrument]
     /// Inserts a `Block` in the block devices list using the specified configuration.
     /// If a block with the same id already exists, it will overwrite it.
     /// Inserting a secondary root block device will fail.
@@ -175,6 +181,7 @@ impl BlockBuilder {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Creates a Block device from a BlockDeviceConfig.
     fn create_block(block_device_config: BlockDeviceConfig) -> Result<Block, DriveError> {
         // check if the path exists
@@ -205,6 +212,7 @@ impl BlockBuilder {
         .map_err(DriveError::CreateBlockDevice)
     }
 
+    #[log_instrument::instrument]
     /// Returns a vec with the structures used to configure the devices.
     pub fn configs(&self) -> Vec<BlockDeviceConfig> {
         let mut ret = vec![];
@@ -223,6 +231,7 @@ mod tests {
     use crate::rate_limiter::RateLimiter;
 
     impl PartialEq for DriveError {
+        #[log_instrument::instrument]
         fn eq(&self, other: &DriveError) -> bool {
             self.to_string() == other.to_string()
         }
@@ -231,6 +240,7 @@ mod tests {
     // This implementation is used only in tests.
     // We cannot directly derive clone because RateLimiter does not implement clone.
     impl Clone for BlockDeviceConfig {
+        #[log_instrument::instrument]
         fn clone(&self) -> Self {
             BlockDeviceConfig {
                 path_on_host: self.path_on_host.clone(),

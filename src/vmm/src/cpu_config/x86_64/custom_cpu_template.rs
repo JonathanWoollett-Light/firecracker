@@ -18,6 +18,7 @@ use crate::cpu_config::x86_64::cpuid::{KvmCpuidFlags, VENDOR_ID_AMD, VENDOR_ID_I
 use crate::cpu_config::x86_64::static_cpu_templates::{c3, t2, t2a, t2cl, t2s, StaticCpuTemplate};
 
 impl GetCpuTemplate for Option<CpuTemplateType> {
+    #[log_instrument::instrument]
     fn get_cpu_template(&self) -> Result<Cow<CustomCpuTemplate>, GetCpuTemplateError> {
         use GetCpuTemplateError::*;
 
@@ -143,6 +144,7 @@ pub struct CustomCpuTemplate {
 }
 
 impl CustomCpuTemplate {
+    #[log_instrument::instrument]
     /// Get a list of MSR indices that are modified by the CPU template.
     pub fn get_msr_index_list(&self) -> Vec<u32> {
         self.msr_modifiers
@@ -151,6 +153,7 @@ impl CustomCpuTemplate {
             .collect()
     }
 
+    #[log_instrument::instrument]
     /// Validate the correctness of the template.
     pub fn validate(&self) -> Result<(), serde_json::Error> {
         Ok(())
@@ -172,6 +175,7 @@ pub struct RegisterModifier {
     pub bitmap: RegisterValueFilter<u64>,
 }
 
+#[log_instrument::instrument]
 fn deserialize_kvm_cpuid_flags<'de, D>(deserializer: D) -> Result<KvmCpuidFlags, D::Error>
 where
     D: Deserializer<'de>,
@@ -180,6 +184,7 @@ where
     Ok(KvmCpuidFlags(flag))
 }
 
+#[log_instrument::instrument]
 fn deserialize_cpuid_register<'de, D>(deserializer: D) -> Result<CpuidRegister, D::Error>
 where
     D: Deserializer<'de>,
@@ -199,6 +204,7 @@ where
     })
 }
 
+#[log_instrument::instrument]
 fn serialize_cpuid_register<S>(cpuid_reg: &CpuidRegister, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,

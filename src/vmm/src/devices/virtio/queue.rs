@@ -77,6 +77,7 @@ pub struct DescriptorChain<'a> {
 }
 
 impl<'a> DescriptorChain<'a> {
+    #[log_instrument::instrument]
     fn checked_new(
         mem: &GuestMemoryMmap,
         desc_table: GuestAddress,
@@ -118,15 +119,18 @@ impl<'a> DescriptorChain<'a> {
         }
     }
 
+    #[log_instrument::instrument]
     fn is_valid(&self) -> bool {
         !self.has_next() || self.next < self.queue_size
     }
 
+    #[log_instrument::instrument]
     /// Gets if this descriptor chain has another descriptor chain linked after it.
     pub fn has_next(&self) -> bool {
         self.flags & VIRTQ_DESC_F_NEXT != 0 && self.ttl > 1
     }
 
+    #[log_instrument::instrument]
     /// If the driver designated this as a write only descriptor.
     ///
     /// If this is false, this descriptor is read only.
@@ -135,6 +139,7 @@ impl<'a> DescriptorChain<'a> {
         self.flags & VIRTQ_DESC_F_WRITE != 0
     }
 
+    #[log_instrument::instrument]
     /// Gets the next descriptor in this descriptor chain, if there is one.
     ///
     /// Note that this is distinct from the next descriptor chain returned by `AvailIter`, which is
@@ -160,6 +165,7 @@ impl<'a> IntoIterator for DescriptorChain<'a> {
     type Item = DescriptorChain<'a>;
     type IntoIter = DescriptorIterator<'a>;
 
+    #[log_instrument::instrument]
     fn into_iter(self) -> Self::IntoIter {
         DescriptorIterator(Some(self))
     }
@@ -168,6 +174,7 @@ impl<'a> IntoIterator for DescriptorChain<'a> {
 impl<'a> Iterator for DescriptorIterator<'a> {
     type Item = DescriptorChain<'a>;
 
+    #[log_instrument::instrument]
     fn next(&mut self) -> Option<Self::Item> {
         self.0.take().map(|desc| {
             self.0 = desc.next_descriptor();
@@ -208,6 +215,7 @@ pub struct Queue {
 
 #[allow(clippy::len_without_is_empty)]
 impl Queue {
+    #[log_instrument::instrument]
     /// Constructs an empty virtio queue with the given `max_size`.
     pub fn new(max_size: u16) -> Queue {
         Queue {
@@ -224,17 +232,20 @@ impl Queue {
         }
     }
 
+    #[log_instrument::instrument]
     /// Maximum size of the queue.
     pub fn get_max_size(&self) -> u16 {
         self.max_size
     }
 
+    #[log_instrument::instrument]
     /// Return the actual size of the queue, as the driver may not set up a
     /// queue as big as the device allows.
     pub fn actual_size(&self) -> u16 {
         min(self.size, self.max_size)
     }
 
+    #[log_instrument::instrument]
     /// Validates the queue's in-memory layout is correct.
     pub fn is_layout_valid(&self, mem: &GuestMemoryMmap) -> bool {
         let queue_size = u64::from(self.actual_size());
@@ -288,6 +299,7 @@ impl Queue {
         }
     }
 
+    #[log_instrument::instrument]
     /// Validates that the queue's representation is correct.
     pub fn is_valid(&self, mem: &GuestMemoryMmap) -> bool {
         if !self.is_layout_valid(mem) {
@@ -304,6 +316,7 @@ impl Queue {
         }
     }
 
+    #[log_instrument::instrument]
     /// Returns the number of yet-to-be-popped descriptor chains in the avail ring.
     fn len(&self, mem: &GuestMemoryMmap) -> u16 {
         debug_assert!(self.is_layout_valid(mem));
@@ -311,11 +324,13 @@ impl Queue {
         (self.avail_idx(mem) - self.next_avail).0
     }
 
+    #[log_instrument::instrument]
     /// Checks if the driver has made any descriptor chains available in the avail ring.
     pub fn is_empty(&self, mem: &GuestMemoryMmap) -> bool {
         self.len(mem) == 0
     }
 
+    #[log_instrument::instrument]
     /// Pop the first available descriptor chain from the avail ring.
     pub fn pop<'b>(&mut self, mem: &'b GuestMemoryMmap) -> Option<DescriptorChain<'b>> {
         debug_assert!(self.is_layout_valid(mem));
@@ -341,6 +356,7 @@ impl Queue {
         self.do_pop_unchecked(mem)
     }
 
+    #[log_instrument::instrument]
     /// Try to pop the first available descriptor chain from the avail ring.
     /// If no descriptor is available, enable notifications.
     pub fn pop_or_enable_notification<'b>(
@@ -358,6 +374,7 @@ impl Queue {
         self.do_pop_unchecked(mem)
     }
 
+    #[log_instrument::instrument]
     /// Pop the first available descriptor chain from the avail ring.
     ///
     /// # Important
@@ -407,12 +424,14 @@ impl Queue {
         )
     }
 
+    #[log_instrument::instrument]
     /// Undo the effects of the last `self.pop()` call.
     /// The caller can use this, if it was unable to consume the last popped descriptor chain.
     pub fn undo_pop(&mut self) {
         self.next_avail -= Wrapping(1);
     }
 
+    #[log_instrument::instrument]
     /// Puts an available descriptor head into the used ring for use by the guest.
     pub fn add_used(
         &mut self,
@@ -450,6 +469,7 @@ impl Queue {
             .map_err(QueueError::UsedRing)
     }
 
+    #[log_instrument::instrument]
     /// Fetch the available ring index (`virtq_avail->idx`) from guest memory.
     /// This is written by the driver, to indicate the next slot that will be filled in the avail
     /// ring.
@@ -463,6 +483,7 @@ impl Queue {
         Wrapping(mem.read_obj::<u16>(addr).unwrap())
     }
 
+    #[log_instrument::instrument]
     /// Get the value of the used event field of the avail ring.
     #[inline(always)]
     pub fn used_event(&self, mem: &GuestMemoryMmap) -> Wrapping<u16> {
@@ -476,6 +497,7 @@ impl Queue {
         Wrapping(mem.read_obj::<u16>(used_event_addr).unwrap())
     }
 
+    #[log_instrument::instrument]
     /// Helper method that writes `val` to the `avail_event` field of the used ring.
     fn set_avail_event(&mut self, val: u16, mem: &GuestMemoryMmap) {
         debug_assert!(self.is_layout_valid(mem));
@@ -487,6 +509,7 @@ impl Queue {
         mem.write_obj(val, avail_event_addr).unwrap();
     }
 
+    #[log_instrument::instrument]
     /// Try to enable notification events from the guest driver. Returns true if notifications were
     /// successfully enabled. Otherwise it means that one or more descriptors can still be consumed
     /// from the available ring and we can't guarantee that there will be a notification. In this
@@ -525,11 +548,13 @@ impl Queue {
         self.next_avail.0 == self.avail_idx(mem).0
     }
 
+    #[log_instrument::instrument]
     /// Enable notification suppression.
     pub fn enable_notif_suppression(&mut self) {
         self.uses_notif_suppression = true;
     }
 
+    #[log_instrument::instrument]
     /// Check if we need to kick the guest.
     ///
     /// Please note this method has side effects: once it returns `true`, it considers the
@@ -596,6 +621,7 @@ mod verification {
     // able to change its address, as it is 16-byte aligned.
     const GUEST_MEMORY_SIZE: usize = QUEUE_END as usize + 30;
 
+    #[log_instrument::instrument]
     fn guest_memory(memory: *mut u8) -> GuestMemoryMmap {
         // Ideally, we'd want to do
         // let region = unsafe {MmapRegionBuilder::new(GUEST_MEMORY_SIZE)
@@ -633,6 +659,7 @@ mod verification {
     }
 
     // can't implement kani::Arbitrary for the relevant types due to orphan rules
+    #[log_instrument::instrument]
     fn setup_kani_guest_memory() -> GuestMemoryMmap {
         // Non-deterministic Vec that will be used as the guest memory. We use `exact_vec` for now
         // as `any_vec` will likely result in worse performance. We do not loose much from
@@ -647,6 +674,7 @@ mod verification {
         )
     }
 
+    #[log_instrument::instrument]
     fn setup_zeroed_guest_memory() -> GuestMemoryMmap {
         guest_memory(unsafe {
             std::alloc::alloc_zeroed(std::alloc::Layout::from_size_align_unchecked(
@@ -675,6 +703,7 @@ mod verification {
     /// Note that the used ring structure has size 6 + 8 * FIRECRACKER_MAX_QUEUE_SIZE
     const QUEUE_END: u64 = USED_RING_BASE_ADDRESS + 6 + 8 * FIRECRACKER_MAX_QUEUE_SIZE as u64;
 
+    #[log_instrument::instrument]
     fn less_arbitrary_queue() -> Queue {
         let mut queue = Queue::new(FIRECRACKER_MAX_QUEUE_SIZE);
 
@@ -692,6 +721,7 @@ mod verification {
     }
 
     impl ProofContext {
+        #[log_instrument::instrument]
         /// Creates a [`ProofContext`] where the queue layout is not arbitrary and instead
         /// fixed to a known valid one
         pub fn bounded_queue() -> Self {
@@ -703,6 +733,7 @@ mod verification {
             ProofContext(queue, mem)
         }
 
+        #[log_instrument::instrument]
         /// Creates a [`ProofContext`] where the queue layout is fixed to a valid one and where
         /// guest memory is initialized to all zeros.
         pub fn bounded() -> Self {
@@ -716,6 +747,7 @@ mod verification {
     }
 
     impl kani::Arbitrary for ProofContext {
+        #[log_instrument::instrument]
         fn any() -> Self {
             let mem = setup_kani_guest_memory();
             let queue: Queue = kani::any();
@@ -727,6 +759,7 @@ mod verification {
     }
 
     impl kani::Arbitrary for Queue {
+        #[log_instrument::instrument]
         fn any() -> Queue {
             // firecracker statically sets the maximal queue size to 256
             let mut queue = Queue::new(FIRECRACKER_MAX_QUEUE_SIZE);
@@ -746,6 +779,7 @@ mod verification {
     }
 
     impl kani::Arbitrary for Descriptor {
+        #[log_instrument::instrument]
         fn any() -> Descriptor {
             Descriptor {
                 addr: kani::any(),
@@ -854,6 +888,7 @@ mod verification {
         if queue.is_valid(&mem) {
             // Section 2.6: Alignment of descriptor table, available ring and used ring; size of
             // queue
+            #[log_instrument::instrument]
             fn alignment_of(val: u64) -> u64 {
                 if val == 0 {
                     u64::MAX
@@ -992,6 +1027,7 @@ mod tests {
     use crate::devices::virtio::QueueError::{DescIndexOutOfBounds, UsedRing};
 
     impl Queue {
+        #[log_instrument::instrument]
         fn avail_event(&self, mem: &GuestMemoryMmap) -> u16 {
             let avail_event_addr = self
                 .used_ring

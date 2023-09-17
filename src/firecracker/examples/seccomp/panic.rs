@@ -5,6 +5,7 @@ use std::fs::File;
 
 use seccompiler::{apply_filter, deserialize_binary};
 
+#[log_instrument::instrument]
 fn main() {
     let args: Vec<String> = args().collect();
     let bpf_path = &args[1];

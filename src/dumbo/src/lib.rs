@@ -34,11 +34,13 @@ pub trait ByteBuffer: Index<usize, Output = u8> {
 }
 
 impl ByteBuffer for [u8] {
+    #[log_instrument::instrument]
     #[inline]
     fn len(&self) -> usize {
         self.len()
     }
 
+    #[log_instrument::instrument]
     #[inline]
     fn read_to_slice(&self, offset: usize, buf: &mut [u8]) {
         let buf_len = buf.len();
@@ -52,14 +54,17 @@ mod tests {
 
     use super::*;
 
+    #[log_instrument::instrument]
     fn bb_len<T: ByteBuffer + ?Sized + Debug>(buf: &T) -> usize {
         buf.len()
     }
 
+    #[log_instrument::instrument]
     fn bb_is_empty<T: ByteBuffer + ?Sized + Debug>(buf: &T) -> bool {
         buf.len() == 0
     }
 
+    #[log_instrument::instrument]
     fn bb_read_from_1<T: ByteBuffer + ?Sized + Debug>(src: &T, dst: &mut [u8]) {
         src.read_to_slice(1, dst);
     }

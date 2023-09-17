@@ -53,6 +53,7 @@ pub const DEFAULT_BRAND_STRING_BASE: &[u8; 28] = b"Intel(R) Xeon(R) Processor @"
 // `normalize`.
 #[allow(clippy::multiple_inherent_impl)]
 impl super::IntelCpuid {
+    #[log_instrument::instrument]
     /// Applies required modifications to CPUID respective of a vCPU.
     ///
     /// # Errors
@@ -78,6 +79,7 @@ impl super::IntelCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Update deterministic cache entry
     #[allow(clippy::unwrap_in_result)]
     fn update_deterministic_cache_entry(
@@ -162,6 +164,7 @@ impl super::IntelCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Update power management entry
     fn update_power_management_entry(&mut self) -> Result<(), NormalizeCpuidError> {
         let leaf_6 = self
@@ -184,6 +187,7 @@ impl super::IntelCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Update structured extended feature flags enumeration leaf
     fn update_extended_feature_flags_entry(&mut self) -> Result<(), NormalizeCpuidError> {
         let leaf_7_0 = self
@@ -200,6 +204,7 @@ impl super::IntelCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Update performance monitoring entry
     fn update_performance_monitoring_entry(&mut self) -> Result<(), NormalizeCpuidError> {
         let leaf_a = self
@@ -214,6 +219,7 @@ impl super::IntelCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     fn update_brand_string_entry(&mut self) -> Result<(), NormalizeCpuidError> {
         // Get host brand string.
         let host_brand_string: [u8; BRAND_STRING_LENGTH] = host_brand_string();
@@ -238,6 +244,7 @@ pub enum DefaultBrandStringError {
     Overflow,
 }
 
+#[log_instrument::instrument]
 /// Normalize brand string to a generic Xeon(R) processor, with the actual CPU frequency
 ///
 /// # Errors

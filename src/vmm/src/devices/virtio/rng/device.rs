@@ -50,11 +50,13 @@ pub struct Entropy {
 }
 
 impl Entropy {
+    #[log_instrument::instrument]
     pub fn new(rate_limiter: RateLimiter) -> Result<Self, EntropyError> {
         let queues = vec![Queue::new(FIRECRACKER_MAX_QUEUE_SIZE); RNG_NUM_QUEUES];
         Self::new_with_queues(queues, rate_limiter)
     }
 
+    #[log_instrument::instrument]
     pub fn new_with_queues(
         queues: Vec<Queue>,
         rate_limiter: RateLimiter,
@@ -77,10 +79,12 @@ impl Entropy {
         })
     }
 
+    #[log_instrument::instrument]
     pub fn id(&self) -> &str {
         ENTROPY_DEV_ID
     }
 
+    #[log_instrument::instrument]
     fn signal_used_queue(&self) -> Result<(), DeviceError> {
         debug!("entropy: raising IRQ");
         self.irq_trigger
@@ -88,6 +92,7 @@ impl Entropy {
             .map_err(DeviceError::FailedSignalingIrq)
     }
 
+    #[log_instrument::instrument]
     fn rate_limit_request(rate_limiter: &mut RateLimiter, bytes: u64) -> bool {
         if !rate_limiter.consume(1, TokenType::Ops) {
             return false;
@@ -101,11 +106,13 @@ impl Entropy {
         true
     }
 
+    #[log_instrument::instrument]
     fn rate_limit_replenish_request(rate_limiter: &mut RateLimiter, bytes: u64) {
         rate_limiter.manual_replenish(1, TokenType::Ops);
         rate_limiter.manual_replenish(bytes, TokenType::Bytes);
     }
 
+    #[log_instrument::instrument]
     fn handle_one(&self, iovec: &mut IoVecBufferMut) -> Result<u32, EntropyError> {
         // If guest provided us with an empty buffer just return directly
         if iovec.len() == 0 {
@@ -122,6 +129,7 @@ impl Entropy {
         Ok(iovec.write_at(&rand_bytes, 0).unwrap().try_into().unwrap())
     }
 
+    #[log_instrument::instrument]
     fn process_entropy_queue(&mut self) {
         // This is safe since we checked in the event handler that the device is activated.
         let mem = self.device_state.mem().unwrap();
@@ -186,6 +194,7 @@ impl Entropy {
         }
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn process_entropy_queue_event(&mut self) {
         if let Err(err) = self.queue_events[RNG_QUEUE].read() {
             error!("Failed to read entropy queue event: {err}");
@@ -198,6 +207,7 @@ impl Entropy {
         }
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn process_rate_limiter_event(&mut self) {
         METRICS.entropy.rate_limiter_event_count.inc();
         match self.rate_limiter.event_handler() {
@@ -212,80 +222,100 @@ impl Entropy {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn process_virtio_queues(&mut self) {
         self.process_entropy_queue();
     }
 
+    #[log_instrument::instrument]
     pub fn rate_limiter(&self) -> &RateLimiter {
         &self.rate_limiter
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn set_avail_features(&mut self, features: u64) {
         self.avail_features = features;
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn set_acked_features(&mut self, features: u64) {
         self.acked_features = features;
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn set_irq_status(&mut self, status: usize) {
         self.irq_trigger.irq_status = Arc::new(AtomicUsize::new(status));
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn set_activated(&mut self, mem: GuestMemoryMmap) {
         self.device_state = DeviceState::Activated(mem);
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn activate_event(&self) -> &EventFd {
         &self.activate_event
     }
 }
 
 impl VirtioDevice for Entropy {
+    #[log_instrument::instrument]
     fn device_type(&self) -> u32 {
         TYPE_RNG
     }
 
+    #[log_instrument::instrument]
     fn queues(&self) -> &[Queue] {
         &self.queues
     }
 
+    #[log_instrument::instrument]
     fn queues_mut(&mut self) -> &mut [Queue] {
         &mut self.queues
     }
 
+    #[log_instrument::instrument]
     fn queue_events(&self) -> &[EventFd] {
         &self.queue_events
     }
 
+    #[log_instrument::instrument]
     fn interrupt_evt(&self) -> &EventFd {
         &self.irq_trigger.irq_evt
     }
 
+    #[log_instrument::instrument]
     fn interrupt_status(&self) -> Arc<AtomicUsize> {
         self.irq_trigger.irq_status.clone()
     }
 
+    #[log_instrument::instrument]
     fn avail_features(&self) -> u64 {
         self.avail_features
     }
 
+    #[log_instrument::instrument]
     fn acked_features(&self) -> u64 {
         self.acked_features
     }
 
+    #[log_instrument::instrument]
     fn set_acked_features(&mut self, acked_features: u64) {
         self.acked_features = acked_features;
     }
 
+    #[log_instrument::instrument]
     fn read_config(&self, _offset: u64, mut _data: &mut [u8]) {}
 
+    #[log_instrument::instrument]
     fn write_config(&mut self, _offset: u64, _data: &[u8]) {}
 
+    #[log_instrument::instrument]
     fn is_activated(&self) -> bool {
         self.device_state.is_activated()
     }
 
+    #[log_instrument::instrument]
     fn activate(&mut self, mem: GuestMemoryMmap) -> Result<(), ActivateError> {
         self.activate_event.write(1).map_err(|err| {
             error!("entropy: Cannot write to activate_evt: {err}");
@@ -310,15 +340,18 @@ mod tests {
     use crate::devices::virtio::VIRTQ_DESC_F_WRITE;
 
     impl VirtioTestDevice for Entropy {
+        #[log_instrument::instrument]
         fn set_queues(&mut self, queues: Vec<Queue>) {
             self.queues = queues;
         }
 
+        #[log_instrument::instrument]
         fn num_queues() -> usize {
             RNG_NUM_QUEUES
         }
     }
 
+    #[log_instrument::instrument]
     fn default_entropy() -> Entropy {
         Entropy::new(RateLimiter::default()).unwrap()
     }

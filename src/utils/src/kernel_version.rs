@@ -22,6 +22,7 @@ pub struct KernelVersion {
 }
 
 impl KernelVersion {
+    #[log_instrument::instrument]
     pub fn new(major: u16, minor: u16, patch: u16) -> Self {
         Self {
             major,
@@ -30,6 +31,7 @@ impl KernelVersion {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn get() -> Result<Self, Error> {
         let mut name: utsname = utsname {
             sysname: [0; 65],
@@ -55,6 +57,7 @@ impl KernelVersion {
         )?)
     }
 
+    #[log_instrument::instrument]
     fn parse(release: String) -> Result<Self, Error> {
         let mut tokens = release.split('.');
 
@@ -76,11 +79,13 @@ impl KernelVersion {
 }
 
 impl std::fmt::Display for KernelVersion {
+    #[log_instrument::instrument]
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
     }
 }
 
+#[log_instrument::instrument]
 pub fn min_kernel_version_for_io_uring() -> KernelVersion {
     KernelVersion::new(5, 10, 51)
 }

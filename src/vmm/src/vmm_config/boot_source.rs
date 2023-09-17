@@ -69,6 +69,7 @@ pub struct BootConfig {
 }
 
 impl BootConfig {
+    #[log_instrument::instrument]
     /// Creates the BootConfig based on a given configuration.
     pub fn new(cfg: &BootSourceConfig) -> Result<Self, BootSourceConfigError> {
         use self::BootSourceConfigError::{

@@ -12,6 +12,7 @@ use crate::vmm_config::boot_source::BootSourceConfig;
 use crate::vmm_config::instance_info::InstanceInfo;
 use crate::{EventManager, Vmm};
 
+#[log_instrument::instrument]
 pub fn create_vmm(
     _kernel_image: Option<&str>,
     is_diff: bool,
@@ -52,14 +53,17 @@ pub fn create_vmm(
     (vmm, event_manager)
 }
 
+#[log_instrument::instrument]
 pub fn default_vmm(kernel_image: Option<&str>) -> (Arc<Mutex<Vmm>>, EventManager) {
     create_vmm(kernel_image, false, true)
 }
 
+#[log_instrument::instrument]
 pub fn default_vmm_no_boot(kernel_image: Option<&str>) -> (Arc<Mutex<Vmm>>, EventManager) {
     create_vmm(kernel_image, false, false)
 }
 
+#[log_instrument::instrument]
 #[cfg(target_arch = "x86_64")]
 pub fn dirty_tracking_vmm(kernel_image: Option<&str>) -> (Arc<Mutex<Vmm>>, EventManager) {
     create_vmm(kernel_image, true, true)

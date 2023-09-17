@@ -24,6 +24,7 @@ pub enum Resource {
 }
 
 impl From<Resource> for u32 {
+    #[log_instrument::instrument]
     fn from(resource: Resource) -> u32 {
         match resource {
             #[allow(clippy::unnecessary_cast)]
@@ -45,6 +46,7 @@ impl From<Resource> for u32 {
 }
 
 impl From<Resource> for i32 {
+    #[log_instrument::instrument]
     fn from(resource: Resource) -> i32 {
         match resource {
             #[allow(clippy::unnecessary_cast)]
@@ -66,6 +68,7 @@ impl From<Resource> for i32 {
 }
 
 impl Display for Resource {
+    #[log_instrument::instrument]
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Resource::RlimitFsize => write!(f, "size of file"),
@@ -81,6 +84,7 @@ pub struct ResourceLimits {
 }
 
 impl Default for ResourceLimits {
+    #[log_instrument::instrument]
     fn default() -> Self {
         ResourceLimits {
             file_size: None,
@@ -90,6 +94,7 @@ impl Default for ResourceLimits {
 }
 
 impl ResourceLimits {
+    #[log_instrument::instrument]
     pub fn install(self) -> Result<(), JailerError> {
         if let Some(file_size) = self.file_size {
             // Set file size limit.
@@ -101,6 +106,7 @@ impl ResourceLimits {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     fn set_limit(resource: Resource, target: libc::rlim_t) -> Result<(), JailerError> {
         let rlim: libc::rlimit = libc::rlimit {
             rlim_cur: target,
@@ -114,10 +120,12 @@ impl ResourceLimits {
             .map_err(|_| JailerError::Setrlimit(resource.to_string()))
     }
 
+    #[log_instrument::instrument]
     pub fn set_file_size(&mut self, file_size: u64) {
         self.file_size = Some(file_size);
     }
 
+    #[log_instrument::instrument]
     pub fn set_no_file(&mut self, no_file: u64) {
         self.no_file = no_file;
     }

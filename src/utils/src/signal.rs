@@ -9,11 +9,13 @@ extern "C" {
     fn __libc_current_sigrtmax() -> c_int;
 }
 
+#[log_instrument::instrument]
 pub fn sigrtmin() -> c_int {
     // SAFETY: Function has no invariants that can be broken.
     unsafe { __libc_current_sigrtmin() }
 }
 
+#[log_instrument::instrument]
 pub fn sigrtmax() -> c_int {
     // SAFETY: Function has no invariants that can be broken.
     unsafe { __libc_current_sigrtmax() }

@@ -67,6 +67,7 @@ pub enum IoUringError {
 }
 
 impl IoUringError {
+    #[log_instrument::instrument]
     /// Return true if this error is caused by a full submission or completion queue.
     pub fn is_throttling_err(&self) -> bool {
         matches!(
@@ -94,6 +95,7 @@ pub struct IoUring {
 }
 
 impl IoUring {
+    #[log_instrument::instrument]
     /// Create a new instance.
     ///
     /// # Arguments
@@ -158,6 +160,7 @@ impl IoUring {
         Ok(instance)
     }
 
+    #[log_instrument::instrument]
     /// Push an [`Operation`](operation/struct.Operation.html) onto the submission queue.
     ///
     /// # Safety
@@ -187,6 +190,7 @@ impl IoUring {
         }
     }
 
+    #[log_instrument::instrument]
     /// Pop a completed entry off the completion queue. Returns `Ok(None)` if there are no entries.
     /// The type `T` must be the same as the `user_data` type used for `push`-ing the operation.
     ///
@@ -208,33 +212,39 @@ impl IoUring {
             .map_err(IoUringError::CQueue)
     }
 
+    #[log_instrument::instrument]
     fn do_submit(&mut self, min_complete: u32) -> Result<u32, IoUringError> {
         self.squeue
             .submit(min_complete)
             .map_err(IoUringError::SQueue)
     }
 
+    #[log_instrument::instrument]
     /// Submit all operations but don't wait for any completions.
     pub fn submit(&mut self) -> Result<u32, IoUringError> {
         self.do_submit(0)
     }
 
+    #[log_instrument::instrument]
     /// Submit all operations and wait for their completion.
     pub fn submit_and_wait_all(&mut self) -> Result<u32, IoUringError> {
         self.do_submit(self.num_ops)
     }
 
+    #[log_instrument::instrument]
     /// Return the number of operations currently on the submission queue.
     pub fn pending_sqes(&self) -> Result<u32, IoUringError> {
         self.squeue.pending().map_err(IoUringError::SQueue)
     }
 
+    #[log_instrument::instrument]
     /// A total of the number of ops in the submission and completion queues, as well as the
     /// in-flight ops.
     pub fn num_ops(&self) -> u32 {
         self.num_ops
     }
 
+    #[log_instrument::instrument]
     fn enable(&mut self) -> Result<(), IoUringError> {
         // SAFETY: Safe because values are valid and we check the return value.
         SyscallReturnCode(unsafe {
@@ -250,6 +260,7 @@ impl IoUring {
         .map_err(IoUringError::Enable)
     }
 
+    #[log_instrument::instrument]
     fn register_files(&mut self, files: Vec<&File>) -> Result<(), IoUringError> {
         if files.is_empty() {
             // No-op.
@@ -284,6 +295,7 @@ impl IoUring {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     fn register_eventfd(&self, fd: RawFd) -> Result<(), IoUringError> {
         // SAFETY: Safe because values are valid and we check the return value.
         SyscallReturnCode(unsafe {
@@ -299,6 +311,7 @@ impl IoUring {
         .map_err(IoUringError::RegisterEventfd)
     }
 
+    #[log_instrument::instrument]
     fn register_restrictions(&self, restrictions: Vec<Restriction>) -> Result<(), IoUringError> {
         if restrictions.is_empty() {
             // No-op.
@@ -323,6 +336,7 @@ impl IoUring {
         .map_err(IoUringError::RegisterRestrictions)
     }
 
+    #[log_instrument::instrument]
     fn check_features(params: io_uring_params) -> Result<(), IoUringError> {
         // We require that the host kernel will never drop completed entries due to an (unlikely)
         // overflow in the completion queue.
@@ -337,6 +351,7 @@ impl IoUring {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     fn check_operations(&self) -> Result<(), IoUringError> {
         let mut probes = ProbeWrapper::new(PROBE_LEN).map_err(IoUringError::Fam)?;
 
@@ -388,6 +403,7 @@ mod tests {
     /// BEGIN PROPERTY BASED TESTING
     use super::*;
 
+    #[log_instrument::instrument]
     fn drain_cqueue(ring: &mut IoUring) {
         while let Some(entry) = unsafe { ring.pop::<u32>().unwrap() } {
             assert!(entry.result().is_ok());
@@ -399,6 +415,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn setup_mem_region(len: usize) -> MmapRegion {
         const PROT: i32 = libc::PROT_READ | libc::PROT_WRITE;
         const FLAGS: i32 = libc::MAP_ANONYMOUS | libc::MAP_PRIVATE;
@@ -415,10 +432,12 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn free_mem_region(region: MmapRegion) {
         unsafe { libc::munmap(region.as_ptr().cast::<libc::c_void>(), region.len()) };
     }
 
+    #[log_instrument::instrument]
     fn read_entire_mem_region(region: &MmapRegion) -> Vec<u8> {
         let mut result = vec![0u8; region.len()];
         let count = region.as_volatile_slice().read(&mut result[..], 0).unwrap();
@@ -426,6 +445,7 @@ mod tests {
         result
     }
 
+    #[log_instrument::instrument]
     #[allow(clippy::let_with_type_underscore)]
     fn arbitrary_rw_operation(file_len: u32) -> impl Strategy<Value = Operation<u32>> {
         (

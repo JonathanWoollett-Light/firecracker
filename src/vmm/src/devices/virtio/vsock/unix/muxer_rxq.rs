@@ -33,6 +33,7 @@ pub struct MuxerRxQ {
 impl MuxerRxQ {
     const SIZE: usize = defs::MUXER_RXQ_SIZE;
 
+    #[log_instrument::instrument]
     /// Trivial RX queue constructor.
     pub fn new() -> Self {
         Self {
@@ -41,6 +42,7 @@ impl MuxerRxQ {
         }
     }
 
+    #[log_instrument::instrument]
     /// Attempt to build an RX queue, that is synchronized to the connection pool.
     /// Note: the resulting queue may still be desynchronized, if there are too many connections
     ///       that have pending RX data. In that case, the muxer will first drain this queue, and
@@ -62,6 +64,7 @@ impl MuxerRxQ {
         Self { q, synced }
     }
 
+    #[log_instrument::instrument]
     /// Push a new RX item to the queue.
     ///
     /// A push will fail when:
@@ -102,31 +105,37 @@ impl MuxerRxQ {
         false
     }
 
+    #[log_instrument::instrument]
     /// Peek into the front of the queue.
     pub fn peek(&self) -> Option<MuxerRx> {
         self.q.front().copied()
     }
 
+    #[log_instrument::instrument]
     /// Pop an RX item from the front of the queue.
     pub fn pop(&mut self) -> Option<MuxerRx> {
         self.q.pop_front()
     }
 
+    #[log_instrument::instrument]
     /// Check if the RX queue is synchronized with the connection pool.
     pub fn is_synced(&self) -> bool {
         self.synced
     }
 
+    #[log_instrument::instrument]
     /// Get the total number of items in the queue.
     pub fn len(&self) -> usize {
         self.q.len()
     }
 
+    #[log_instrument::instrument]
     /// Check if the queue is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    #[log_instrument::instrument]
     /// Check if the queue is full.
     pub fn is_full(&self) -> bool {
         self.len() == Self::SIZE

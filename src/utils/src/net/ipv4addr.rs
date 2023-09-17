@@ -3,6 +3,7 @@
 
 use std::net::Ipv4Addr;
 
+#[log_instrument::instrument]
 /// Checks if an IPv4 address is RFC 3927 compliant.
 /// # Examples
 ///

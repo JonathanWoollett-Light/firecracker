@@ -33,6 +33,7 @@ pub enum EditVmStateSubCommand {
     },
 }
 
+#[log_instrument::instrument]
 pub fn edit_vmstate_command(command: EditVmStateSubCommand) -> Result<(), EditVmStateError> {
     match command {
         EditVmStateSubCommand::RemoveRegs {
@@ -46,6 +47,7 @@ pub fn edit_vmstate_command(command: EditVmStateSubCommand) -> Result<(), EditVm
     Ok(())
 }
 
+#[log_instrument::instrument]
 fn edit(
     vmstate_path: &PathBuf,
     output_path: &PathBuf,
@@ -57,6 +59,7 @@ fn edit(
     Ok(())
 }
 
+#[log_instrument::instrument]
 fn remove_regs(
     mut state: MicrovmState,
     remove_regs: &[u64],

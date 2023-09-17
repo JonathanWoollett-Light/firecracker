@@ -88,6 +88,7 @@ struct ConnectionTuple {
 }
 
 impl ConnectionTuple {
+    #[log_instrument::instrument]
     fn new(remote_addr: Ipv4Addr, remote_port: u16) -> Self {
         ConnectionTuple {
             remote_addr,
@@ -152,6 +153,7 @@ enum RecvSegmentOutcome {
 }
 
 impl TcpIPv4Handler {
+    #[log_instrument::instrument]
     /// Creates a new `TcpIPv4Handler`.
     ///
     /// The handler acts as if bound to `local_addr`:`local_port`, and will accept at most
@@ -178,31 +180,37 @@ impl TcpIPv4Handler {
         }
     }
 
+    #[log_instrument::instrument]
     /// Setter for the local IPv4 address of this TCP handler.
     pub fn set_local_ipv4_addr(&mut self, ipv4_addr: Ipv4Addr) {
         self.local_ipv4_addr = ipv4_addr;
     }
 
+    #[log_instrument::instrument]
     /// Returns the local IPv4 address of this TCP handler.
     pub fn local_ipv4_addr(&self) -> Ipv4Addr {
         self.local_ipv4_addr
     }
 
+    #[log_instrument::instrument]
     /// Returns the local port of this TCP handler.
     pub fn local_port(&self) -> u16 {
         self.local_port
     }
 
+    #[log_instrument::instrument]
     /// Returns the max connections of this TCP handler.
     pub fn max_connections(&self) -> usize {
         self.max_connections
     }
 
+    #[log_instrument::instrument]
     /// Returns the max pending resets of this TCP handler.
     pub fn max_pending_resets(&self) -> usize {
         self.max_pending_resets
     }
 
+    #[log_instrument::instrument]
     /// Contains logic for handling incoming segments.
     ///
     /// Any changes to the state of the handler are communicated through an `Ok(RecvEvent)`.
@@ -286,6 +294,7 @@ impl TcpIPv4Handler {
         }
     }
 
+    #[log_instrument::instrument]
     fn check_timeout(&mut self, value: u64, tuple: ConnectionTuple) {
         match self.next_timeout {
             Some((t, _)) if t > value => self.next_timeout = Some((value, tuple)),
@@ -294,6 +303,7 @@ impl TcpIPv4Handler {
         };
     }
 
+    #[log_instrument::instrument]
     fn find_next_timeout(&mut self) {
         let mut next_timeout = None;
         for (tuple, endpoint) in self.connections.iter() {
@@ -312,6 +322,7 @@ impl TcpIPv4Handler {
 
     // Returns true if the endpoint has been added to the set of active connections (it may have
     // been there already).
+    #[log_instrument::instrument]
     fn check_next_segment_status(
         &mut self,
         tuple: ConnectionTuple,
@@ -334,11 +345,13 @@ impl TcpIPv4Handler {
         false
     }
 
+    #[log_instrument::instrument]
     fn add_connection(&mut self, tuple: ConnectionTuple, endpoint: Endpoint) {
         self.check_next_segment_status(tuple, endpoint.next_segment_status());
         self.connections.insert(tuple, endpoint);
     }
 
+    #[log_instrument::instrument]
     fn remove_connection(&mut self, tuple: ConnectionTuple) {
         // Just in case it's in there somewhere.
         self.active_connections.remove(&tuple);
@@ -352,6 +365,7 @@ impl TcpIPv4Handler {
     }
 
     // TODO: I guess this should be refactored at some point to also remove the endpoint if found.
+    #[log_instrument::instrument]
     fn find_evictable_connection(&self) -> Option<ConnectionTuple> {
         for (tuple, endpoint) in self.connections.iter() {
             if endpoint.is_evictable() {
@@ -361,6 +375,7 @@ impl TcpIPv4Handler {
         None
     }
 
+    #[log_instrument::instrument]
     fn enqueue_rst_config(&mut self, tuple: ConnectionTuple, cfg: RstConfig) {
         // We simply forgo sending any RSTs if the queue is already full.
         if self.rst_queue.len() < self.max_pending_resets {
@@ -368,10 +383,12 @@ impl TcpIPv4Handler {
         }
     }
 
+    #[log_instrument::instrument]
     fn enqueue_rst<T: NetworkBytes + Debug>(&mut self, tuple: ConnectionTuple, s: &TcpSegment<T>) {
         self.enqueue_rst_config(tuple, RstConfig::new(s));
     }
 
+    #[log_instrument::instrument]
     /// Attempts to write one packet, from either the `RST` queue or one of the existing endpoints,
     /// to `buf`.
     ///
@@ -487,6 +504,7 @@ impl TcpIPv4Handler {
         Ok((len, event))
     }
 
+    #[log_instrument::instrument]
     /// Describes the status of the next segment to be sent by the handler.
     #[inline]
     pub fn next_segment_status(&self) -> NextSegmentStatus {
@@ -510,12 +528,14 @@ mod tests {
     use crate::pdu::bytes::NetworkBytesMut;
     use crate::tcp::tests::mock_callback;
 
+    #[log_instrument::instrument]
     fn inner_tcp_mut<'a, T: NetworkBytesMut + Debug>(
         p: &'a mut IPv4Packet<'_, T>,
     ) -> TcpSegment<'a, &'a mut [u8]> {
         TcpSegment::from_bytes(p.payload_mut(), None).unwrap()
     }
 
+    #[log_instrument::instrument]
     #[allow(clippy::type_complexity)]
     fn write_next<'a>(
         h: &mut TcpIPv4Handler,
@@ -532,6 +552,7 @@ mod tests {
         })
     }
 
+    #[log_instrument::instrument]
     fn next_written_segment<'a>(
         h: &mut TcpIPv4Handler,
         buf: &'a mut [u8],
@@ -550,6 +571,7 @@ mod tests {
     // Calls write_next_packet until either an error occurs, or there's nothing left to send.
     // When successful, returns how many packets were written. The remote_addr argument is used
     // to check the packets are sent to the appropriate destination.
+    #[log_instrument::instrument]
     fn drain_packets(
         h: &mut TcpIPv4Handler,
         src_addr: Ipv4Addr,

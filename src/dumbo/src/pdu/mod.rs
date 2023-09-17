@@ -34,17 +34,20 @@ pub struct Incomplete<T> {
 }
 
 impl<T: Debug> Incomplete<T> {
+    #[log_instrument::instrument]
     #[inline]
     fn new(inner: T) -> Self {
         Incomplete { inner }
     }
 
+    #[log_instrument::instrument]
     /// Returns a reference to the wrapped object.
     #[inline]
     pub fn inner(&self) -> &T {
         &self.inner
     }
 
+    #[log_instrument::instrument]
     /// Returns a mutable reference to the wrapped object.
     #[inline]
     pub fn inner_mut(&mut self) -> &mut T {
@@ -59,6 +62,7 @@ enum ChecksumProto {
     Udp = PROTOCOL_UDP,
 }
 
+#[log_instrument::instrument]
 /// Computes the checksum of a TCP/UDP packet. Since both protocols use
 /// the same algorithm to compute the checksum.
 ///

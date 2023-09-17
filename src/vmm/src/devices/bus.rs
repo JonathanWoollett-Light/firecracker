@@ -24,18 +24,21 @@ struct BusRange(u64, u64);
 impl Eq for BusRange {}
 
 impl PartialEq for BusRange {
+    #[log_instrument::instrument]
     fn eq(&self, other: &BusRange) -> bool {
         self.0 == other.0
     }
 }
 
 impl Ord for BusRange {
+    #[log_instrument::instrument]
     fn cmp(&self, other: &BusRange) -> Ordering {
         self.0.cmp(&other.0)
     }
 }
 
 impl PartialOrd for BusRange {
+    #[log_instrument::instrument]
     fn partial_cmp(&self, other: &BusRange) -> Option<Ordering> {
         self.0.partial_cmp(&other.0)
     }
@@ -78,7 +81,9 @@ pub struct DummyDevice;
 
 #[cfg(test)]
 impl DummyDevice {
+    #[log_instrument::instrument]
     pub fn bus_write(&mut self, _offset: u64, _data: &[u8]) {}
+    #[log_instrument::instrument]
     pub fn bus_read(&mut self, _offset: u64, _data: &[u8]) {}
 }
 
@@ -88,12 +93,14 @@ pub struct ConstantDevice;
 
 #[cfg(test)]
 impl ConstantDevice {
+    #[log_instrument::instrument]
     pub fn bus_read(&mut self, offset: u64, data: &mut [u8]) {
         for (i, v) in data.iter_mut().enumerate() {
             *v = (offset as u8) + (i as u8);
         }
     }
 
+    #[log_instrument::instrument]
     fn bus_write(&mut self, offset: u64, data: &[u8]) {
         for (i, v) in data.iter().enumerate() {
             assert_eq!(*v, (offset as u8) + (i as u8))
@@ -102,12 +109,14 @@ impl ConstantDevice {
 }
 
 impl BusDevice {
+    #[log_instrument::instrument]
     pub fn i8042_device_ref(&self) -> Option<&I8042Device> {
         match self {
             Self::I8042Device(x) => Some(x),
             _ => None,
         }
     }
+    #[log_instrument::instrument]
     #[cfg(target_arch = "aarch64")]
     pub fn rtc_device_ref(&self) -> Option<&RTCDevice> {
         match self {
@@ -115,18 +124,21 @@ impl BusDevice {
             _ => None,
         }
     }
+    #[log_instrument::instrument]
     pub fn boot_timer_ref(&self) -> Option<&BootTimer> {
         match self {
             Self::BootTimer(x) => Some(x),
             _ => None,
         }
     }
+    #[log_instrument::instrument]
     pub fn mmio_transport_ref(&self) -> Option<&MmioTransport> {
         match self {
             Self::MmioTransport(x) => Some(x),
             _ => None,
         }
     }
+    #[log_instrument::instrument]
     pub fn serial_ref(&self) -> Option<&SerialDevice<std::io::Stdin>> {
         match self {
             Self::Serial(x) => Some(x),
@@ -134,12 +146,14 @@ impl BusDevice {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn i8042_device_mut(&mut self) -> Option<&mut I8042Device> {
         match self {
             Self::I8042Device(x) => Some(x),
             _ => None,
         }
     }
+    #[log_instrument::instrument]
     #[cfg(target_arch = "aarch64")]
     pub fn rtc_device_mut(&mut self) -> Option<&mut RTCDevice> {
         match self {
@@ -147,18 +161,21 @@ impl BusDevice {
             _ => None,
         }
     }
+    #[log_instrument::instrument]
     pub fn boot_timer_mut(&mut self) -> Option<&mut BootTimer> {
         match self {
             Self::BootTimer(x) => Some(x),
             _ => None,
         }
     }
+    #[log_instrument::instrument]
     pub fn mmio_transport_mut(&mut self) -> Option<&mut MmioTransport> {
         match self {
             Self::MmioTransport(x) => Some(x),
             _ => None,
         }
     }
+    #[log_instrument::instrument]
     pub fn serial_mut(&mut self) -> Option<&mut SerialDevice<std::io::Stdin>> {
         match self {
             Self::Serial(x) => Some(x),
@@ -166,6 +183,7 @@ impl BusDevice {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn read(&mut self, offset: u64, data: &mut [u8]) {
         match self {
             Self::I8042Device(x) => x.bus_read(offset, data),
@@ -181,6 +199,7 @@ impl BusDevice {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn write(&mut self, offset: u64, data: &[u8]) {
         match self {
             Self::I8042Device(x) => x.bus_write(offset, data),
@@ -198,12 +217,14 @@ impl BusDevice {
 }
 
 impl MutEventSubscriber for BusDevice {
+    #[log_instrument::instrument]
     fn process(&mut self, event: Events, ops: &mut EventOps) {
         match self {
             Self::Serial(serial) => serial.process(event, ops),
             _ => panic!(),
         }
     }
+    #[log_instrument::instrument]
     fn init(&mut self, ops: &mut EventOps) {
         match self {
             Self::Serial(serial) => serial.init(ops),
@@ -213,6 +234,7 @@ impl MutEventSubscriber for BusDevice {
 }
 
 impl Bus {
+    #[log_instrument::instrument]
     /// Constructs an a bus with an empty address space.
     pub fn new() -> Bus {
         Bus {
@@ -220,6 +242,7 @@ impl Bus {
         }
     }
 
+    #[log_instrument::instrument]
     fn first_before(&self, addr: u64) -> Option<(BusRange, &Mutex<BusDevice>)> {
         // for when we switch to rustc 1.17: self.devices.range(..addr).iter().rev().next()
         for (range, dev) in self.devices.iter().rev() {
@@ -230,6 +253,7 @@ impl Bus {
         None
     }
 
+    #[log_instrument::instrument]
     /// Returns the device found at some address.
     pub fn get_device(&self, addr: u64) -> Option<(u64, &Mutex<BusDevice>)> {
         if let Some((BusRange(start, len), dev)) = self.first_before(addr) {
@@ -241,6 +265,7 @@ impl Bus {
         None
     }
 
+    #[log_instrument::instrument]
     /// Puts the given device at the given address space.
     pub fn insert(
         &mut self,
@@ -276,6 +301,7 @@ impl Bus {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Reads data from the device that owns the range containing `addr` and puts it into `data`.
     ///
     /// Returns true on success, otherwise `data` is untouched.
@@ -291,6 +317,7 @@ impl Bus {
         }
     }
 
+    #[log_instrument::instrument]
     /// Writes `data` to the device that owns the range containing `addr`.
     ///
     /// Returns true on success, otherwise `data` is untouched.

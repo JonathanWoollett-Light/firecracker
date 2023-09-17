@@ -79,6 +79,7 @@ struct Arguments {
     is_basic: bool,
 }
 
+#[log_instrument::instrument]
 fn build_arg_parser() -> ArgParser<'static> {
     ArgParser::new()
         .arg(
@@ -109,6 +110,7 @@ fn build_arg_parser() -> ArgParser<'static> {
         ))
 }
 
+#[log_instrument::instrument]
 fn get_argument_values(arguments: &ArgumentsBag) -> Result<Arguments, SeccompError> {
     let arch_string = arguments.single_value("target-arch");
     if arch_string.is_none() {
@@ -138,6 +140,7 @@ fn get_argument_values(arguments: &ArgumentsBag) -> Result<Arguments, SeccompErr
     })
 }
 
+#[log_instrument::instrument]
 fn compile(args: &Arguments) -> Result<(), SeccompError> {
     let input_file = File::open(&args.input_file)
         .map_err(|err| SeccompError::FileOpen(PathBuf::from(&args.input_file), err))?;
@@ -169,6 +172,7 @@ enum SeccompilerError {
     Error(SeccompError),
 }
 
+#[log_instrument::instrument]
 fn main() -> core::result::Result<(), SeccompilerError> {
     let result = main_exec();
     if let Err(e) = result {
@@ -179,6 +183,7 @@ fn main() -> core::result::Result<(), SeccompilerError> {
     }
 }
 
+#[log_instrument::instrument]
 fn main_exec() -> core::result::Result<(), SeccompilerError> {
     let mut arg_parser = build_arg_parser();
 

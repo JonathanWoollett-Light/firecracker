@@ -11,6 +11,7 @@ use super::{Entropy, RNG_QUEUE};
 use crate::devices::virtio::VirtioDevice;
 
 impl Entropy {
+    #[log_instrument::instrument]
     fn register_runtime_events(&self, ops: &mut EventOps) {
         if let Err(err) = ops.add(Events::new(&self.queue_events()[RNG_QUEUE], EventSet::IN)) {
             error!("entropy: Failed to register queue event: {err}");
@@ -20,12 +21,14 @@ impl Entropy {
         }
     }
 
+    #[log_instrument::instrument]
     fn register_activate_event(&self, ops: &mut EventOps) {
         if let Err(err) = ops.add(Events::new(self.activate_event(), EventSet::IN)) {
             error!("entropy: Failed to register activate event: {err}");
         }
     }
 
+    #[log_instrument::instrument]
     fn process_activate_event(&self, ops: &mut EventOps) {
         if let Err(err) = self.activate_event().read() {
             error!("entropy: Failed to consume activate event: {err}");
@@ -42,6 +45,7 @@ impl Entropy {
 }
 
 impl MutEventSubscriber for Entropy {
+    #[log_instrument::instrument]
     fn init(&mut self, ops: &mut event_manager::EventOps) {
         // This function can be called during different points in the device lifetime:
         //  - shortly after device creation,
@@ -54,6 +58,7 @@ impl MutEventSubscriber for Entropy {
         }
     }
 
+    #[log_instrument::instrument]
     fn process(&mut self, events: event_manager::Events, ops: &mut event_manager::EventOps) {
         let event_set = events.event_set();
         let source = events.fd();

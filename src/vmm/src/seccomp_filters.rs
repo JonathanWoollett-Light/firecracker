@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use seccompiler::BpfThreadMap;
 
+#[log_instrument::instrument]
 /// Retrieve empty seccomp filters.
 pub fn get_empty_filters() -> BpfThreadMap {
     let mut map = BpfThreadMap::new();

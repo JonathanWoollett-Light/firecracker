@@ -51,6 +51,7 @@ pub const MMIO_MEM_START: u64 = FIRST_ADDR_PAST_32BITS - MEM_32BIT_GAP_SIZE;
 /// The size of the memory area reserved for MMIO devices.
 pub const MMIO_MEM_SIZE: u64 = MEM_32BIT_GAP_SIZE;
 
+#[log_instrument::instrument]
 /// Returns a Vec of the valid memory addresses.
 /// These should be used to configure the GuestMemoryMmap structure for the platform.
 /// For x86_64 all addresses are valid from the start of the kernel except a
@@ -69,11 +70,13 @@ pub fn arch_memory_regions(size: usize) -> Vec<(GuestAddress, usize)> {
     }
 }
 
+#[log_instrument::instrument]
 /// Returns the memory address where the kernel could be loaded.
 pub fn get_kernel_start() -> u64 {
     layout::HIMEM_START
 }
 
+#[log_instrument::instrument]
 /// Returns the memory address where the initrd could be loaded.
 pub fn initrd_load_addr(
     guest_mem: &GuestMemoryMmap,
@@ -93,6 +96,7 @@ pub fn initrd_load_addr(
     Ok(align_to_pagesize(lowmem_size - initrd_size) as u64)
 }
 
+#[log_instrument::instrument]
 /// Configures the system and should be called once per vm before starting vcpu threads.
 ///
 /// # Arguments
@@ -175,6 +179,7 @@ pub fn configure_system(
     .map_err(|_| ConfigurationError::ZeroPageSetup)
 }
 
+#[log_instrument::instrument]
 /// Add an e820 region to the e820 map.
 /// Returns Ok(()) if successful, or an error if there is no space left in the map.
 fn add_e820_entry(

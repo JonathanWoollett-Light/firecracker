@@ -28,6 +28,7 @@ use crate::rate_limiter::RateLimiter;
 
 static NEXT_INDEX: AtomicUsize = AtomicUsize::new(1);
 
+#[log_instrument::instrument]
 pub fn default_net() -> Net {
     let next_tap = NEXT_INDEX.fetch_add(1, Ordering::SeqCst);
     // Id is the firecracker-facing identifier, e.g. local to the FC process. We thus do not need to
@@ -57,6 +58,7 @@ pub fn default_net() -> Net {
     net
 }
 
+#[log_instrument::instrument]
 pub fn default_net_no_mmds() -> Net {
     let next_tap = NEXT_INDEX.fetch_add(1, Ordering::SeqCst);
     let tap_device_id = format!("net-device{}", next_tap);
@@ -84,6 +86,7 @@ pub enum ReadTapMock {
 }
 
 impl ReadTapMock {
+    #[log_instrument::instrument]
     pub fn mock_frame(&self) -> Vec<u8> {
         if let ReadTapMock::MockFrame(frame) = self {
             return frame.clone();
@@ -106,16 +109,19 @@ pub struct Mocks {
 }
 
 impl Mocks {
+    #[log_instrument::instrument]
     pub fn set_read_tap(&mut self, read_tap: ReadTapMock) {
         self.read_tap = read_tap;
     }
 
+    #[log_instrument::instrument]
     pub fn set_write_tap(&mut self, write_tap: WriteTapMock) {
         self.write_tap = write_tap;
     }
 }
 
 impl Default for Mocks {
+    #[log_instrument::instrument]
     fn default() -> Mocks {
         Mocks {
             read_tap: ReadTapMock::MockFrame(
@@ -148,6 +154,7 @@ pub struct TapTrafficSimulator {
 }
 
 impl TapTrafficSimulator {
+    #[log_instrument::instrument]
     pub fn new(tap_index: i32) -> Self {
         // Create sockaddr_ll struct.
         // SAFETY: sockaddr_storage has no invariants and can be safely zeroed.
@@ -202,6 +209,7 @@ impl TapTrafficSimulator {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn push_tx_packet(&self, buf: &[u8]) {
         // SAFETY: The call is safe since the parameters are valid.
         let res = unsafe {
@@ -219,6 +227,7 @@ impl TapTrafficSimulator {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn pop_rx_packet(&self, buf: &mut [u8]) -> bool {
         // SAFETY: The call is safe since the parameters are valid.
         let ret = unsafe {
@@ -238,6 +247,7 @@ impl TapTrafficSimulator {
     }
 }
 
+#[log_instrument::instrument]
 pub fn create_socket() -> File {
     // SAFETY: This is safe since we check the return value.
     let socket = unsafe { libc::socket(libc::AF_PACKET, libc::SOCK_RAW, libc::ETH_P_ALL.to_be()) };
@@ -250,6 +260,7 @@ pub fn create_socket() -> File {
 }
 
 // Returns handles to virtio queues creation/activation and manipulation.
+#[log_instrument::instrument]
 pub fn virtqueues(mem: &GuestMemoryMmap) -> (VirtQueue, VirtQueue) {
     let rxq = VirtQueue::new(GuestAddress(0), mem, 16);
     let txq = VirtQueue::new(GuestAddress(0x1000), mem, 16);
@@ -258,6 +269,7 @@ pub fn virtqueues(mem: &GuestMemoryMmap) -> (VirtQueue, VirtQueue) {
     (rxq, txq)
 }
 
+#[log_instrument::instrument]
 pub fn if_index(tap: &Tap) -> i32 {
     let sock = create_socket();
     let ifreq = IfReqBuilder::new()
@@ -269,6 +281,7 @@ pub fn if_index(tap: &Tap) -> i32 {
     unsafe { ifreq.ifr_ifru.ifru_ivalue }
 }
 
+#[log_instrument::instrument]
 /// Enable the tap interface.
 pub fn enable(tap: &Tap) {
     // Disable IPv6 router advertisment requests
@@ -293,6 +306,7 @@ pub fn enable(tap: &Tap) {
         .unwrap();
 }
 
+#[log_instrument::instrument]
 #[cfg(test)]
 pub(crate) fn inject_tap_tx_frame(net: &Net, len: usize) -> Vec<u8> {
     assert!(len >= vnet_hdr_len());
@@ -306,6 +320,7 @@ pub(crate) fn inject_tap_tx_frame(net: &Net, len: usize) -> Vec<u8> {
     frame
 }
 
+#[log_instrument::instrument]
 pub fn write_element_in_queue(net: &Net, idx: usize, val: u64) -> Result<(), DeviceError> {
     if idx > net.queue_evts.len() {
         return Err(DeviceError::QueueError(QueueError::DescIndexOutOfBounds(
@@ -316,6 +331,7 @@ pub fn write_element_in_queue(net: &Net, idx: usize, val: u64) -> Result<(), Dev
     Ok(())
 }
 
+#[log_instrument::instrument]
 pub fn get_element_from_queue(net: &Net, idx: usize) -> Result<u64, DeviceError> {
     if idx > net.queue_evts.len() {
         return Err(DeviceError::QueueError(QueueError::DescIndexOutOfBounds(
@@ -325,16 +341,19 @@ pub fn get_element_from_queue(net: &Net, idx: usize) -> Result<u64, DeviceError>
     Ok(u64::try_from(net.queue_evts[idx].as_raw_fd()).unwrap())
 }
 
+#[log_instrument::instrument]
 pub fn default_guest_mac() -> MacAddr {
     MacAddr::from_str("11:22:33:44:55:66").unwrap()
 }
 
+#[log_instrument::instrument]
 pub fn set_mac(net: &mut Net, mac: MacAddr) {
     net.guest_mac = Some(mac);
     net.config_space.guest_mac = mac;
 }
 
 // Assigns "guest virtio driver" activated queues to the net device.
+#[log_instrument::instrument]
 pub fn assign_queues(net: &mut Net, rxq: Queue, txq: Queue) {
     net.queues.clear();
     net.queues.push(rxq);
@@ -374,6 +393,7 @@ pub mod test {
     }
 
     impl fmt::Debug for TestHelper<'_> {
+        #[log_instrument::instrument]
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             f.debug_struct("TestHelper")
                 .field("event_manager", &"?")
@@ -389,6 +409,7 @@ pub mod test {
     impl<'a> TestHelper<'a> {
         const QUEUE_SIZE: u16 = 16;
 
+        #[log_instrument::instrument]
         pub fn get_default() -> TestHelper<'a> {
             let mut event_manager = EventManager::new().unwrap();
             let mut net = default_net();
@@ -421,10 +442,12 @@ pub mod test {
             }
         }
 
+        #[log_instrument::instrument]
         pub fn net(&mut self) -> MutexGuard<Net> {
             self.net.lock().unwrap()
         }
 
+        #[log_instrument::instrument]
         pub fn activate_net(&mut self) {
             self.net.lock().unwrap().activate(self.mem.clone()).unwrap();
             // Process the activate event.
@@ -432,6 +455,7 @@ pub mod test {
             assert_eq!(ev_count, 1);
         }
 
+        #[log_instrument::instrument]
         pub fn simulate_event(&mut self, event: NetEvent) {
             match event {
                 NetEvent::RxQueue => self.net().process_rx_queue_event(),
@@ -442,10 +466,12 @@ pub mod test {
             };
         }
 
+        #[log_instrument::instrument]
         pub fn data_addr(&self) -> u64 {
             self.txq.end().raw_value()
         }
 
+        #[log_instrument::instrument]
         pub fn add_desc_chain(
             &mut self,
             queue: NetQueue,
@@ -485,6 +511,7 @@ pub mod test {
             event_fd.write(1).unwrap();
         }
 
+        #[log_instrument::instrument]
         /// Generate a tap frame of `frame_len` and check that it is deferred
         pub fn check_rx_deferred_frame(&mut self, frame_len: usize) -> Vec<u8> {
             self.net().tap.mocks.set_read_tap(ReadTapMock::TapFrame);
@@ -506,6 +533,7 @@ pub mod test {
             frame
         }
 
+        #[log_instrument::instrument]
         /// Check that after adding a valid Rx queue descriptor chain a previously deferred frame
         /// is eventually received by the guest
         pub fn check_rx_queue_resume(&mut self, expected_frame: &[u8]) {
@@ -531,6 +559,7 @@ pub mod test {
 
         // Generates a frame of `frame_len` and writes it to the provided descriptor chain.
         // Doesn't generate an error if the descriptor chain is longer than `frame_len`.
+        #[log_instrument::instrument]
         pub fn write_tx_frame(&self, desc_list: &[(u16, u32, u16)], frame_len: usize) -> Vec<u8> {
             let mut frame = utils::rand::rand_alphanumerics(frame_len)
                 .as_bytes()

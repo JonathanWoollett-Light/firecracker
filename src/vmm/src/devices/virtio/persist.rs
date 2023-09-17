@@ -60,6 +60,7 @@ impl Persist<'_> for Queue {
     type ConstructorArgs = ();
     type Error = ();
 
+    #[log_instrument::instrument]
     fn save(&self) -> Self::State {
         QueueState {
             max_size: self.max_size,
@@ -74,6 +75,7 @@ impl Persist<'_> for Queue {
         }
     }
 
+    #[log_instrument::instrument]
     fn restore(_: Self::ConstructorArgs, state: &Self::State) -> Result<Self, Self::Error> {
         Ok(Queue {
             max_size: state.max_size,
@@ -109,6 +111,7 @@ pub struct VirtioDeviceState {
 }
 
 impl VirtioDeviceState {
+    #[log_instrument::instrument]
     /// Construct the virtio state of a device.
     pub fn from_device(device: &dyn VirtioDevice) -> Self {
         VirtioDeviceState {
@@ -121,6 +124,7 @@ impl VirtioDeviceState {
         }
     }
 
+    #[log_instrument::instrument]
     /// Does sanity checking on the `self` state against expected values
     /// and builds queues from state.
     pub fn build_queues_checked(
@@ -199,6 +203,7 @@ impl Persist<'_> for MmioTransport {
     type ConstructorArgs = MmioTransportConstructorArgs;
     type Error = ();
 
+    #[log_instrument::instrument]
     fn save(&self) -> Self::State {
         MmioTransportState {
             features_select: self.features_select,
@@ -209,6 +214,7 @@ impl Persist<'_> for MmioTransport {
         }
     }
 
+    #[log_instrument::instrument]
     fn restore(
         constructor_args: Self::ConstructorArgs,
         state: &Self::State,
@@ -236,6 +242,7 @@ mod tests {
 
     const DEFAULT_QUEUE_MAX_SIZE: u16 = 256;
     impl Default for QueueState {
+        #[log_instrument::instrument]
         fn default() -> QueueState {
             QueueState {
                 max_size: DEFAULT_QUEUE_MAX_SIZE,
@@ -348,6 +355,7 @@ mod tests {
     }
 
     impl PartialEq for MmioTransport {
+        #[log_instrument::instrument]
         fn eq(&self, other: &MmioTransport) -> bool {
             let self_dev_type = self.device().lock().unwrap().device_type();
             self.acked_features_select == other.acked_features_select &&
@@ -362,6 +370,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn generic_mmiotransport_persistence_test(
         mmio_transport: MmioTransport,
         mem: GuestMemoryMmap,
@@ -385,6 +394,7 @@ mod tests {
         assert_eq!(restored_mmio_transport, mmio_transport);
     }
 
+    #[log_instrument::instrument]
     fn default_block() -> (MmioTransport, GuestMemoryMmap, Arc<Mutex<Block>>) {
         let mem = default_mem();
 
@@ -401,6 +411,7 @@ mod tests {
         (mmio_transport, mem, block)
     }
 
+    #[log_instrument::instrument]
     fn default_net() -> (MmioTransport, GuestMemoryMmap, Arc<Mutex<Net>>) {
         let mem = default_mem();
         let net = Arc::new(Mutex::new(net::test_utils::default_net()));
@@ -409,6 +420,7 @@ mod tests {
         (mmio_transport, mem, net)
     }
 
+    #[log_instrument::instrument]
     fn default_vsock() -> (
         MmioTransport,
         GuestMemoryMmap,

@@ -20,6 +20,7 @@ const MAP_CAPACITY: usize = 351;
 
 impl SyscallTable {
     /// Create new syscall table
+    #[log_instrument::instrument]
     pub fn new(arch: TargetArch) -> Self {
         let mut instance = Self {
             arch,
@@ -31,11 +32,13 @@ impl SyscallTable {
         instance
     }
 
+    #[log_instrument::instrument]
     /// Returns the arch-specific syscall number based on the given name.
     pub fn get_syscall_nr(&self, sys_name: &str) -> Option<i64> {
         self.map.get(sys_name).copied()
     }
 
+    #[log_instrument::instrument]
     /// Populates the arch-specific syscall map.
     fn populate_map(&mut self) {
         match self.arch {

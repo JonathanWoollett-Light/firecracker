@@ -45,6 +45,7 @@ pub struct BalloonDeviceConfig {
 }
 
 impl From<BalloonConfig> for BalloonDeviceConfig {
+    #[log_instrument::instrument]
     fn from(state: BalloonConfig) -> Self {
         BalloonDeviceConfig {
             amount_mib: state.amount_mib,
@@ -82,11 +83,13 @@ pub struct BalloonBuilder {
 }
 
 impl BalloonBuilder {
+    #[log_instrument::instrument]
     /// Creates an empty Balloon Store.
     pub fn new() -> Self {
         Self { inner: None }
     }
 
+    #[log_instrument::instrument]
     /// Inserts a Balloon device in the store.
     /// If an entry already exists, it will overwrite it.
     pub fn set(&mut self, cfg: BalloonDeviceConfig) -> Result<(), BalloonConfigError> {
@@ -102,16 +105,19 @@ impl BalloonBuilder {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Inserts an existing balloon device.
     pub fn set_device(&mut self, balloon: MutexBalloon) {
         self.inner = Some(balloon);
     }
 
+    #[log_instrument::instrument]
     /// Provides a reference to the Balloon if present.
     pub fn get(&self) -> Option<&MutexBalloon> {
         self.inner.as_ref()
     }
 
+    #[log_instrument::instrument]
     /// Returns the same structure that was used to configure the device.
     pub fn get_config(&self) -> Result<BalloonDeviceConfig, BalloonConfigError> {
         self.get()
@@ -123,6 +129,7 @@ impl BalloonBuilder {
 
 #[cfg(test)]
 impl Default for BalloonBuilder {
+    #[log_instrument::instrument]
     fn default() -> BalloonBuilder {
         let mut balloon = BalloonBuilder::new();
         assert!(balloon.set(BalloonDeviceConfig::default()).is_ok());
@@ -134,6 +141,7 @@ impl Default for BalloonBuilder {
 pub(crate) mod tests {
     use super::*;
 
+    #[log_instrument::instrument]
     pub(crate) fn default_config() -> BalloonDeviceConfig {
         BalloonDeviceConfig {
             amount_mib: 0,

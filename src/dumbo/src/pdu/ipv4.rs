@@ -63,6 +63,7 @@ pub struct IPv4Packet<'a, T: 'a> {
 
 #[allow(clippy::len_without_is_empty)]
 impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
+    #[log_instrument::instrument]
     /// Interpret `bytes` as an IPv4Packet without checking the validity of the header fields, and
     /// the length of the inner byte sequence.
     ///
@@ -77,6 +78,7 @@ impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
         }
     }
 
+    #[log_instrument::instrument]
     /// Attempts to interpret `bytes` as an IPv4 packet, checking the validity of the header fields
     /// and the length of the inner byte sequence.
     pub fn from_bytes(bytes: T, verify_checksum: bool) -> Result<Self, Error> {
@@ -118,6 +120,7 @@ impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
         Ok(packet)
     }
 
+    #[log_instrument::instrument]
     /// Returns the value of the `version` header field, and the header length.
     ///
     /// This method returns the actual length (in bytes) of the header, and not the value of the
@@ -130,6 +133,7 @@ impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
         (x >> 4, header_len)
     }
 
+    #[log_instrument::instrument]
     /// Returns the packet header length (in bytes).
     #[inline]
     pub fn header_len(&self) -> usize {
@@ -137,6 +141,7 @@ impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
         header_len
     }
 
+    #[log_instrument::instrument]
     /// Returns the values of the `dscp` and `ecn` header fields.
     #[inline]
     pub fn dscp_and_ecn(&self) -> (u8, u8) {
@@ -144,18 +149,21 @@ impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
         (x >> 2, x & 0b11)
     }
 
+    #[log_instrument::instrument]
     /// Returns the value of the 'total length' header field.
     #[inline]
     pub fn total_len(&self) -> u16 {
         self.bytes.ntohs_unchecked(TOTAL_LEN_OFFSET)
     }
 
+    #[log_instrument::instrument]
     /// Returns the value of the `identification` header field.
     #[inline]
     pub fn identification(&self) -> u16 {
         self.bytes.ntohs_unchecked(IDENTIFICATION_OFFSET)
     }
 
+    #[log_instrument::instrument]
     /// Returns the values of the `flags` and `fragment offset` header fields.
     #[inline]
     pub fn flags_and_fragment_offset(&self) -> (u8, u16) {
@@ -163,36 +171,42 @@ impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
         ((x >> 13) as u8, x & 0x1fff)
     }
 
+    #[log_instrument::instrument]
     /// Returns the value of the `ttl` header field.
     #[inline]
     pub fn ttl(&self) -> u8 {
         self.bytes[TTL_OFFSET]
     }
 
+    #[log_instrument::instrument]
     /// Returns the value of the `protocol` header field.
     #[inline]
     pub fn protocol(&self) -> u8 {
         self.bytes[PROTOCOL_OFFSET]
     }
 
+    #[log_instrument::instrument]
     /// Returns the value of the `header checksum` header field.
     #[inline]
     pub fn header_checksum(&self) -> u16 {
         self.bytes.ntohs_unchecked(HEADER_CHECKSUM_OFFSET)
     }
 
+    #[log_instrument::instrument]
     /// Returns the source IPv4 address of the packet.
     #[inline]
     pub fn source_address(&self) -> Ipv4Addr {
         Ipv4Addr::from(self.bytes.ntohl_unchecked(SOURCE_ADDRESS_OFFSET))
     }
 
+    #[log_instrument::instrument]
     /// Returns the destination IPv4 address of the packet.
     #[inline]
     pub fn destination_address(&self) -> Ipv4Addr {
         Ipv4Addr::from(self.bytes.ntohl_unchecked(DESTINATION_ADDRESS_OFFSET))
     }
 
+    #[log_instrument::instrument]
     /// Returns a byte slice containing the payload, using the given header length value to compute
     /// the payload offset.
     ///
@@ -204,12 +218,14 @@ impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
         self.bytes.split_at(header_len).1
     }
 
+    #[log_instrument::instrument]
     /// Returns a byte slice that contains the payload of the packet.
     #[inline]
     pub fn payload(&self) -> &[u8] {
         self.payload_unchecked(self.header_len())
     }
 
+    #[log_instrument::instrument]
     /// Returns the length of the inner byte sequence.
     ///
     /// This is equal to the output of the `total_len()` method for properly constructed instances
@@ -219,6 +235,7 @@ impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
         self.bytes.len()
     }
 
+    #[log_instrument::instrument]
     /// Computes and returns the packet header checksum using the provided header length.
     ///
     /// A nice description of how this works can be found [here]. May panic for invalid values of
@@ -242,6 +259,7 @@ impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
         !(sum as u16)
     }
 
+    #[log_instrument::instrument]
     /// Computes and returns the packet header checksum.
     #[inline]
     pub fn compute_checksum(&self) -> u16 {
@@ -250,6 +268,7 @@ impl<'a, T: NetworkBytes + Debug> IPv4Packet<'a, T> {
 }
 
 impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
+    #[log_instrument::instrument]
     /// Attempts to write an IPv4 packet header to `buf`, making sure there is enough space.
     ///
     /// This method returns an incomplete packet, because the size of the payload might be unknown
@@ -280,6 +299,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         Ok(Incomplete::new(packet))
     }
 
+    #[log_instrument::instrument]
     /// Sets the values of the `version` and `ihl` header fields (the latter is computed from the
     /// value of `header_len`).
     #[inline]
@@ -290,6 +310,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self
     }
 
+    #[log_instrument::instrument]
     /// Sets the values of the `dscp` and `ecn` header fields.
     #[inline]
     pub fn set_dscp_and_ecn(&mut self, dscp: u8, ecn: u8) -> &mut Self {
@@ -297,6 +318,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self
     }
 
+    #[log_instrument::instrument]
     /// Sets the value of the `total length` header field.
     #[inline]
     pub fn set_total_len(&mut self, value: u16) -> &mut Self {
@@ -304,6 +326,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self
     }
 
+    #[log_instrument::instrument]
     /// Sets the value of the `identification` header field.
     #[inline]
     pub fn set_identification(&mut self, value: u16) -> &mut Self {
@@ -311,6 +334,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self
     }
 
+    #[log_instrument::instrument]
     /// Sets the values of the `flags` and `fragment offset` header fields.
     #[inline]
     pub fn set_flags_and_fragment_offset(&mut self, flags: u8, fragment_offset: u16) -> &mut Self {
@@ -320,6 +344,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self
     }
 
+    #[log_instrument::instrument]
     /// Sets the value of the `ttl` header field.
     #[inline]
     pub fn set_ttl(&mut self, value: u8) -> &mut Self {
@@ -327,6 +352,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self
     }
 
+    #[log_instrument::instrument]
     /// Sets the value of the `protocol` header field.
     #[inline]
     pub fn set_protocol(&mut self, value: u8) -> &mut Self {
@@ -334,6 +360,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self
     }
 
+    #[log_instrument::instrument]
     /// Sets the value of the `header checksum` header field.
     #[inline]
     pub fn set_header_checksum(&mut self, value: u16) -> &mut Self {
@@ -341,6 +368,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self
     }
 
+    #[log_instrument::instrument]
     /// Sets the source address of the packet.
     #[inline]
     pub fn set_source_address(&mut self, addr: Ipv4Addr) -> &mut Self {
@@ -349,6 +377,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self
     }
 
+    #[log_instrument::instrument]
     /// Sets the destination address of the packet.
     #[inline]
     pub fn set_destination_address(&mut self, addr: Ipv4Addr) -> &mut Self {
@@ -357,6 +386,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self
     }
 
+    #[log_instrument::instrument]
     /// Returns a mutable byte slice representing the payload of the packet, using the provided
     /// header length to compute the payload offset.
     ///
@@ -368,6 +398,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
         self.bytes.split_at_mut(header_len).1
     }
 
+    #[log_instrument::instrument]
     /// Returns a mutable byte slice representing the payload of the packet.
     #[inline]
     pub fn payload_mut(&mut self) -> &mut [u8] {
@@ -384,6 +415,7 @@ impl<'a, T: NetworkBytesMut + Debug> IPv4Packet<'a, T> {
 /// shrinking the inner byte sequence to be as large as the packet itself (this includes setting
 /// the `total length` header field).
 impl<'a, T: NetworkBytesMut + Debug> Incomplete<IPv4Packet<'a, T>> {
+    #[log_instrument::instrument]
     /// Transforms `self` into an `IPv4Packet` based on the supplied header and payload length. May
     /// panic for invalid values of the input parameters.
     ///
@@ -418,6 +450,7 @@ impl<'a, T: NetworkBytesMut + Debug> Incomplete<IPv4Packet<'a, T>> {
         self.inner
     }
 
+    #[log_instrument::instrument]
     /// Transforms `self` into an `IPv4Packet` based on the supplied options and payload length.
     ///
     /// # Panics
@@ -435,6 +468,7 @@ impl<'a, T: NetworkBytesMut + Debug> Incomplete<IPv4Packet<'a, T>> {
         self.with_header_and_payload_len_unchecked(header_len, payload_len, compute_checksum)
     }
 
+    #[log_instrument::instrument]
     /// Transforms `self` into an `IPv4Packet` based on the supplied payload length. May panic for
     /// invalid values of the input parameters.
     ///
@@ -452,6 +486,7 @@ impl<'a, T: NetworkBytesMut + Debug> Incomplete<IPv4Packet<'a, T>> {
     }
 }
 
+#[log_instrument::instrument]
 /// This function checks if `buf` may hold an IPv4Packet heading towards the given address. Cannot
 /// produce false negatives.
 #[inline]
@@ -567,6 +602,7 @@ mod tests {
 
         // Using a helper function here instead of a closure because it's hard (impossible?) to
         // specify lifetime bounds for closure arguments.
+        #[log_instrument::instrument]
         fn p(buf: &mut [u8]) -> IPv4Packet<&mut [u8]> {
             IPv4Packet::from_bytes_unchecked(buf)
         }

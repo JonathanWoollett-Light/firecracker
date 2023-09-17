@@ -64,6 +64,7 @@ pub enum CpuTemplateType {
 }
 
 impl From<&Option<CpuTemplateType>> for StaticCpuTemplate {
+    #[log_instrument::instrument]
     fn from(value: &Option<CpuTemplateType>) -> Self {
         match value {
             Some(CpuTemplateType::Static(template)) => *template,
@@ -75,6 +76,7 @@ impl From<&Option<CpuTemplateType>> for StaticCpuTemplate {
 impl<'a> TryFrom<&'a [u8]> for CustomCpuTemplate {
     type Error = serde_json::Error;
 
+    #[log_instrument::instrument]
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
         let template: CustomCpuTemplate = serde_json::from_slice(value)?;
         template.validate()?;
@@ -85,6 +87,7 @@ impl<'a> TryFrom<&'a [u8]> for CustomCpuTemplate {
 impl TryFrom<&str> for CustomCpuTemplate {
     type Error = serde_json::Error;
 
+    #[log_instrument::instrument]
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         CustomCpuTemplate::try_from(value.as_bytes())
     }
@@ -102,6 +105,7 @@ pub enum KvmCapability {
 }
 
 impl Serialize for KvmCapability {
+    #[log_instrument::instrument]
     /// Serialize KvmCapability into a string.
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -116,6 +120,7 @@ impl Serialize for KvmCapability {
 }
 
 impl<'de> Deserialize<'de> for KvmCapability {
+    #[log_instrument::instrument]
     /// Deserialize string into a KvmCapability.
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -159,6 +164,7 @@ impl<V> RegisterValueFilter<V>
 where
     V: Numeric + Debug,
 {
+    #[log_instrument::instrument]
     /// Applies filter to the value
     #[inline]
     pub fn apply(&self, value: V) -> V {
@@ -170,6 +176,7 @@ impl<V> Serialize for RegisterValueFilter<V>
 where
     V: Numeric + Debug,
 {
+    #[log_instrument::instrument]
     /// Serialize combination of value and filter into a single tri state string
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -201,6 +208,7 @@ impl<'de, V> Deserialize<'de> for RegisterValueFilter<V>
 where
     V: Numeric + Debug,
 {
+    #[log_instrument::instrument]
     /// Deserialize a composite bitmap string into a value pair
     /// input string: "010x"
     /// result: {

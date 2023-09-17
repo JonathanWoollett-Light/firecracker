@@ -109,6 +109,7 @@ pub const TEST_INVALID_TEMPLATE_JSON: &str = r#"{
     ]
 }"#;
 
+#[log_instrument::instrument]
 /// Builds a sample custom CPU template
 pub fn build_test_template() -> CustomCpuTemplate {
     CustomCpuTemplate {

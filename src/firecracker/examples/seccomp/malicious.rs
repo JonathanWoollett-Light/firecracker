@@ -1,5 +1,6 @@
 // Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+#[log_instrument::instrument]
 fn main() {
     unsafe {
         // In this example, the malicious component is outputting to standard input.

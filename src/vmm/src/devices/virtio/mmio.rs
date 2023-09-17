@@ -58,6 +58,7 @@ pub struct MmioTransport {
 }
 
 impl MmioTransport {
+    #[log_instrument::instrument]
     /// Constructs a new MMIO transport for the given virtio device.
     pub fn new(mem: GuestMemoryMmap, device: Arc<Mutex<dyn VirtioDevice>>) -> MmioTransport {
         let interrupt_status = device.lock().expect("Poisoned lock").interrupt_status();
@@ -74,20 +75,24 @@ impl MmioTransport {
         }
     }
 
+    #[log_instrument::instrument]
     /// Gets the encapsulated locked VirtioDevice.
     pub fn locked_device(&self) -> MutexGuard<dyn VirtioDevice + 'static> {
         self.device.lock().expect("Poisoned lock")
     }
 
+    #[log_instrument::instrument]
     /// Gets the encapsulated VirtioDevice.
     pub fn device(&self) -> Arc<Mutex<dyn VirtioDevice>> {
         self.device.clone()
     }
 
+    #[log_instrument::instrument]
     fn check_device_status(&self, set: u32, clr: u32) -> bool {
         self.device_status & (set | clr) == set
     }
 
+    #[log_instrument::instrument]
     fn are_queues_valid(&self) -> bool {
         self.locked_device()
             .queues()
@@ -95,6 +100,7 @@ impl MmioTransport {
             .all(|q| q.is_valid(&self.mem))
     }
 
+    #[log_instrument::instrument]
     fn with_queue<U, F>(&self, d: U, f: F) -> U
     where
         F: FnOnce(&Queue) -> U,
@@ -110,6 +116,7 @@ impl MmioTransport {
         }
     }
 
+    #[log_instrument::instrument]
     fn with_queue_mut<F: FnOnce(&mut Queue)>(&mut self, f: F) -> bool {
         if let Some(queue) = self
             .locked_device()
@@ -123,6 +130,7 @@ impl MmioTransport {
         }
     }
 
+    #[log_instrument::instrument]
     fn update_queue_field<F: FnOnce(&mut Queue)>(&mut self, f: F) {
         if self.check_device_status(
             device_status::FEATURES_OK,
@@ -137,6 +145,7 @@ impl MmioTransport {
         }
     }
 
+    #[log_instrument::instrument]
     fn reset(&mut self) {
         if self.locked_device().is_activated() {
             warn!("reset device while it's still in active state");
@@ -154,6 +163,7 @@ impl MmioTransport {
         }
     }
 
+    #[log_instrument::instrument]
     /// Update device status according to the state machine defined by VirtIO Spec 1.0.
     /// Please refer to VirtIO Spec 1.0, section 2.1.1 and 3.1.1.
     ///
@@ -218,6 +228,7 @@ impl MmioTransport {
 }
 
 impl MmioTransport {
+    #[log_instrument::instrument]
     pub fn bus_read(&mut self, offset: u64, data: &mut [u8]) {
         match offset {
             0x00..=0xff if data.len() == 4 => {
@@ -258,11 +269,14 @@ impl MmioTransport {
         };
     }
 
+    #[log_instrument::instrument]
     pub fn bus_write(&mut self, offset: u64, data: &[u8]) {
+        #[log_instrument::instrument]
         fn hi(v: &mut GuestAddress, x: u32) {
             *v = (*v & 0xffff_ffff) | (u64::from(x) << 32)
         }
 
+        #[log_instrument::instrument]
         fn lo(v: &mut GuestAddress, x: u32) {
             *v = (*v & !0xffff_ffff) | u64::from(x)
         }
@@ -347,6 +361,7 @@ pub(crate) mod tests {
     }
 
     impl DummyDevice {
+        #[log_instrument::instrument]
         pub(crate) fn new() -> Self {
             DummyDevice {
                 acked_features: 0,
@@ -363,68 +378,83 @@ pub(crate) mod tests {
             }
         }
 
+        #[log_instrument::instrument]
         fn set_avail_features(&mut self, avail_features: u64) {
             self.avail_features = avail_features;
         }
     }
 
     impl VirtioDevice for DummyDevice {
+        #[log_instrument::instrument]
         fn avail_features(&self) -> u64 {
             self.avail_features
         }
 
+        #[log_instrument::instrument]
         fn acked_features(&self) -> u64 {
             self.acked_features
         }
 
+        #[log_instrument::instrument]
         fn set_acked_features(&mut self, acked_features: u64) {
             self.acked_features = acked_features;
         }
 
+        #[log_instrument::instrument]
         fn device_type(&self) -> u32 {
             123
         }
 
+        #[log_instrument::instrument]
         fn queues(&self) -> &[Queue] {
             &self.queues
         }
 
+        #[log_instrument::instrument]
         fn queues_mut(&mut self) -> &mut [Queue] {
             &mut self.queues
         }
 
+        #[log_instrument::instrument]
         fn queue_events(&self) -> &[EventFd] {
             &self.queue_evts
         }
 
+        #[log_instrument::instrument]
         fn interrupt_evt(&self) -> &EventFd {
             &self.interrupt_evt
         }
 
+        #[log_instrument::instrument]
         fn interrupt_status(&self) -> Arc<AtomicUsize> {
             self.interrupt_status.clone()
         }
 
+        #[log_instrument::instrument]
         fn read_config(&self, offset: u64, data: &mut [u8]) {
             data.copy_from_slice(&self.config_bytes[offset as usize..]);
         }
 
+        #[log_instrument::instrument]
         fn write_config(&mut self, offset: u64, data: &[u8]) {
             for (i, item) in data.iter().enumerate() {
                 self.config_bytes[offset as usize + i] = *item;
             }
         }
 
+        #[log_instrument::instrument]
         fn activate(&mut self, _: GuestMemoryMmap) -> Result<(), ActivateError> {
             self.device_activated = true;
             Ok(())
         }
 
+        #[log_instrument::instrument]
         fn is_activated(&self) -> bool {
             self.device_activated
         }
     }
 
+    #[log_instrument::instrument]
     fn set_device_status(d: &mut MmioTransport, status: u32) {
         let mut buf = vec![0; 4];
         write_le_u32(&mut buf[..], status);
@@ -795,6 +825,7 @@ pub(crate) mod tests {
         assert_eq!(read_le_u32(&buf[..]), 1);
     }
 
+    #[log_instrument::instrument]
     fn activate_device(d: &mut MmioTransport) {
         set_device_status(d, device_status::ACKNOWLEDGE);
         set_device_status(d, device_status::ACKNOWLEDGE | device_status::DRIVER);

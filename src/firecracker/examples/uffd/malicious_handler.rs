@@ -10,6 +10,7 @@ use std::os::unix::io::AsRawFd;
 
 use uffd_utils::create_pf_handler;
 
+#[log_instrument::instrument]
 fn main() {
     let uffd_handler = create_pf_handler();
 

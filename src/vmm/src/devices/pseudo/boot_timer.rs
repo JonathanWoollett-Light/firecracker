@@ -12,6 +12,7 @@ pub struct BootTimer {
 }
 
 impl BootTimer {
+    #[log_instrument::instrument]
     pub fn bus_write(&mut self, offset: u64, data: &[u8]) {
         // Only handle byte length instructions at a zero offset.
         if data.len() != 1 || offset != 0 {
@@ -32,10 +33,12 @@ impl BootTimer {
             );
         }
     }
+    #[log_instrument::instrument]
     pub fn bus_read(&mut self, _offset: u64, _data: &[u8]) {}
 }
 
 impl BootTimer {
+    #[log_instrument::instrument]
     /// Create a device at a certain point in time.
     pub fn new(start_ts: TimestampUs) -> BootTimer {
         BootTimer { start_ts }

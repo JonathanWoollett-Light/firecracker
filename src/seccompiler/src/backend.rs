@@ -84,6 +84,7 @@ const SECCOMP_DATA_ARG_SIZE: u8 = 8;
 pub struct Comment;
 
 impl<'de> Deserialize<'de> for Comment {
+    #[log_instrument::instrument]
     fn deserialize<D>(_deserializer: D) -> std::result::Result<Comment, D::Error>
     where
         D: Deserializer<'de>,
@@ -127,6 +128,7 @@ pub enum TargetArchError {
 }
 
 impl TargetArch {
+    #[log_instrument::instrument]
     /// Get the arch audit value.
     fn get_audit_value(self) -> u32 {
         match self {
@@ -135,6 +137,7 @@ impl TargetArch {
         }
     }
 
+    #[log_instrument::instrument]
     /// Get the string representation.
     fn to_string(self) -> &'static str {
         match self {
@@ -146,6 +149,7 @@ impl TargetArch {
 
 impl TryInto<TargetArch> for &str {
     type Error = TargetArchError;
+    #[log_instrument::instrument]
     fn try_into(self) -> std::result::Result<TargetArch, TargetArchError> {
         match self.to_lowercase().as_str() {
             "x86_64" => Ok(TargetArch::x86_64),
@@ -156,6 +160,7 @@ impl TryInto<TargetArch> for &str {
 }
 
 impl From<TargetArch> for &str {
+    #[log_instrument::instrument]
     fn from(target_arch: TargetArch) -> Self {
         target_arch.to_string()
     }
@@ -259,6 +264,7 @@ pub struct SeccompFilter {
 }
 
 impl SeccompCondition {
+    #[log_instrument::instrument]
     /// Validates the SeccompCondition data
     pub fn validate(&self) -> Result<(), FilterError> {
         // Checks that the given argument number is valid.
@@ -269,6 +275,7 @@ impl SeccompCondition {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Splits the [`SeccompCondition`] into 32 bit chunks and offsets.
     ///
     /// Returns most significant half, least significant half of the `value` field of
@@ -292,6 +299,7 @@ impl SeccompCondition {
         (msb, lsb, msb_offset, lsb_offset)
     }
 
+    #[log_instrument::instrument]
     /// Translates the `eq` (equal) condition into BPF statements.
     ///
     /// # Arguments
@@ -324,6 +332,7 @@ impl SeccompCondition {
         bpf
     }
 
+    #[log_instrument::instrument]
     /// Translates the `ge` (greater than or equal) condition into BPF statements.
     ///
     /// # Arguments
@@ -348,6 +357,7 @@ impl SeccompCondition {
         bpf
     }
 
+    #[log_instrument::instrument]
     /// Translates the `gt` (greater than) condition into BPF statements.
     ///
     /// # Arguments
@@ -372,6 +382,7 @@ impl SeccompCondition {
         bpf
     }
 
+    #[log_instrument::instrument]
     /// Translates the `le` (less than or equal) condition into BPF statements.
     ///
     /// # Arguments
@@ -396,6 +407,7 @@ impl SeccompCondition {
         bpf
     }
 
+    #[log_instrument::instrument]
     /// Translates the `lt` (less than) condition into BPF statements.
     ///
     /// # Arguments
@@ -420,6 +432,7 @@ impl SeccompCondition {
         bpf
     }
 
+    #[log_instrument::instrument]
     /// Translates the `masked_eq` (masked equal) condition into BPF statements.
     ///
     /// The `masked_eq` condition is `true` if the result of logical `AND` between the given value
@@ -451,6 +464,7 @@ impl SeccompCondition {
         bpf
     }
 
+    #[log_instrument::instrument]
     /// Translates the `ne` (not equal) condition into BPF statements.
     ///
     /// # Arguments
@@ -474,6 +488,7 @@ impl SeccompCondition {
         bpf
     }
 
+    #[log_instrument::instrument]
     /// Translates the [`SeccompCondition`] into BPF statements.
     ///
     /// # Arguments
@@ -500,6 +515,7 @@ impl SeccompCondition {
 }
 
 impl From<SeccompAction> for u32 {
+    #[log_instrument::instrument]
     /// Return codes of the BPF program for each action.
     ///
     /// # Arguments
@@ -521,6 +537,7 @@ impl From<SeccompAction> for u32 {
 }
 
 impl SeccompRule {
+    #[log_instrument::instrument]
     /// Creates a new rule. Rules with 0 conditions always match.
     ///
     /// # Arguments
@@ -534,6 +551,7 @@ impl SeccompRule {
         Self { conditions, action }
     }
 
+    #[log_instrument::instrument]
     /// Appends a condition of the rule to an accumulator.
     ///
     /// The length of the rule and offset to the next rule are updated.
@@ -582,6 +600,7 @@ impl SeccompRule {
 }
 
 impl From<SeccompRule> for BpfProgram {
+    #[log_instrument::instrument]
     /// Translates a rule into BPF statements.
     ///
     /// Each rule starts with 2 jump statements:
@@ -623,6 +642,7 @@ impl From<SeccompRule> for BpfProgram {
 }
 
 impl SeccompFilter {
+    #[log_instrument::instrument]
     /// Creates a new filter with a set of rules and a default action.
     ///
     /// # Arguments
@@ -646,6 +666,7 @@ impl SeccompFilter {
         Ok(instance)
     }
 
+    #[log_instrument::instrument]
     /// Performs semantic checks on the SeccompFilter.
     fn validate(&self) -> Result<(), FilterError> {
         for (syscall_number, syscall_rules) in self.rules.iter() {
@@ -680,6 +701,7 @@ impl SeccompFilter {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Appends a chain of rules to an accumulator, updating the length of the filter.
     ///
     /// # Arguments
@@ -735,6 +757,7 @@ impl SeccompFilter {
 
 impl TryInto<BpfProgram> for SeccompFilter {
     type Error = FilterError;
+    #[log_instrument::instrument]
     fn try_into(self) -> Result<BpfProgram, FilterError> {
         // Initialize the result with the precursory architecture check.
         let mut result = VALIDATE_ARCHITECTURE(self.target_arch);
@@ -789,6 +812,7 @@ impl TryInto<BpfProgram> for SeccompFilter {
     }
 }
 
+#[log_instrument::instrument]
 /// Builds a `jump` BPF instruction.
 ///
 /// # Arguments
@@ -803,6 +827,7 @@ fn BPF_JUMP(code: u16, k: u32, jt: u8, jf: u8) -> sock_filter {
     sock_filter { code, jt, jf, k }
 }
 
+#[log_instrument::instrument]
 /// Builds a "statement" BPF instruction.
 ///
 /// # Arguments
@@ -820,6 +845,7 @@ fn BPF_STMT(code: u16, k: u32) -> sock_filter {
     }
 }
 
+#[log_instrument::instrument]
 /// Builds a sequence of BPF instructions that validate the underlying architecture.
 #[allow(non_snake_case)]
 #[inline(always)]
@@ -832,6 +858,7 @@ fn VALIDATE_ARCHITECTURE(target_arch: TargetArch) -> Vec<sock_filter> {
     ]
 }
 
+#[log_instrument::instrument]
 /// Builds a sequence of BPF instructions that are followed by syscall examination.
 #[allow(non_snake_case)]
 #[inline(always)]
@@ -860,12 +887,14 @@ mod tests {
     }
 
     // Builds the (syscall, rules) tuple for allowing a syscall with certain arguments.
+    #[log_instrument::instrument]
     fn allow_syscall_if(syscall_number: i64, rules: Vec<SeccompRule>) -> (i64, Vec<SeccompRule>) {
         (syscall_number, rules)
     }
 
     impl SeccompCondition {
         // Creates a new `SeccompCondition`.
+        #[log_instrument::instrument]
         pub fn new(
             arg_number: u8,
             arg_len: SeccompCmpArgLen,
@@ -907,6 +936,7 @@ mod tests {
         libc::SYS_futex,
     ];
 
+    #[log_instrument::instrument]
     fn install_filter(bpf_filter: BpfProgram) {
         unsafe {
             {
@@ -929,6 +959,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn validate_seccomp_filter(
         rules: Vec<(i64, Vec<SeccompRule>)>,
         validation_fn: fn(),
@@ -1464,6 +1495,7 @@ mod tests {
         assert_eq!(bpfprog, instructions);
     }
 
+    #[log_instrument::instrument]
     fn create_test_bpf_filter(arg_len: ArgLen) -> SeccompFilter {
         SeccompFilter::new(
             vec![

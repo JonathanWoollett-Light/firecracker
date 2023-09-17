@@ -141,11 +141,13 @@ pub enum StartMicrovmError {
 /// It's convenient to automatically convert `linux_loader::cmdline::Error`s
 /// to `StartMicrovmError`s.
 impl std::convert::From<linux_loader::cmdline::Error> for StartMicrovmError {
+    #[log_instrument::instrument]
     fn from(err: linux_loader::cmdline::Error) -> StartMicrovmError {
         StartMicrovmError::KernelCmdline(err.to_string())
     }
 }
 
+#[log_instrument::instrument]
 #[cfg_attr(target_arch = "aarch64", allow(unused))]
 fn create_vmm_and_vcpus(
     instance_info: &InstanceInfo,
@@ -240,6 +242,7 @@ fn create_vmm_and_vcpus(
     Ok((vmm, vcpus))
 }
 
+#[log_instrument::instrument]
 /// Builds and starts a microVM based on the current Firecracker VmResources configuration.
 ///
 /// The built microVM and all the created vCPUs start off in the paused state.
@@ -354,6 +357,7 @@ pub fn build_microvm_for_boot(
     Ok(vmm)
 }
 
+#[log_instrument::instrument]
 /// Builds and boots a microVM based on the current Firecracker VmResources configuration.
 ///
 /// This is the default build recipe, one could build other microVM flavors by using the
@@ -415,6 +419,7 @@ pub enum BuildMicrovmFromSnapshotError {
     SeccompFiltersInternal(#[from] seccompiler::InstallationError),
 }
 
+#[log_instrument::instrument]
 /// Builds and starts a microVM based on the provided MicrovmState.
 ///
 /// An `Arc` reference of the built `Vmm` is also plugged in the `EventManager`, while another
@@ -536,6 +541,7 @@ pub fn build_microvm_from_snapshot(
     Ok(vmm)
 }
 
+#[log_instrument::instrument]
 /// Creates GuestMemory of `mem_size_mib` MiB in size.
 pub fn create_guest_memory(
     mem_size_mib: usize,
@@ -554,6 +560,7 @@ pub fn create_guest_memory(
     .map_err(StartMicrovmError::GuestMemoryMmap)
 }
 
+#[log_instrument::instrument]
 fn load_kernel(
     boot_config: &BootConfig,
     guest_memory: &GuestMemoryMmap,
@@ -584,6 +591,7 @@ fn load_kernel(
     Ok(entry_addr.kernel_load)
 }
 
+#[log_instrument::instrument]
 fn load_initrd_from_config(
     boot_cfg: &BootConfig,
     vm_memory: &GuestMemoryMmap,
@@ -599,6 +607,7 @@ fn load_initrd_from_config(
     })
 }
 
+#[log_instrument::instrument]
 /// Loads the initrd from a file into the given memory slice.
 ///
 /// * `vm_memory` - The guest memory the initrd is written to.
@@ -647,6 +656,7 @@ where
     })
 }
 
+#[log_instrument::instrument]
 /// Sets up the irqchip for a x86_64 microVM.
 #[cfg(target_arch = "x86_64")]
 pub fn setup_interrupt_controller(vm: &mut Vm) -> Result<(), StartMicrovmError> {
@@ -655,6 +665,7 @@ pub fn setup_interrupt_controller(vm: &mut Vm) -> Result<(), StartMicrovmError> 
         .map_err(StartMicrovmError::Internal)
 }
 
+#[log_instrument::instrument]
 /// Sets up the irqchip for a aarch64 microVM.
 #[cfg(target_arch = "aarch64")]
 pub fn setup_interrupt_controller(vm: &mut Vm, vcpu_count: u8) -> Result<(), StartMicrovmError> {
@@ -663,6 +674,7 @@ pub fn setup_interrupt_controller(vm: &mut Vm, vcpu_count: u8) -> Result<(), Sta
         .map_err(StartMicrovmError::Internal)
 }
 
+#[log_instrument::instrument]
 /// Sets up the serial device.
 pub fn setup_serial_device(
     event_manager: &mut EventManager,
@@ -686,6 +698,7 @@ pub fn setup_serial_device(
     Ok(serial)
 }
 
+#[log_instrument::instrument]
 #[cfg(target_arch = "aarch64")]
 fn attach_legacy_devices_aarch64(
     event_manager: &mut EventManager,
@@ -718,6 +731,7 @@ fn attach_legacy_devices_aarch64(
         .map_err(VmmError::RegisterMMIODevice)
 }
 
+#[log_instrument::instrument]
 fn create_vcpus(vm: &Vm, vcpu_count: u8, exit_evt: &EventFd) -> Result<Vec<Vcpu>, VmmError> {
     let mut vcpus = Vec::with_capacity(vcpu_count as usize);
     for cpu_idx in 0..vcpu_count {
@@ -728,6 +742,7 @@ fn create_vcpus(vm: &Vm, vcpu_count: u8, exit_evt: &EventFd) -> Result<Vec<Vcpu>
     Ok(vcpus)
 }
 
+#[log_instrument::instrument]
 /// Configures the system for booting Linux.
 #[cfg_attr(target_arch = "aarch64", allow(unused))]
 pub fn configure_system_for_boot(
@@ -833,6 +848,7 @@ pub fn configure_system_for_boot(
     Ok(())
 }
 
+#[log_instrument::instrument]
 /// Attaches a VirtioDevice device to the device manager and event manager.
 fn attach_virtio_device<T: 'static + VirtioDevice + MutEventSubscriber + Debug>(
     event_manager: &mut EventManager,
@@ -853,6 +869,7 @@ fn attach_virtio_device<T: 'static + VirtioDevice + MutEventSubscriber + Debug>(
         .map(|_| ())
 }
 
+#[log_instrument::instrument]
 pub(crate) fn attach_boot_timer_device(
     vmm: &mut Vmm,
     request_ts: TimestampUs,
@@ -868,6 +885,7 @@ pub(crate) fn attach_boot_timer_device(
     Ok(())
 }
 
+#[log_instrument::instrument]
 fn attach_entropy_device(
     vmm: &mut Vmm,
     cmdline: &mut LoaderKernelCmdline,
@@ -883,6 +901,7 @@ fn attach_entropy_device(
     attach_virtio_device(event_manager, vmm, id, entropy_device.clone(), cmdline)
 }
 
+#[log_instrument::instrument]
 fn attach_block_devices<'a, I: Iterator<Item = &'a Arc<Mutex<Block>>> + Debug>(
     vmm: &mut Vmm,
     cmdline: &mut LoaderKernelCmdline,
@@ -911,6 +930,7 @@ fn attach_block_devices<'a, I: Iterator<Item = &'a Arc<Mutex<Block>>> + Debug>(
     Ok(())
 }
 
+#[log_instrument::instrument]
 fn attach_net_devices<'a, I: Iterator<Item = &'a Arc<Mutex<Net>>> + Debug>(
     vmm: &mut Vmm,
     cmdline: &mut LoaderKernelCmdline,
@@ -925,6 +945,7 @@ fn attach_net_devices<'a, I: Iterator<Item = &'a Arc<Mutex<Net>>> + Debug>(
     Ok(())
 }
 
+#[log_instrument::instrument]
 fn attach_unixsock_vsock_device(
     vmm: &mut Vmm,
     cmdline: &mut LoaderKernelCmdline,
@@ -936,6 +957,7 @@ fn attach_unixsock_vsock_device(
     attach_virtio_device(event_manager, vmm, id, unix_vsock.clone(), cmdline)
 }
 
+#[log_instrument::instrument]
 fn attach_balloon_device(
     vmm: &mut Vmm,
     cmdline: &mut LoaderKernelCmdline,
@@ -948,6 +970,7 @@ fn attach_balloon_device(
 }
 
 // Adds `O_NONBLOCK` to the stdout flags.
+#[log_instrument::instrument]
 pub(crate) fn set_stdout_nonblocking() {
     // SAFETY: Call is safe since parameters are valid.
     let flags = unsafe { libc::fcntl(libc::STDOUT_FILENO, libc::F_GETFL, 0) };
@@ -994,6 +1017,7 @@ pub mod tests {
     }
 
     impl CustomBlockConfig {
+        #[log_instrument::instrument]
         pub(crate) fn new(
             drive_id: String,
             is_root_device: bool,
@@ -1011,6 +1035,7 @@ pub mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn default_mmio_device_manager() -> MMIODeviceManager {
         MMIODeviceManager::new(
             crate::arch::MMIO_MEM_START,
@@ -1020,6 +1045,7 @@ pub mod tests {
         .unwrap()
     }
 
+    #[log_instrument::instrument]
     fn cmdline_contains(cmdline: &Cmdline, slug: &str) -> bool {
         // The following unwraps can never fail; the only way any of these methods
         // would return an `Err` is if one of the following conditions is met:
@@ -1038,6 +1064,7 @@ pub mod tests {
             .contains(slug)
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn default_kernel_cmdline() -> Cmdline {
         linux_loader::cmdline::Cmdline::try_from(
             DEFAULT_KERNEL_CMDLINE,
@@ -1046,6 +1073,7 @@ pub mod tests {
         .unwrap()
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn default_vmm() -> Vmm {
         let guest_memory = create_guest_memory(128, false).unwrap();
 
@@ -1098,6 +1126,7 @@ pub mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn insert_block_devices(
         vmm: &mut Vmm,
         cmdline: &mut Cmdline,
@@ -1131,6 +1160,7 @@ pub mod tests {
         block_files
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn insert_net_device(
         vmm: &mut Vmm,
         cmdline: &mut Cmdline,
@@ -1144,6 +1174,7 @@ pub mod tests {
         assert!(res.is_ok());
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn insert_net_device_with_mmds(
         vmm: &mut Vmm,
         cmdline: &mut Cmdline,
@@ -1164,6 +1195,7 @@ pub mod tests {
         attach_net_devices(vmm, cmdline, net_builder.iter(), event_manager).unwrap();
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn insert_vsock_device(
         vmm: &mut Vmm,
         cmdline: &mut Cmdline,
@@ -1182,6 +1214,7 @@ pub mod tests {
             .is_some());
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn insert_entropy_device(
         vmm: &mut Vmm,
         cmdline: &mut Cmdline,
@@ -1199,6 +1232,7 @@ pub mod tests {
             .is_some());
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn insert_balloon_device(
         vmm: &mut Vmm,
         cmdline: &mut Cmdline,
@@ -1217,20 +1251,24 @@ pub mod tests {
             .is_some());
     }
 
+    #[log_instrument::instrument]
     fn make_test_bin() -> Vec<u8> {
         let mut fake_bin = Vec::new();
         fake_bin.resize(1_000_000, 0xAA);
         fake_bin
     }
 
+    #[log_instrument::instrument]
     fn create_guest_mem_at(at: GuestAddress, size: usize) -> GuestMemoryMmap {
         utils::vm_memory::test_utils::create_guest_memory_unguarded(&[(at, size)], false).unwrap()
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn create_guest_mem_with_size(size: usize) -> GuestMemoryMmap {
         create_guest_mem_at(GuestAddress(0x0), size)
     }
 
+    #[log_instrument::instrument]
     fn is_dirty_tracking_enabled(mem: &GuestMemoryMmap) -> bool {
         mem.iter().all(|r| r.bitmap().is_some())
     }

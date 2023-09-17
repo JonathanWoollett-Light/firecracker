@@ -10,12 +10,14 @@ use std::os::unix::io::{AsRawFd, RawFd};
 pub struct MockSerialInput(pub File);
 
 impl io::Read for MockSerialInput {
+    #[log_instrument::instrument]
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.0.read(buf)
     }
 }
 
 impl AsRawFd for MockSerialInput {
+    #[log_instrument::instrument]
     fn as_raw_fd(&self) -> RawFd {
         self.0.as_raw_fd()
     }

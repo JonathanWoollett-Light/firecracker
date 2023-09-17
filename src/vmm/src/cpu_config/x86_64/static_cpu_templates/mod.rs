@@ -45,6 +45,7 @@ pub enum StaticCpuTemplate {
 }
 
 impl StaticCpuTemplate {
+    #[log_instrument::instrument]
     /// Check if no template specified
     pub fn is_none(&self) -> bool {
         self == &StaticCpuTemplate::None

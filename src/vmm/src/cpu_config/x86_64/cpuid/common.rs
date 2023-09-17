@@ -11,6 +11,7 @@ pub enum GetCpuidError {
     InvalidSubleaf(u32),
 }
 
+#[log_instrument::instrument]
 /// Extract entry from the cpuid.
 ///
 /// # Errors
@@ -34,6 +35,7 @@ pub fn get_cpuid(leaf: u32, subleaf: u32) -> Result<std::arch::x86_64::CpuidResu
     Ok(entry)
 }
 
+#[log_instrument::instrument]
 /// Extracts the CPU vendor id from leaf 0x0.
 ///
 /// # Errors
@@ -52,6 +54,7 @@ pub fn get_vendor_id_from_host() -> Result<[u8; 12], GetCpuidError> {
     })
 }
 
+#[log_instrument::instrument]
 /// Returns MSRs to be saved based on CPUID features that are enabled.
 pub(crate) fn msrs_to_save_by_cpuid(cpuid: &kvm_bindings::CpuId) -> std::collections::HashSet<u32> {
     /// Memory Protection Extensions

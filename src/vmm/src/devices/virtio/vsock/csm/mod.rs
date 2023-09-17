@@ -70,6 +70,7 @@ enum PendingRx {
     CreditUpdate = 4,
 }
 impl PendingRx {
+    #[log_instrument::instrument]
     /// Transform the enum value into a bitmask, that can be used for set operations.
     fn into_mask(self) -> u16 {
         1u16 << (self as u16)
@@ -83,11 +84,13 @@ struct PendingRxSet {
 }
 
 impl PendingRxSet {
+    #[log_instrument::instrument]
     /// Insert an item into the set.
     fn insert(&mut self, it: PendingRx) {
         self.data |= it.into_mask();
     }
 
+    #[log_instrument::instrument]
     /// Remove an item from the set and return:
     /// - true, if the item was in the set; or
     /// - false, if the item wasn't in the set.
@@ -97,11 +100,13 @@ impl PendingRxSet {
         ret
     }
 
+    #[log_instrument::instrument]
     /// Check if an item is present in this set.
     fn contains(&self, it: PendingRx) -> bool {
         self.data & it.into_mask() != 0
     }
 
+    #[log_instrument::instrument]
     /// Check if the set is empty.
     fn is_empty(&self) -> bool {
         self.data == 0
@@ -110,6 +115,7 @@ impl PendingRxSet {
 
 /// Create a set containing only one item.
 impl From<PendingRx> for PendingRxSet {
+    #[log_instrument::instrument]
     fn from(it: PendingRx) -> Self {
         Self {
             data: it.into_mask(),

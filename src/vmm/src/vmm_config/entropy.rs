@@ -19,6 +19,7 @@ pub struct EntropyDeviceConfig {
 }
 
 impl From<&Entropy> for EntropyDeviceConfig {
+    #[log_instrument::instrument]
     fn from(dev: &Entropy) -> Self {
         let rate_limiter: RateLimiterConfig = dev.rate_limiter().into();
         EntropyDeviceConfig {
@@ -42,11 +43,13 @@ pub enum EntropyDeviceError {
 pub struct EntropyDeviceBuilder(Option<Arc<Mutex<Entropy>>>);
 
 impl EntropyDeviceBuilder {
+    #[log_instrument::instrument]
     /// Create a new instance for the builder
     pub fn new() -> Self {
         Self(None)
     }
 
+    #[log_instrument::instrument]
     /// Build an entropy device and return a (counted) reference to it protected by a mutex
     pub fn build(
         &mut self,
@@ -62,17 +65,20 @@ impl EntropyDeviceBuilder {
         Ok(dev)
     }
 
+    #[log_instrument::instrument]
     /// Insert a new entropy device from a configuration object
     pub fn insert(&mut self, config: EntropyDeviceConfig) -> Result<(), EntropyDeviceError> {
         let _ = self.build(config)?;
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Get a reference to the entropy device, if present
     pub fn get(&self) -> Option<&Arc<Mutex<Entropy>>> {
         self.0.as_ref()
     }
 
+    #[log_instrument::instrument]
     /// Get the configuration of the entropy device (if any)
     pub fn config(&self) -> Option<EntropyDeviceConfig> {
         self.0
@@ -80,6 +86,7 @@ impl EntropyDeviceBuilder {
             .map(|dev| EntropyDeviceConfig::from(dev.lock().unwrap().deref()))
     }
 
+    #[log_instrument::instrument]
     /// Set the entropy device from an already created object
     pub fn set_device(&mut self, device: Arc<Mutex<Entropy>>) {
         self.0 = Some(device);

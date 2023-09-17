@@ -25,15 +25,18 @@ pub struct SyncFileEngine {
 unsafe impl Send for SyncFileEngine {}
 
 impl SyncFileEngine {
+    #[log_instrument::instrument]
     pub fn from_file(file: File) -> SyncFileEngine {
         SyncFileEngine { file }
     }
 
+    #[log_instrument::instrument]
     #[cfg(test)]
     pub fn file(&self) -> &File {
         &self.file
     }
 
+    #[log_instrument::instrument]
     pub fn read(
         &mut self,
         offset: u64,
@@ -50,6 +53,7 @@ impl SyncFileEngine {
         Ok(count)
     }
 
+    #[log_instrument::instrument]
     pub fn write(
         &mut self,
         offset: u64,
@@ -66,6 +70,7 @@ impl SyncFileEngine {
         Ok(count)
     }
 
+    #[log_instrument::instrument]
     pub fn flush(&mut self) -> Result<(), SyncIoError> {
         // flush() first to force any cached data out of rust buffers.
         self.file.flush().map_err(SyncIoError::Flush)?;

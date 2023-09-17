@@ -17,6 +17,7 @@ pub enum VmState {
 }
 
 impl Display for VmState {
+    #[log_instrument::instrument]
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
             VmState::NotStarted => write!(f, "Not started"),
@@ -27,6 +28,7 @@ impl Display for VmState {
 }
 
 impl ser::Serialize for VmState {
+    #[log_instrument::instrument]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: ser::Serializer,

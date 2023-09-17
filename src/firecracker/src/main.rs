@@ -75,6 +75,7 @@ enum ResizeFdTableError {
 }
 
 impl From<MainError> for ExitCode {
+    #[log_instrument::instrument]
     fn from(value: MainError) -> Self {
         let exit_code = match value {
             MainError::ParseArguments(_) => FcExitCode::ArgParsing,
@@ -88,6 +89,7 @@ impl From<MainError> for ExitCode {
     }
 }
 
+#[log_instrument::instrument]
 fn main() -> ExitCode {
     let result = main_exec();
     if let Err(err) = result {
@@ -99,6 +101,7 @@ fn main() -> ExitCode {
     }
 }
 
+#[log_instrument::instrument]
 fn main_exec() -> Result<(), MainError> {
     // Initialize the logger.
     LOGGER.init().map_err(MainError::SetLogger)?;
@@ -433,6 +436,7 @@ fn main_exec() -> Result<(), MainError> {
     }
 }
 
+#[log_instrument::instrument]
 /// Attempts to resize the processes file descriptor table to match RLIMIT_NOFILE or 2048 if no
 /// RLIMIT_NOFILE is set (this can only happen if firecracker is run outside the jailer. 2048 is
 /// the default the jailer would set).
@@ -481,6 +485,7 @@ fn resize_fdtable() -> Result<(), ResizeFdTableError> {
     Ok(())
 }
 
+#[log_instrument::instrument]
 /// Enable SSBD mitigation through `prctl`.
 #[cfg(target_arch = "aarch64")]
 pub fn enable_ssbd_mitigation() {
@@ -518,10 +523,12 @@ pub fn enable_ssbd_mitigation() {
 }
 
 // Log a warning for any usage of deprecated parameters.
+#[log_instrument::instrument]
 #[allow(unused)]
 fn warn_deprecated_parameters() {}
 
 // Print supported snapshot data format versions.
+#[log_instrument::instrument]
 fn print_supported_snapshot_versions() {
     let mut versions: Vec<_> = FC_VERSION_TO_SNAP_VERSION
         .iter()
@@ -546,6 +553,7 @@ enum SnapshotVersionError {
 }
 
 // Print data format of provided snapshot state file.
+#[log_instrument::instrument]
 fn print_snapshot_data_format(snapshot_path: &str) -> Result<(), SnapshotVersionError> {
     let mut snapshot_reader =
         File::open(snapshot_path).map_err(SnapshotVersionError::OpenSnapshot)?;
@@ -571,6 +579,7 @@ pub enum BuildFromJsonError {
 }
 
 // Configure and start a microVM as described by the command-line JSON.
+#[log_instrument::instrument]
 fn build_microvm_from_json(
     seccomp_filters: &BpfThreadMap,
     event_manager: &mut EventManager,
@@ -605,6 +614,7 @@ enum RunWithoutApiError {
     BuildMicroVMFromJson(BuildFromJsonError),
 }
 
+#[log_instrument::instrument]
 fn run_without_api(
     seccomp_filters: &BpfThreadMap,
     config_json: Option<String>,

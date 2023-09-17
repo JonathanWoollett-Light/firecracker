@@ -111,6 +111,7 @@ enum FingerprintOperation {
     },
 }
 
+#[log_instrument::instrument]
 fn run(cli: Cli) -> Result<(), HelperError> {
     match cli.command {
         Command::Template(op) => match op {
@@ -180,6 +181,7 @@ fn run(cli: Cli) -> Result<(), HelperError> {
     Ok(())
 }
 
+#[log_instrument::instrument]
 fn main() -> Result<(), HelperError> {
     let cli = Cli::parse();
     let result = run(cli);
@@ -200,6 +202,7 @@ mod tests {
 
     use super::*;
 
+    #[log_instrument::instrument]
     pub fn generate_config(kernel_image_path: &str, rootfs_path: &str) -> String {
         format!(
             r#"{{
@@ -219,6 +222,7 @@ mod tests {
         )
     }
 
+    #[log_instrument::instrument]
     pub fn generate_config_with_template(
         kernel_image_path: &str,
         rootfs_path: &str,
@@ -243,6 +247,7 @@ mod tests {
         )
     }
 
+    #[log_instrument::instrument]
     fn generate_config_file(
         kernel_image_path: &str,
         rootfs_path: &str,
@@ -303,6 +308,7 @@ mod tests {
     }"#;
 
     // Build a sample custom CPU template.
+    #[log_instrument::instrument]
     fn generate_sample_template() -> TempFile {
         let file = TempFile::new().unwrap();
         file.as_file()
@@ -312,6 +318,7 @@ mod tests {
     }
 
     // Build a sample fingerprint file.
+    #[log_instrument::instrument]
     fn generate_sample_fingerprint() -> TempFile {
         let fingerprint = fingerprint::Fingerprint {
             firecracker_version: crate::utils::CPU_TEMPLATE_HELPER_VERSION.to_string(),

@@ -24,6 +24,7 @@ pub enum MetricsConfigError {
     InitializationFailure(String),
 }
 
+#[log_instrument::instrument]
 /// Configures the metrics as described in `metrics_cfg`.
 pub fn init_metrics(metrics_cfg: MetricsConfig) -> Result<(), MetricsConfigError> {
     let writer = FcLineWriter::new(

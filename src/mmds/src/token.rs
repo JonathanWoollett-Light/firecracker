@@ -73,6 +73,7 @@ pub struct TokenAuthority {
 // TODO When https://github.com/RustCrypto/AEADs/pull/532 is merged replace these manual
 // implementation with `#[derive(Debug)]`.
 impl fmt::Debug for TokenAuthority {
+    #[log_instrument::instrument]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("TokenAuthority")
             .field("num_encrypted_tokens", &self.num_encrypted_tokens)
@@ -83,6 +84,7 @@ impl fmt::Debug for TokenAuthority {
 }
 
 impl TokenAuthority {
+    #[log_instrument::instrument]
     /// Create a new token authority entity.
     pub fn new() -> Result<TokenAuthority, Error> {
         let mut file = File::open(Path::new(RANDOMNESS_POOL))?;
@@ -95,12 +97,14 @@ impl TokenAuthority {
         })
     }
 
+    #[log_instrument::instrument]
     /// Set Additional Authenticated Data to be used for
     /// encryption and decryption of the session token.
     pub fn set_aad(&mut self, instance_id: &str) {
         self.aad = format!("microvmid={}", instance_id);
     }
 
+    #[log_instrument::instrument]
     /// Generate encoded token string using the token time to live provided.
     pub fn generate_token_secret(&mut self, ttl_seconds: u32) -> Result<String, Error> {
         // Check number of tokens encrypted under the current key. We need to
@@ -117,6 +121,7 @@ impl TokenAuthority {
         Ok(encoded_token)
     }
 
+    #[log_instrument::instrument]
     /// Create a new Token structure to encrypt.
     fn create_token(&mut self, ttl_seconds: u32) -> Result<Token, Error> {
         // Validate token time to live against bounds.
@@ -136,6 +141,7 @@ impl TokenAuthority {
         Ok(Token::new(iv, payload, tag))
     }
 
+    #[log_instrument::instrument]
     /// Encrypt expiry using AES-GCM block cipher and return payload and tag obtained.
     fn encrypt_expiry(
         &self,
@@ -161,6 +167,7 @@ impl TokenAuthority {
         Ok((expiry_as_bytes, tag_as_bytes))
     }
 
+    #[log_instrument::instrument]
     /// Attempts to decrypt expiry value within token sequence. Returns false if expiry
     /// cannot be decrypted. If decryption succeeds, returns true if token has not expired
     /// (i.e. current time is greater than expiry) and false otherwise.
@@ -186,6 +193,7 @@ impl TokenAuthority {
         expiry > get_time_ms(ClockType::Monotonic)
     }
 
+    #[log_instrument::instrument]
     /// Decrypt ciphertext composed of payload and tag to obtain the expiry value.
     fn decrypt_expiry(
         &self,
@@ -212,6 +220,7 @@ impl TokenAuthority {
         Ok(u64::from_le_bytes(expiry_as_bytes))
     }
 
+    #[log_instrument::instrument]
     /// Create a new AES-GCM cipher entity.
     fn create_cipher(entropy_pool: &mut File) -> Result<Aes256Gcm, Error> {
         // Randomly generate a 256-bit key to be used for encryption/decryption purposes.
@@ -222,6 +231,7 @@ impl TokenAuthority {
         Ok(Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key)))
     }
 
+    #[log_instrument::instrument]
     /// Make sure to reinitialize the cipher under a new key before reaching
     /// a count of 2^32 encrypted tokens under the same cipher entity.
     fn check_encryption_count(&mut self) -> Result<(), Error> {
@@ -248,11 +258,13 @@ impl TokenAuthority {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Validate the token time to live against bounds.
     fn check_ttl(ttl_seconds: u32) -> bool {
         (MIN_TOKEN_TTL_SECONDS..=MAX_TOKEN_TTL_SECONDS).contains(&ttl_seconds)
     }
 
+    #[log_instrument::instrument]
     /// Compute expiry time in seconds by adding the time to live provided
     /// to the current time measured in milliseconds.
     fn compute_expiry(ttl_as_seconds: u32) -> u64 {
@@ -279,11 +291,13 @@ struct Token {
 }
 
 impl Token {
+    #[log_instrument::instrument]
     /// Create a new token struct.
     fn new(iv: [u8; IV_LEN], payload: [u8; PAYLOAD_LEN], tag: [u8; TAG_LEN]) -> Self {
         Token { iv, payload, tag }
     }
 
+    #[log_instrument::instrument]
     /// Encode token structure into a string using base64 encoding.
     fn base64_encode(&self) -> Result<String, Error> {
         let token_bytes: Vec<u8> = bincode::serialize(self)?;
@@ -292,6 +306,7 @@ impl Token {
         Ok(base64::encode_config(token_bytes, base64::STANDARD))
     }
 
+    #[log_instrument::instrument]
     /// Decode token structure from base64 string.
     fn base64_decode(encoded_token: &str) -> Result<Self, Error> {
         let token_bytes = base64::decode_config(encoded_token, base64::STANDARD)

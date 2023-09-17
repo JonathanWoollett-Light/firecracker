@@ -154,6 +154,7 @@ pub struct Vm {
 
 /// Contains Vm functions that are usable across CPU architectures
 impl Vm {
+    #[log_instrument::instrument]
     /// Constructs a new `Vm` using the given `Kvm` instance.
     pub fn new(kvm_cap_modifiers: Vec<KvmCapability>) -> Result<Self, VmError> {
         let kvm = Kvm::new().map_err(VmError::Kvm)?;
@@ -200,6 +201,7 @@ impl Vm {
         }
     }
 
+    #[log_instrument::instrument]
     fn combine_capabilities(kvm_cap_modifiers: &[KvmCapability]) -> Vec<u32> {
         let mut total_caps = Self::DEFAULT_CAPABILITIES.to_vec();
         for modifier in kvm_cap_modifiers.iter() {
@@ -219,6 +221,7 @@ impl Vm {
         total_caps
     }
 
+    #[log_instrument::instrument]
     fn check_capabilities(kvm: &Kvm, capabilities: &[u32]) -> Result<(), u32> {
         for cap in capabilities {
             // If capability is not supported kernel will return 0.
@@ -229,6 +232,7 @@ impl Vm {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Initializes the guest memory.
     pub fn memory_init(
         &self,
@@ -247,6 +251,7 @@ impl Vm {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn set_kvm_memory_regions(
         &self,
         guest_mem: &GuestMemoryMmap,
@@ -276,6 +281,7 @@ impl Vm {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Gets a reference to the kvm file descriptor owned by this VM.
     pub fn fd(&self) -> &VmFd {
         &self.fd
@@ -294,6 +300,7 @@ impl Vm {
         kvm_bindings::KVM_CAP_ONE_REG,
     ];
 
+    #[log_instrument::instrument]
     /// Creates the GIC (Global Interrupt Controller).
     pub fn setup_irqchip(&mut self, vcpu_count: u8) -> Result<(), VmError> {
         self.irqchip_handle = Some(
@@ -303,11 +310,13 @@ impl Vm {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Gets a reference to the irqchip of the VM.
     pub fn get_irqchip(&self) -> &GICDevice {
         self.irqchip_handle.as_ref().expect("IRQ chip not set")
     }
 
+    #[log_instrument::instrument]
     /// Saves and returns the Kvm Vm state.
     pub fn save_state(&self, mpidrs: &[u64]) -> Result<VmState, VmError> {
         Ok(VmState {
@@ -319,6 +328,7 @@ impl Vm {
         })
     }
 
+    #[log_instrument::instrument]
     /// Restore the KVM VM state
     ///
     /// # Errors
@@ -366,16 +376,19 @@ impl Vm {
         kvm_bindings::KVM_CAP_EXT_CPUID,
     ];
 
+    #[log_instrument::instrument]
     /// Returns a ref to the supported `CpuId` for this Vm.
     pub fn supported_cpuid(&self) -> &CpuId {
         &self.supported_cpuid
     }
 
+    #[log_instrument::instrument]
     /// Returns a ref to the list of serializable MSR indices.
     pub fn msrs_to_save(&self) -> &MsrList {
         &self.msrs_to_save
     }
 
+    #[log_instrument::instrument]
     /// Restores the KVM VM state.
     ///
     /// # Errors
@@ -405,6 +418,7 @@ impl Vm {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Creates the irq chip and an in-kernel device model for the PIT.
     pub fn setup_irqchip(&self) -> Result<(), VmError> {
         self.fd.create_irq_chip().map_err(VmError::VmSetup)?;
@@ -417,6 +431,7 @@ impl Vm {
         self.fd.create_pit2(pit_config).map_err(VmError::VmSetup)
     }
 
+    #[log_instrument::instrument]
     /// Saves and returns the Kvm Vm state.
     pub fn save_state(&self) -> Result<VmState, VmError> {
         let pitstate = self.fd.get_pit2().map_err(VmError::VmGetPit2)?;
@@ -479,6 +494,7 @@ pub struct VmState {
 }
 
 impl VmState {
+    #[log_instrument::instrument]
     fn default_caps(_: u16) -> Vec<KvmCapability> {
         Vec::default()
     }
@@ -486,6 +502,7 @@ impl VmState {
 
 #[cfg(target_arch = "x86_64")]
 impl fmt::Debug for VmState {
+    #[log_instrument::instrument]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("VmState")
             .field("pitstate", &self.pitstate)
@@ -504,6 +521,7 @@ pub(crate) mod tests {
     use super::*;
 
     // Auxiliary function being used throughout the tests.
+    #[log_instrument::instrument]
     pub(crate) fn setup_vm(mem_size: usize) -> (Vm, GuestMemoryMmap) {
         let gm = utils::vm_memory::test_utils::create_anon_guest_memory(
             &[(GuestAddress(0), mem_size)],

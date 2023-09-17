@@ -41,6 +41,7 @@ pub struct CpuConfiguration {
 }
 
 impl CpuConfiguration {
+    #[log_instrument::instrument]
     /// Modifies provided config with changes from template
     pub fn apply_template(
         self,
@@ -110,6 +111,7 @@ mod tests {
     use crate::cpu_config::templates::RegisterValueFilter;
     use crate::cpu_config::x86_64::cpuid::{CpuidEntry, IntelCpuid, KvmCpuidFlags};
 
+    #[log_instrument::instrument]
     fn build_test_template() -> CustomCpuTemplate {
         CustomCpuTemplate {
             cpuid_modifiers: vec![CpuidLeafModifier {
@@ -167,6 +169,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn build_supported_cpuid() -> Cpuid {
         Cpuid::Intel(IntelCpuid(BTreeMap::from([(
             CpuidKey {
@@ -177,6 +180,7 @@ mod tests {
         )])))
     }
 
+    #[log_instrument::instrument]
     fn empty_cpu_config() -> CpuConfiguration {
         CpuConfiguration {
             cpuid: Cpuid::Intel(IntelCpuid(BTreeMap::new())),
@@ -184,6 +188,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn supported_cpu_config() -> CpuConfiguration {
         CpuConfiguration {
             cpuid: build_supported_cpuid(),
@@ -191,6 +196,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn unsupported_cpu_config() -> CpuConfiguration {
         CpuConfiguration {
             cpuid: build_supported_cpuid(),

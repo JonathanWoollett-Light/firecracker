@@ -25,6 +25,7 @@ pub enum DeviceState {
 }
 
 impl DeviceState {
+    #[log_instrument::instrument]
     /// Checks if the device is activated.
     pub fn is_activated(&self) -> bool {
         match self {
@@ -33,6 +34,7 @@ impl DeviceState {
         }
     }
 
+    #[log_instrument::instrument]
     /// Gets the memory attached to the device if it is activated.
     pub fn mem(&self) -> Option<&GuestMemoryMmap> {
         match self {
@@ -59,6 +61,7 @@ pub struct IrqTrigger {
 }
 
 impl IrqTrigger {
+    #[log_instrument::instrument]
     pub fn new() -> std::io::Result<Self> {
         Ok(Self {
             irq_status: Arc::new(AtomicUsize::new(0)),
@@ -66,6 +69,7 @@ impl IrqTrigger {
         })
     }
 
+    #[log_instrument::instrument]
     pub fn trigger_irq(&self, irq_type: IrqType) -> Result<(), std::io::Error> {
         let irq = match irq_type {
             IrqType::Config => VIRTIO_MMIO_INT_CONFIG,
@@ -180,6 +184,7 @@ pub trait VirtioDevice: AsAny + Send {
 }
 
 impl fmt::Debug for dyn VirtioDevice {
+    #[log_instrument::instrument]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "VirtioDevice type {}", self.device_type())
     }
@@ -190,6 +195,7 @@ pub(crate) mod tests {
     use super::*;
 
     impl IrqTrigger {
+        #[log_instrument::instrument]
         pub fn has_pending_irq(&self, irq_type: IrqType) -> bool {
             if let Ok(num_irqs) = self.irq_evt.read() {
                 if num_irqs == 0 {
@@ -236,54 +242,67 @@ pub(crate) mod tests {
     }
 
     impl VirtioDevice for MockVirtioDevice {
+        #[log_instrument::instrument]
         fn avail_features(&self) -> u64 {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn acked_features(&self) -> u64 {
             self.acked_features
         }
 
+        #[log_instrument::instrument]
         fn set_acked_features(&mut self, _acked_features: u64) {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn device_type(&self) -> u32 {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn queues(&self) -> &[Queue] {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn queues_mut(&mut self) -> &mut [Queue] {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn queue_events(&self) -> &[EventFd] {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn interrupt_evt(&self) -> &EventFd {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn interrupt_status(&self) -> Arc<AtomicUsize> {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn read_config(&self, _offset: u64, _data: &mut [u8]) {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn write_config(&mut self, _offset: u64, _data: &[u8]) {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn activate(&mut self, _mem: GuestMemoryMmap) -> Result<(), ActivateError> {
             todo!()
         }
 
+        #[log_instrument::instrument]
         fn is_activated(&self) -> bool {
             todo!()
         }

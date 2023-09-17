@@ -24,6 +24,7 @@ pub enum StripError {
     NumberOfInputs,
 }
 
+#[log_instrument::instrument]
 fn strip_common<K, V>(maps: &mut [HashMap<K, RegisterValueFilter<V>>]) -> Result<(), StripError>
 where
     K: ModifierMapKey + Debug,

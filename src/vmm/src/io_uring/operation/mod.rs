@@ -31,6 +31,7 @@ pub enum OpCode {
 
 // Useful for outputting errors.
 impl From<OpCode> for &'static str {
+    #[log_instrument::instrument]
     fn from(opcode: OpCode) -> Self {
         match opcode {
             OpCode::Read => "read",
@@ -54,6 +55,7 @@ pub struct Operation<T> {
 
 // Needed for proptesting.
 impl<T> fmt::Debug for Operation<T> {
+    #[log_instrument::instrument]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -72,6 +74,7 @@ impl<T> fmt::Debug for Operation<T> {
 
 #[allow(clippy::len_without_is_empty)]
 impl<T: Debug> Operation<T> {
+    #[log_instrument::instrument]
     /// Construct a read operation.
     pub fn read(fd: FixedFd, addr: usize, len: u32, offset: u64, user_data: T) -> Self {
         Self {
@@ -85,6 +88,7 @@ impl<T: Debug> Operation<T> {
         }
     }
 
+    #[log_instrument::instrument]
     /// Construct a write operation.
     pub fn write(fd: FixedFd, addr: usize, len: u32, offset: u64, user_data: T) -> Self {
         Self {
@@ -98,6 +102,7 @@ impl<T: Debug> Operation<T> {
         }
     }
 
+    #[log_instrument::instrument]
     /// Construct a fsync operation.
     pub fn fsync(fd: FixedFd, user_data: T) -> Self {
         Self {
@@ -111,21 +116,25 @@ impl<T: Debug> Operation<T> {
         }
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn fd(&self) -> FixedFd {
         self.fd
     }
 
+    #[log_instrument::instrument]
     /// Consumes the operation and returns the associated `user_data`.
     pub fn user_data(self) -> T {
         *self.user_data
     }
 
     // Needed for proptesting.
+    #[log_instrument::instrument]
     #[cfg(test)]
     pub(crate) fn set_linked(&mut self) {
         self.flags |= 1 << bindings::IOSQE_IO_LINK_BIT;
     }
 
+    #[log_instrument::instrument]
     /// Transform the operation into an `Sqe`.
     ///
     /// # Safety

@@ -7,6 +7,7 @@ use vmm::cpu_config::templates::{CpuConfiguration, CustomCpuTemplate, RegisterVa
 
 use crate::utils::aarch64::reg_modifier;
 
+#[log_instrument::instrument]
 pub fn config_to_template(cpu_config: &CpuConfiguration) -> CustomCpuTemplate {
     let mut reg_modifiers: Vec<RegisterModifier> = cpu_config
         .regs
@@ -44,6 +45,7 @@ mod tests {
     const KVM_REG_SIZE_U64: u64 = 0x0030000000000000;
     const KVM_REG_SIZE_U128: u64 = 0x0040000000000000;
 
+    #[log_instrument::instrument]
     fn build_sample_regs() -> Aarch64RegisterVec {
         let mut v = Aarch64RegisterVec::default();
         v.push(Aarch64RegisterRef::new(
@@ -61,6 +63,7 @@ mod tests {
         v
     }
 
+    #[log_instrument::instrument]
     fn build_expected_reg_modifiers() -> Vec<RegisterModifier> {
         vec![
             reg_modifier!(KVM_REG_SIZE_U32, 0x0000_ffff),

@@ -51,6 +51,7 @@ struct HostCacheStore {
 
 #[cfg(not(test))]
 impl Default for CacheEngine {
+    #[log_instrument::instrument]
     fn default() -> Self {
         CacheEngine {
             store: Box::new(HostCacheStore {
@@ -61,6 +62,7 @@ impl Default for CacheEngine {
 }
 
 impl CacheStore for HostCacheStore {
+    #[log_instrument::instrument]
     fn get_by_key(&self, index: u8, file_name: &str) -> Result<String, CacheInfoError> {
         readln_special(&PathBuf::from(format!(
             "{}/index{}/{}",
@@ -72,6 +74,7 @@ impl CacheStore for HostCacheStore {
 }
 
 impl CacheEntry {
+    #[log_instrument::instrument]
     fn from_index(index: u8, store: &dyn CacheStore) -> Result<CacheEntry, CacheInfoError> {
         let mut err_str = String::new();
         let mut cache: CacheEntry = CacheEntry::default();
@@ -139,6 +142,7 @@ impl CacheEntry {
 }
 
 impl Default for CacheEntry {
+    #[log_instrument::instrument]
     fn default() -> Self {
         CacheEntry {
             level: 0,
@@ -160,6 +164,7 @@ pub(crate) enum CacheType {
 }
 
 impl CacheType {
+    #[log_instrument::instrument]
     fn try_from(string: &str) -> Result<Self, CacheInfoError> {
         match string.trim() {
             "Instruction" => Ok(Self::Instruction),
@@ -173,6 +178,7 @@ impl CacheType {
     }
 
     // The below are auxiliary functions used for constructing the FDT.
+    #[log_instrument::instrument]
     pub fn of_cache_size(&self) -> &str {
         match self {
             Self::Instruction => "i-cache-size",
@@ -181,6 +187,7 @@ impl CacheType {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn of_cache_line_size(&self) -> &str {
         match self {
             Self::Instruction => "i-cache-line-size",
@@ -189,6 +196,7 @@ impl CacheType {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn of_cache_type(&self) -> Option<&'static str> {
         match self {
             Self::Instruction => None,
@@ -197,6 +205,7 @@ impl CacheType {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn of_cache_sets(&self) -> &str {
         match self {
             Self::Instruction => "i-cache-sets",
@@ -206,11 +215,13 @@ impl CacheType {
     }
 }
 
+#[log_instrument::instrument]
 fn readln_special<T: AsRef<Path>>(file_path: &T) -> Result<String, CacheInfoError> {
     let line = fs::read_to_string(file_path)?;
     Ok(line.trim_end().to_string())
 }
 
+#[log_instrument::instrument]
 fn to_bytes(cache_size_pretty: &mut String) -> Result<usize, CacheInfoError> {
     match cache_size_pretty.pop() {
         Some('K') => Ok(cache_size_pretty.parse::<usize>().map_err(|err| {
@@ -239,6 +250,7 @@ fn to_bytes(cache_size_pretty: &mut String) -> Result<usize, CacheInfoError> {
 // Expected input is a list of 32-bit comma separated hex values,
 // without the 0x prefix.
 //
+#[log_instrument::instrument]
 fn mask_str2bit_count(mask_str: &str) -> Result<u16, CacheInfoError> {
     let split_mask_iter = mask_str.split(',');
     let mut bit_count: u16 = 0;
@@ -263,6 +275,7 @@ fn mask_str2bit_count(mask_str: &str) -> Result<u16, CacheInfoError> {
     Ok(bit_count)
 }
 
+#[log_instrument::instrument]
 fn append_cache_level(
     cache_l1: &mut Vec<CacheEntry>,
     cache_non_l1: &mut Vec<CacheEntry>,
@@ -275,6 +288,7 @@ fn append_cache_level(
     }
 }
 
+#[log_instrument::instrument]
 pub(crate) fn read_cache_config(
     cache_l1: &mut Vec<CacheEntry>,
     cache_non_l1: &mut Vec<CacheEntry>,
@@ -324,6 +338,7 @@ mod tests {
     }
 
     impl Default for CacheEngine {
+        #[log_instrument::instrument]
         fn default() -> Self {
             CacheEngine {
                 store: Box::new(MockCacheStore {
@@ -334,6 +349,7 @@ mod tests {
     }
 
     impl CacheEngine {
+        #[log_instrument::instrument]
         fn new(map: &HashMap<String, String>) -> Self {
             CacheEngine {
                 store: Box::new(MockCacheStore {
@@ -344,6 +360,7 @@ mod tests {
     }
 
     impl CacheStore for MockCacheStore {
+        #[log_instrument::instrument]
         fn get_by_key(&self, index: u8, file_name: &str) -> Result<String, CacheInfoError> {
             let key = format!("index{}/{}", index, file_name);
             if let Some(val) = self.dummy_fs.get(&key) {
@@ -356,6 +373,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn create_default_store() -> HashMap<String, String> {
         let mut cache_struct = HashMap::new();
         cache_struct.insert("index0/level".to_string(), "1".to_string());

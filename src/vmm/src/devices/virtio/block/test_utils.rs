@@ -22,6 +22,7 @@ use crate::devices::virtio::IrqType;
 use crate::devices::virtio::{Block, CacheType, Queue, RequestHeader};
 use crate::rate_limiter::RateLimiter;
 
+#[log_instrument::instrument]
 /// Create a default Block instance to be used in tests.
 pub fn default_block(file_engine_type: FileEngineType) -> Block {
     // Create backing file.
@@ -31,6 +32,7 @@ pub fn default_block(file_engine_type: FileEngineType) -> Block {
     default_block_with_path(f.as_path().to_str().unwrap().to_string(), file_engine_type)
 }
 
+#[log_instrument::instrument]
 /// Return the Async FileEngineType if supported by the host, otherwise default to Sync.
 pub fn default_engine_type_for_kv() -> FileEngineType {
     if KernelVersion::get().unwrap() >= min_kernel_version_for_io_uring() {
@@ -40,6 +42,7 @@ pub fn default_engine_type_for_kv() -> FileEngineType {
     }
 }
 
+#[log_instrument::instrument]
 /// Create a default Block instance using file at the specified path to be used in tests.
 pub fn default_block_with_path(path: String, file_engine_type: FileEngineType) -> Block {
     // Rate limiting is enabled but with a high operation rate (10 million ops/s).
@@ -60,18 +63,22 @@ pub fn default_block_with_path(path: String, file_engine_type: FileEngineType) -
     .unwrap()
 }
 
+#[log_instrument::instrument]
 pub fn set_queue(blk: &mut Block, idx: usize, q: Queue) {
     blk.queues[idx] = q;
 }
 
+#[log_instrument::instrument]
 pub fn set_rate_limiter(blk: &mut Block, rl: RateLimiter) {
     blk.rate_limiter = rl;
 }
 
+#[log_instrument::instrument]
 pub fn rate_limiter(blk: &mut Block) -> &RateLimiter {
     &blk.rate_limiter
 }
 
+#[log_instrument::instrument]
 #[cfg(test)]
 pub fn simulate_queue_event(b: &mut Block, maybe_expected_irq: Option<bool>) {
     // Trigger the queue event.
@@ -84,6 +91,7 @@ pub fn simulate_queue_event(b: &mut Block, maybe_expected_irq: Option<bool>) {
     }
 }
 
+#[log_instrument::instrument]
 #[cfg(test)]
 pub fn simulate_async_completion_event(b: &mut Block, expected_irq: bool) {
     if let FileEngine::Async(engine) = b.disk.file_engine_mut() {
@@ -99,6 +107,7 @@ pub fn simulate_async_completion_event(b: &mut Block, expected_irq: bool) {
     assert_eq!(b.irq_trigger.has_pending_irq(IrqType::Vring), expected_irq);
 }
 
+#[log_instrument::instrument]
 #[cfg(test)]
 pub fn simulate_queue_and_async_completion_events(b: &mut Block, expected_irq: bool) {
     match b.disk.file_engine_mut() {
@@ -123,6 +132,7 @@ pub struct RequestDescriptorChain<'a, 'b> {
 }
 
 impl<'a, 'b> RequestDescriptorChain<'a, 'b> {
+    #[log_instrument::instrument]
     /// Creates a new [`RequestDescriptor´] chain in the given [`VirtQueue`]
     ///
     /// The header, data and status descriptors are put into the first three indices in
@@ -141,6 +151,7 @@ impl<'a, 'b> RequestDescriptorChain<'a, 'b> {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn header(&self) -> RequestHeader {
         self.header_desc
             .memory()
@@ -148,6 +159,7 @@ impl<'a, 'b> RequestDescriptorChain<'a, 'b> {
             .unwrap()
     }
 
+    #[log_instrument::instrument]
     pub fn set_header(&self, header: RequestHeader) {
         self.header_desc
             .memory()
@@ -156,6 +168,7 @@ impl<'a, 'b> RequestDescriptorChain<'a, 'b> {
     }
 }
 
+#[log_instrument::instrument]
 /// Puts a descriptor chain of length three into the given [`VirtQueue`].
 ///
 /// This chain follows the skeleton of a block device request, e.g. the first

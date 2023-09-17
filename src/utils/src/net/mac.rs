@@ -30,6 +30,7 @@ pub struct MacAddr {
 }
 
 impl fmt::Display for MacAddr {
+    #[log_instrument::instrument]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let b = &self.bytes;
         write!(
@@ -41,12 +42,14 @@ impl fmt::Display for MacAddr {
 }
 
 impl From<[u8; 6]> for MacAddr {
+    #[log_instrument::instrument]
     fn from(bytes: [u8; 6]) -> Self {
         Self { bytes }
     }
 }
 
 impl From<MacAddr> for [u8; 6] {
+    #[log_instrument::instrument]
     fn from(mac: MacAddr) -> Self {
         mac.bytes
     }
@@ -54,6 +57,7 @@ impl From<MacAddr> for [u8; 6] {
 
 impl FromStr for MacAddr {
     type Err = String;
+    #[log_instrument::instrument]
     /// Try to turn a `&str` into a `MacAddr` object. The method will return the `str` that failed
     /// to be parsed.
     /// # Arguments
@@ -87,6 +91,7 @@ impl FromStr for MacAddr {
 }
 
 impl MacAddr {
+    #[log_instrument::instrument]
     /// Create a `MacAddr` from a slice.
     /// Does not check whether `src.len()` == `MAC_ADDR_LEN`.
     /// # Arguments
@@ -109,6 +114,7 @@ impl MacAddr {
         MacAddr { bytes }
     }
 
+    #[log_instrument::instrument]
     /// Return the underlying content of this `MacAddr` in bytes.
     /// # Example
     ///
@@ -124,6 +130,7 @@ impl MacAddr {
 }
 
 impl Serialize for MacAddr {
+    #[log_instrument::instrument]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -133,6 +140,7 @@ impl Serialize for MacAddr {
 }
 
 impl<'de> Deserialize<'de> for MacAddr {
+    #[log_instrument::instrument]
     fn deserialize<D>(deserializer: D) -> Result<MacAddr, D::Error>
     where
         D: Deserializer<'de>,

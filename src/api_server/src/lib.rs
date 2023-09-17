@@ -41,6 +41,7 @@ pub struct ApiServer {
 }
 
 impl ApiServer {
+    #[log_instrument::instrument]
     /// Constructor for `ApiServer`.
     ///
     /// Returns the newly formed `ApiServer`.
@@ -56,6 +57,7 @@ impl ApiServer {
         }
     }
 
+    #[log_instrument::instrument]
     /// Runs the Api Server.
     ///
     /// # Arguments
@@ -122,6 +124,7 @@ impl ApiServer {
         }
     }
 
+    #[log_instrument::instrument]
     /// Handles an API request received through the associated socket.
     pub fn handle_request(
         &mut self,
@@ -148,6 +151,7 @@ impl ApiServer {
         }
     }
 
+    #[log_instrument::instrument]
     fn serve_vmm_action_request(
         &mut self,
         vmm_action: Box<VmmAction>,
@@ -189,6 +193,7 @@ impl ApiServer {
         response
     }
 
+    #[log_instrument::instrument]
     /// An HTTP response which also includes a body.
     pub(crate) fn json_response<T: Into<String> + Debug>(status: StatusCode, body: T) -> Response {
         let mut response = Response::new(Version::Http11, status);
@@ -196,6 +201,7 @@ impl ApiServer {
         response
     }
 
+    #[log_instrument::instrument]
     fn json_fault_message<T: AsRef<str> + serde::Serialize + Debug>(msg: T) -> String {
         json!({ "fault_message": msg }).to_string()
     }

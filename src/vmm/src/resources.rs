@@ -115,6 +115,7 @@ pub struct VmResources {
 }
 
 impl VmResources {
+    #[log_instrument::instrument]
     /// Configures Vmm resources as described by the `config_json` param.
     pub fn from_json(
         config_json: &str,
@@ -185,6 +186,7 @@ impl VmResources {
         Ok(resources)
     }
 
+    #[log_instrument::instrument]
     /// If not initialised, create the mmds data store with the default config.
     pub fn mmds_or_default(&mut self) -> &Arc<Mutex<Mmds>> {
         self.mmds
@@ -193,12 +195,14 @@ impl VmResources {
             ))))
     }
 
+    #[log_instrument::instrument]
     /// If not initialised, create the mmds data store with the default config.
     pub fn locked_mmds_or_default(&mut self) -> MutexGuard<'_, Mmds> {
         let mmds = self.mmds_or_default();
         mmds.lock().expect("Poisoned lock")
     }
 
+    #[log_instrument::instrument]
     /// Updates the resources from a restored device (used for configuring resources when
     /// restoring from a snapshot).
     pub fn update_from_restored_device(&mut self, device: SharedDeviceType) {
@@ -224,22 +228,26 @@ impl VmResources {
         }
     }
 
+    #[log_instrument::instrument]
     /// Returns whether dirty page tracking is enabled or not.
     pub fn track_dirty_pages(&self) -> bool {
         self.vm_config.track_dirty_pages
     }
 
+    #[log_instrument::instrument]
     /// Configures the dirty page tracking functionality of the microVM.
     pub fn set_track_dirty_pages(&mut self, dirty_page_tracking: bool) {
         self.vm_config.track_dirty_pages = dirty_page_tracking;
     }
 
+    #[log_instrument::instrument]
     /// Add a custom CPU template to the VM resources
     /// to configure vCPUs.
     pub fn set_custom_cpu_template(&mut self, cpu_template: CustomCpuTemplate) {
         self.vm_config.set_custom_cpu_template(cpu_template);
     }
 
+    #[log_instrument::instrument]
     /// Updates the configuration of the microVM.
     pub fn update_vm_config(&mut self, update: &MachineConfigUpdate) -> Result<(), VmConfigError> {
         self.vm_config.update(update)?;
@@ -262,6 +270,7 @@ impl VmResources {
 
     // Repopulate the MmdsConfig based on information from the data store
     // and the associated net devices.
+    #[log_instrument::instrument]
     fn mmds_config(&self) -> Option<MmdsConfig> {
         // If the data store is not initialised, we can be sure that the user did not configure
         // mmds.
@@ -298,16 +307,19 @@ impl VmResources {
         mmds_config
     }
 
+    #[log_instrument::instrument]
     /// Gets a reference to the boot source configuration.
     pub fn boot_source_config(&self) -> &BootSourceConfig {
         &self.boot_source.config
     }
 
+    #[log_instrument::instrument]
     /// Gets a reference to the boot source builder.
     pub fn boot_source_builder(&self) -> Option<&BootConfig> {
         self.boot_source.builder.as_ref()
     }
 
+    #[log_instrument::instrument]
     /// Sets a balloon device to be attached when the VM starts.
     pub fn set_balloon_device(
         &mut self,
@@ -322,6 +334,7 @@ impl VmResources {
         self.balloon.set(config)
     }
 
+    #[log_instrument::instrument]
     /// Obtains the boot source hooks (kernel fd, command line creation and validation).
     pub fn build_boot_source(
         &mut self,
@@ -332,11 +345,13 @@ impl VmResources {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Set the boot source configuration (contains raw kernel config details).
     pub fn set_boot_source_config(&mut self, boot_source_cfg: BootSourceConfig) {
         self.boot_source.config = boot_source_cfg;
     }
 
+    #[log_instrument::instrument]
     /// Inserts a block to be attached when the VM starts.
     // Only call this function as part of user configuration.
     // If the drive_id does not exist, a new Block Device Config is added to the list.
@@ -347,6 +362,7 @@ impl VmResources {
         self.block.insert(block_device_config)
     }
 
+    #[log_instrument::instrument]
     /// Builds a network device to be attached when the VM starts.
     pub fn build_net_device(
         &mut self,
@@ -356,11 +372,13 @@ impl VmResources {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Sets a vsock device to be attached when the VM starts.
     pub fn set_vsock_device(&mut self, config: VsockDeviceConfig) -> Result<(), VsockConfigError> {
         self.vsock.insert(config)
     }
 
+    #[log_instrument::instrument]
     /// Builds an entropy device to be attached when the VM starts.
     pub fn build_entropy_device(
         &mut self,
@@ -369,6 +387,7 @@ impl VmResources {
         self.entropy.insert(body)
     }
 
+    #[log_instrument::instrument]
     /// Setter for mmds config.
     pub fn set_mmds_config(
         &mut self,
@@ -381,6 +400,7 @@ impl VmResources {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Updates MMDS version.
     pub fn set_mmds_version(
         &mut self,
@@ -398,6 +418,7 @@ impl VmResources {
 
     // Updates MMDS Network Stack for network interfaces to allow forwarding
     // requests to MMDS (or not).
+    #[log_instrument::instrument]
     fn set_mmds_network_stack_config(
         &mut self,
         config: &MmdsConfig,
@@ -445,6 +466,7 @@ impl VmResources {
 }
 
 impl From<&VmResources> for VmmConfig {
+    #[log_instrument::instrument]
     fn from(resources: &VmResources) -> Self {
         VmmConfig {
             balloon_device: resources.balloon.get_config().ok(),
@@ -488,6 +510,7 @@ mod tests {
     use crate::vmm_config::RateLimiterConfig;
     use crate::HTTP_MAX_PAYLOAD_SIZE;
 
+    #[log_instrument::instrument]
     fn default_net_cfg() -> NetworkInterfaceConfig {
         NetworkInterfaceConfig {
             iface_id: "net_if1".to_string(),
@@ -505,6 +528,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn default_net_builder() -> NetBuilder {
         let mut net_builder = NetBuilder::new();
         net_builder.build(default_net_cfg()).unwrap();
@@ -512,6 +536,7 @@ mod tests {
         net_builder
     }
 
+    #[log_instrument::instrument]
     fn default_block_cfg() -> (BlockDeviceConfig, TempFile) {
         let tmp_file = TempFile::new().unwrap();
         (
@@ -529,6 +554,7 @@ mod tests {
         )
     }
 
+    #[log_instrument::instrument]
     fn default_blocks() -> BlockBuilder {
         let mut blocks = BlockBuilder::new();
         let (cfg, _file) = default_block_cfg();
@@ -536,6 +562,7 @@ mod tests {
         blocks
     }
 
+    #[log_instrument::instrument]
     fn default_boot_cfg() -> BootSource {
         let kernel_cmdline =
             linux_loader::cmdline::Cmdline::try_from(DEFAULT_KERNEL_CMDLINE, 4096).unwrap();
@@ -550,6 +577,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn default_vm_resources() -> VmResources {
         VmResources {
             vm_config: VmConfig::default(),
@@ -566,6 +594,7 @@ mod tests {
     }
 
     impl PartialEq for BootConfig {
+        #[log_instrument::instrument]
         fn eq(&self, other: &Self) -> bool {
             self.cmdline.eq(&other.cmdline)
                 && self.kernel_file.metadata().unwrap().st_ino()

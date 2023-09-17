@@ -24,6 +24,7 @@ pub enum UtilsError {
     VmStateSave(snapshot::Error),
 }
 
+#[log_instrument::instrument]
 #[allow(unused)]
 pub fn open_vmstate(snapshot_path: &PathBuf) -> Result<(MicrovmState, u16), UtilsError> {
     let version_map = VERSION_MAP.clone();
@@ -34,6 +35,7 @@ pub fn open_vmstate(snapshot_path: &PathBuf) -> Result<(MicrovmState, u16), Util
 }
 
 // This method is used only in aarch64 code so far
+#[log_instrument::instrument]
 #[allow(unused)]
 pub fn save_vmstate(
     microvm_state: MicrovmState,

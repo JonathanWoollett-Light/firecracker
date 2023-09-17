@@ -13,6 +13,7 @@ pub struct GICv3(super::GIC);
 impl std::ops::Deref for GICv3 {
     type Target = super::GIC;
 
+    #[log_instrument::instrument]
     fn deref(&self) -> &Self::Target {
         &self.0
     }
@@ -28,21 +29,25 @@ impl GICv3 {
     // Device trees specific constants
     const ARCH_GIC_V3_MAINT_IRQ: u32 = 9;
 
+    #[log_instrument::instrument]
     /// Get the address of the GIC distributor.
     fn get_dist_addr() -> u64 {
         super::layout::MAPPED_IO_START - GICv3::KVM_VGIC_V3_DIST_SIZE
     }
 
+    #[log_instrument::instrument]
     /// Get the size of the GIC distributor.
     fn get_dist_size() -> u64 {
         GICv3::KVM_VGIC_V3_DIST_SIZE
     }
 
+    #[log_instrument::instrument]
     /// Get the address of the GIC redistributors.
     fn get_redists_addr(vcpu_count: u64) -> u64 {
         GICv3::get_dist_addr() - GICv3::get_redists_size(vcpu_count)
     }
 
+    #[log_instrument::instrument]
     /// Get the size of the GIC redistributors.
     fn get_redists_size(vcpu_count: u64) -> u64 {
         vcpu_count * GICv3::KVM_VGIC_V3_REDIST_SIZE
@@ -50,14 +55,17 @@ impl GICv3 {
 
     pub const VERSION: u32 = kvm_bindings::kvm_device_type_KVM_DEV_TYPE_ARM_VGIC_V3;
 
+    #[log_instrument::instrument]
     pub fn fdt_compatibility(&self) -> &str {
         "arm,gic-v3"
     }
 
+    #[log_instrument::instrument]
     pub fn fdt_maint_irq(&self) -> u32 {
         GICv3::ARCH_GIC_V3_MAINT_IRQ
     }
 
+    #[log_instrument::instrument]
     /// Create the GIC device object
     pub fn create_device(fd: DeviceFd, vcpu_count: u64) -> Self {
         GICv3(super::GIC {
@@ -72,14 +80,17 @@ impl GICv3 {
         })
     }
 
+    #[log_instrument::instrument]
     pub fn save_device(&self, mpidrs: &[u64]) -> Result<GicState, GicError> {
         regs::save_state(&self.fd, mpidrs)
     }
 
+    #[log_instrument::instrument]
     pub fn restore_device(&self, mpidrs: &[u64], state: &GicState) -> Result<(), GicError> {
         regs::restore_state(&self.fd, mpidrs, state)
     }
 
+    #[log_instrument::instrument]
     pub fn init_device_attributes(gic_device: &Self) -> Result<(), GicError> {
         // Setting up the distributor attribute.
         // We are placing the GIC below 1GB so we need to substract the size of the distributor.
@@ -104,6 +115,7 @@ impl GICv3 {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Initialize a GIC device
     pub fn init_device(vm: &VmFd) -> Result<DeviceFd, GicError> {
         let mut gic_device = kvm_bindings::kvm_create_device {
@@ -116,6 +128,7 @@ impl GICv3 {
             .map_err(GicError::CreateGIC)
     }
 
+    #[log_instrument::instrument]
     /// Method to initialize the GIC device
     pub fn create(vm: &VmFd, vcpu_count: u64) -> Result<Self, GicError> {
         let vgic_fd = Self::init_device(vm)?;
@@ -129,6 +142,7 @@ impl GICv3 {
         Ok(device)
     }
 
+    #[log_instrument::instrument]
     /// Finalize the setup of a GIC device
     pub fn finalize_device(gic_device: &Self) -> Result<(), GicError> {
         // On arm there are 3 types of interrupts: SGI (0-15), PPI (16-31), SPI (32-1020).
@@ -159,6 +173,7 @@ impl GICv3 {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Set a GIC device attribute
     pub fn set_device_attribute(
         fd: &DeviceFd,
@@ -180,6 +195,7 @@ impl GICv3 {
     }
 }
 
+#[log_instrument::instrument]
 /// Function that flushes
 /// RDIST pending tables into guest RAM.
 ///

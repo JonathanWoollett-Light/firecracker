@@ -26,6 +26,7 @@ const TIMER_REFILL_STATE: TimerState =
 const NANOSEC_IN_ONE_MILLISEC: u64 = 1_000_000;
 
 // Euclid's two-thousand-year-old algorithm for finding the greatest common divisor.
+#[log_instrument::instrument]
 fn gcd(x: u64, y: u64) -> u64 {
     let mut x = x;
     let mut y = y;
@@ -74,6 +75,7 @@ pub struct TokenBucket {
 }
 
 impl TokenBucket {
+    #[log_instrument::instrument]
     /// Creates a `TokenBucket` wrapped in an `Option`.
     ///
     /// TokenBucket created is of `size` total capacity and takes `complete_refill_time_ms`
@@ -116,6 +118,7 @@ impl TokenBucket {
     }
 
     // Replenishes token bucket based on elapsed time. Should only be called internally by `Self`.
+    #[log_instrument::instrument]
     fn auto_replenish(&mut self) {
         // Compute time passed since last refill/update.
         let now = Instant::now();
@@ -168,6 +171,7 @@ impl TokenBucket {
         }
     }
 
+    #[log_instrument::instrument]
     /// Attempts to consume `tokens` from the bucket and returns whether the action succeeded.
     pub fn reduce(&mut self, mut tokens: u64) -> BucketReduction {
         // First things first: consume the one-time-burst budget.
@@ -215,6 +219,7 @@ impl TokenBucket {
         BucketReduction::Success
     }
 
+    #[log_instrument::instrument]
     /// "Manually" adds tokens to bucket.
     pub fn force_replenish(&mut self, tokens: u64) {
         // This means we are still during the burst interval.
@@ -231,26 +236,31 @@ impl TokenBucket {
         self.budget = std::cmp::min(self.budget.saturating_add(tokens), self.size);
     }
 
+    #[log_instrument::instrument]
     /// Returns the capacity of the token bucket.
     pub fn capacity(&self) -> u64 {
         self.size
     }
 
+    #[log_instrument::instrument]
     /// Returns the remaining one time burst budget.
     pub fn one_time_burst(&self) -> u64 {
         self.one_time_burst
     }
 
+    #[log_instrument::instrument]
     /// Returns the time in milliseconds required to to completely fill the bucket.
     pub fn refill_time_ms(&self) -> u64 {
         self.refill_time
     }
 
+    #[log_instrument::instrument]
     /// Returns the current budget (one time burst allowance notwithstanding).
     pub fn budget(&self) -> u64 {
         self.budget
     }
 
+    #[log_instrument::instrument]
     /// Returns the initially configured one time burst budget.
     pub fn initial_one_time_burst(&self) -> u64 {
         self.initial_one_time_burst
@@ -302,12 +312,14 @@ pub struct RateLimiter {
 }
 
 impl PartialEq for RateLimiter {
+    #[log_instrument::instrument]
     fn eq(&self, other: &RateLimiter) -> bool {
         self.bandwidth == other.bandwidth && self.ops == other.ops
     }
 }
 
 impl fmt::Debug for RateLimiter {
+    #[log_instrument::instrument]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -318,6 +330,7 @@ impl fmt::Debug for RateLimiter {
 }
 
 impl RateLimiter {
+    #[log_instrument::instrument]
     /// Creates a new Rate Limiter that can limit on both bytes/s and ops/s.
     ///
     /// # Arguments
@@ -373,12 +386,14 @@ impl RateLimiter {
     }
 
     // Arm the timer of the rate limiter with the provided `TimerState`.
+    #[log_instrument::instrument]
     fn activate_timer(&mut self, timer_state: TimerState) {
         // Register the timer; don't care about its previous state
         self.timer_fd.set_state(timer_state, SetTimeFlags::Default);
         self.timer_active = true;
     }
 
+    #[log_instrument::instrument]
     /// Attempts to consume tokens and returns whether that is possible.
     ///
     /// If rate limiting is disabled on provided `token_type`, this function will always succeed.
@@ -431,6 +446,7 @@ impl RateLimiter {
         }
     }
 
+    #[log_instrument::instrument]
     /// Adds tokens of `token_type` to their respective bucket.
     ///
     /// Can be used to *manually* add tokens to a bucket. Useful for reverting a
@@ -447,6 +463,7 @@ impl RateLimiter {
         }
     }
 
+    #[log_instrument::instrument]
     /// Returns whether this rate limiter is blocked.
     ///
     /// The limiter 'blocks' when a `consume()` operation fails because there was not enough
@@ -456,6 +473,7 @@ impl RateLimiter {
         self.timer_active
     }
 
+    #[log_instrument::instrument]
     /// This function needs to be called every time there is an event on the
     /// FD provided by this object's `AsRawFd` trait implementation.
     ///
@@ -474,6 +492,7 @@ impl RateLimiter {
         }
     }
 
+    #[log_instrument::instrument]
     /// Updates the parameters of the token buckets associated with this RateLimiter.
     // TODO: Please note that, right now, the buckets become full after being updated.
     pub fn update_buckets(&mut self, bytes: BucketUpdate, ops: BucketUpdate) {
@@ -489,11 +508,13 @@ impl RateLimiter {
         };
     }
 
+    #[log_instrument::instrument]
     /// Returns an immutable view of the inner bandwidth token bucket.
     pub fn bandwidth(&self) -> Option<&TokenBucket> {
         self.bandwidth.as_ref()
     }
 
+    #[log_instrument::instrument]
     /// Returns an immutable view of the inner ops token bucket.
     pub fn ops(&self) -> Option<&TokenBucket> {
         self.ops.as_ref()
@@ -501,6 +522,7 @@ impl RateLimiter {
 }
 
 impl AsRawFd for RateLimiter {
+    #[log_instrument::instrument]
     /// Provides a FD which needs to be monitored for POLLIN events.
     ///
     /// This object's `event_handler()` method must be called on such events.
@@ -513,6 +535,7 @@ impl AsRawFd for RateLimiter {
 }
 
 impl Default for RateLimiter {
+    #[log_instrument::instrument]
     /// Default RateLimiter is a no-op limiter with infinite budget.
     fn default() -> Self {
         // Safe to unwrap since this will not attempt to create timer_fd.
@@ -556,6 +579,7 @@ mod verification {
         static mut LAST_SECONDS: i64 = 0;
         static mut LAST_NANOS: u32 = 0;
 
+        #[log_instrument::instrument]
         /// Stubs out `std::time::Instant::now` to return non-deterministic instances that are
         /// non-decreasing. The first value produced by this stub will always be 0. This is
         /// because generally harnesses only care about the delta between instants i1 and i2, which
@@ -585,6 +609,7 @@ mod verification {
             to_return
         }
 
+        #[log_instrument::instrument]
         pub(super) fn next_instant_now() -> Instant {
             let stub = InstantStub {
                 tv_sec: unsafe { LAST_SECONDS },
@@ -598,6 +623,7 @@ mod verification {
             unsafe { std::mem::transmute(stub) }
         }
 
+        #[log_instrument::instrument]
         /// Stubs out the GCD computation by over-approximating the return value as "any number that
         /// divides both inputs".
         fn gcd(x: u64, y: u64) -> u64 {
@@ -612,6 +638,7 @@ mod verification {
             // underapproximates.
         }
 
+        #[log_instrument::instrument]
         /// Stubs out `TokenBucket::auto_replenish` by simply filling up the bucket by a
         /// non-deterministic amount.
         fn token_bucket_auto_replenish(this: &mut TokenBucket) {
@@ -620,6 +647,7 @@ mod verification {
     }
 
     impl TokenBucket {
+        #[log_instrument::instrument]
         /// Functions checking that the general invariants of a TokenBucket are upheld
         fn is_valid(&self) -> bool {
             self.size != 0
@@ -634,6 +662,7 @@ mod verification {
     }
 
     impl kani::Arbitrary for TokenBucket {
+        #[log_instrument::instrument]
         fn any() -> TokenBucket {
             let bucket = TokenBucket::new(kani::any(), kani::any(), kani::any());
             kani::assume(bucket.is_some());
@@ -789,24 +818,29 @@ pub(crate) mod tests {
 
     impl TokenBucket {
         // Resets the token bucket: budget set to max capacity and last-updated set to now.
+        #[log_instrument::instrument]
         fn reset(&mut self) {
             self.budget = self.size;
             self.last_update = Instant::now();
         }
 
+        #[log_instrument::instrument]
         fn get_last_update(&self) -> &Instant {
             &self.last_update
         }
 
+        #[log_instrument::instrument]
         fn get_processed_capacity(&self) -> u64 {
             self.processed_capacity
         }
 
+        #[log_instrument::instrument]
         fn get_processed_refill_time(&self) -> u64 {
             self.processed_refill_time
         }
 
         // After a restore, we cannot be certain that the last_update field has the same value.
+        #[log_instrument::instrument]
         pub fn partial_eq(&self, other: &TokenBucket) -> bool {
             (other.capacity() == self.capacity())
                 && (other.one_time_burst() == self.one_time_burst())
@@ -816,6 +850,7 @@ pub(crate) mod tests {
     }
 
     impl RateLimiter {
+        #[log_instrument::instrument]
         fn get_token_bucket(&self, token_type: TokenType) -> Option<&TokenBucket> {
             match token_type {
                 TokenType::Bytes => self.bandwidth.as_ref(),

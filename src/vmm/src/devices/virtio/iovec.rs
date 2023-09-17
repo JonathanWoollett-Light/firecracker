@@ -30,6 +30,7 @@ pub(crate) struct IoVecBuffer {
 }
 
 impl IoVecBuffer {
+    #[log_instrument::instrument]
     /// Create an `IoVecBuffer` from a `DescriptorChain`
     pub fn from_descriptor_chain(
         mem: &GuestMemoryMmap,
@@ -64,16 +65,19 @@ impl IoVecBuffer {
         Ok(Self { vecs, len })
     }
 
+    #[log_instrument::instrument]
     /// Get the total length of the memory regions covered by this `IoVecBuffer`
     pub fn len(&self) -> usize {
         self.len
     }
 
+    #[log_instrument::instrument]
     /// Returns a pointer to the memory keeping the `iovec` structs
     pub fn as_iovec_ptr(&self) -> *const iovec {
         self.vecs.as_ptr()
     }
 
+    #[log_instrument::instrument]
     /// Returns the length of the `iovec` array.
     pub fn iovec_count(&self) -> usize {
         self.vecs.len()
@@ -85,6 +89,7 @@ impl IoVecBuffer {
     // `buf.len()` long in the `buf` slice. Here we assume that [`offset`, `offset` + `buf.len()`]
     // is within range, so it is the responsibility of the caller function to perform the necessary
     // checks.
+    #[log_instrument::instrument]
     fn read_subregion(&self, buf: &mut [u8], mut offset: usize) -> usize {
         debug_assert!(offset + buf.len() <= self.len());
         let mut bytes = 0;
@@ -126,6 +131,7 @@ impl IoVecBuffer {
         bytes
     }
 
+    #[log_instrument::instrument]
     /// Reads a number of bytes from the `IoVecBuffer` starting at a given offset.
     ///
     /// This will try to fill `buf` reading bytes from the `IoVecBuffer` starting from
@@ -160,6 +166,7 @@ pub(crate) struct IoVecBufferMut {
 }
 
 impl IoVecBufferMut {
+    #[log_instrument::instrument]
     /// Create an `IoVecBufferMut` from a `DescriptorChain`
     pub fn from_descriptor_chain(
         mem: &GuestMemoryMmap,
@@ -194,6 +201,7 @@ impl IoVecBufferMut {
         Ok(Self { vecs, len })
     }
 
+    #[log_instrument::instrument]
     /// Get the total length of the memory regions covered by this `IoVecBuffer`
     pub fn len(&self) -> usize {
         self.len
@@ -205,6 +213,7 @@ impl IoVecBufferMut {
     // `buf.len()` long in the `buf` slice. Here we assume that [`offset`, `offset` + `buf.len()`]
     // is within range, so it is the responsibility of the caller function to perform the necessary
     // checks.
+    #[log_instrument::instrument]
     fn write_subregion(&self, buf: &[u8], mut offset: usize) -> usize {
         debug_assert!(offset + buf.len() <= self.len());
         let mut bytes = 0;
@@ -246,6 +255,7 @@ impl IoVecBufferMut {
         bytes
     }
 
+    #[log_instrument::instrument]
     /// Writes a number of bytes into the `IoVecBufferMut` starting at a given offset.
     ///
     /// This will try to fill `IoVecBufferMut` writing bytes from the `buf` starting from
@@ -278,6 +288,7 @@ mod tests {
     use crate::devices::virtio::test_utils::VirtQueue;
 
     impl<'a> From<&'a [u8]> for IoVecBuffer {
+        #[log_instrument::instrument]
         fn from(buf: &'a [u8]) -> Self {
             Self {
                 vecs: vec![iovec {
@@ -290,6 +301,7 @@ mod tests {
     }
 
     impl<'a> From<Vec<&'a [u8]>> for IoVecBuffer {
+        #[log_instrument::instrument]
         fn from(buffer: Vec<&'a [u8]>) -> Self {
             let mut len = 0;
             let vecs = buffer
@@ -308,6 +320,7 @@ mod tests {
     }
 
     impl From<&mut [u8]> for IoVecBufferMut {
+        #[log_instrument::instrument]
         fn from(buf: &mut [u8]) -> Self {
             Self {
                 vecs: vec![iovec {
@@ -319,6 +332,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn default_mem() -> GuestMemoryMmap {
         create_anon_guest_memory(
             &[
@@ -331,6 +345,7 @@ mod tests {
         .unwrap()
     }
 
+    #[log_instrument::instrument]
     fn chain(m: &GuestMemoryMmap, is_write_only: bool) -> (Queue, VirtQueue) {
         let vq = VirtQueue::new(GuestAddress(0), m, 16);
 
@@ -355,6 +370,7 @@ mod tests {
         (q, vq)
     }
 
+    #[log_instrument::instrument]
     fn read_only_chain(mem: &GuestMemoryMmap) -> (Queue, VirtQueue) {
         let v: Vec<u8> = (0..=255).collect();
         mem.write_slice(&v, GuestAddress(0x20000)).unwrap();
@@ -362,6 +378,7 @@ mod tests {
         chain(mem, false)
     }
 
+    #[log_instrument::instrument]
     fn write_only_chain(mem: &GuestMemoryMmap) -> (Queue, VirtQueue) {
         let v = vec![0; 256];
         mem.write_slice(&v, GuestAddress(0x20000)).unwrap();
@@ -540,6 +557,7 @@ mod verification {
     // >= 1.
     const MAX_DESC_LENGTH: usize = 5;
 
+    #[log_instrument::instrument]
     fn create_iovecs(mem: *mut u8, size: usize) -> (Vec<iovec>, usize) {
         let nr_descs: usize = kani::any_where(|&n| n <= MAX_DESC_LENGTH);
         let mut vecs: Vec<iovec> = Vec::with_capacity(nr_descs);
@@ -562,6 +580,7 @@ mod verification {
     }
 
     impl kani::Arbitrary for IoVecBuffer {
+        #[log_instrument::instrument]
         fn any() -> Self {
             // We only read from `IoVecBuffer`, so create here a guest memory object, with arbitrary
             // contents and size up to GUEST_MEMORY_SIZE.
@@ -572,6 +591,7 @@ mod verification {
     }
 
     impl kani::Arbitrary for IoVecBufferMut {
+        #[log_instrument::instrument]
         fn any() -> Self {
             // We only write into `IoVecBufferMut` objects, so we can simply create a guest memory
             // object initialized to zeroes, trying to be nice to Kani.

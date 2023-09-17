@@ -249,6 +249,7 @@ pub enum VmmError {
 /// Shorthand type for KVM dirty page bitmap.
 pub type DirtyBitmap = HashMap<usize, Vec<u64>>;
 
+#[log_instrument::instrument]
 /// Returns the size of guest memory, in MiB.
 pub(crate) fn mem_size_mib(guest_memory: &GuestMemoryMmap) -> u64 {
     guest_memory.iter().map(|region| region.len()).sum::<u64>() >> 20
@@ -319,21 +320,25 @@ pub struct Vmm {
 }
 
 impl Vmm {
+    #[log_instrument::instrument]
     /// Gets Vmm version.
     pub fn version(&self) -> String {
         self.instance_info.vmm_version.clone()
     }
 
+    #[log_instrument::instrument]
     /// Gets Vmm instance info.
     pub fn instance_info(&self) -> InstanceInfo {
         self.instance_info.clone()
     }
 
+    #[log_instrument::instrument]
     /// Provides the Vmm shutdown exit code if there is one.
     pub fn shutdown_exit_code(&self) -> Option<FcExitCode> {
         self.shutdown_exit_code
     }
 
+    #[log_instrument::instrument]
     /// Gets the specified bus device.
     pub fn get_bus_device(
         &self,
@@ -343,6 +348,7 @@ impl Vmm {
         self.mmio_device_manager.get_device(device_type, device_id)
     }
 
+    #[log_instrument::instrument]
     /// Starts the microVM vcpus.
     ///
     /// # Errors
@@ -392,6 +398,7 @@ impl Vmm {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Sends a resume command to the vCPUs.
     pub fn resume_vm(&mut self) -> Result<(), VmmError> {
         self.mmio_device_manager.kick_devices();
@@ -416,6 +423,7 @@ impl Vmm {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Sends a pause command to the vCPUs.
     pub fn pause_vm(&mut self) -> Result<(), VmmError> {
         // Send the events.
@@ -438,11 +446,13 @@ impl Vmm {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Returns a reference to the inner `GuestMemoryMmap` object.
     pub fn guest_memory(&self) -> &GuestMemoryMmap {
         &self.guest_memory
     }
 
+    #[log_instrument::instrument]
     /// Sets RDA bit in serial console
     pub fn emulate_serial_init(&self) -> Result<(), EmulateSerialInitError> {
         // When restoring from a previously saved state, there is no serial
@@ -488,6 +498,7 @@ impl Vmm {
         }
     }
 
+    #[log_instrument::instrument]
     /// Injects CTRL+ALT+DEL keystroke combo in the i8042 device.
     #[cfg(target_arch = "x86_64")]
     pub fn send_ctrl_alt_del(&mut self) -> Result<(), VmmError> {
@@ -501,6 +512,7 @@ impl Vmm {
             .map_err(VmmError::I8042Error)
     }
 
+    #[log_instrument::instrument]
     /// Saves the state of a paused Microvm.
     pub fn save_state(&mut self, vm_info: &VmInfo) -> Result<MicrovmState, MicrovmStateError> {
         use self::MicrovmStateError::SaveVmState;
@@ -530,6 +542,7 @@ impl Vmm {
         })
     }
 
+    #[log_instrument::instrument]
     fn save_vcpu_states(&mut self) -> Result<Vec<VcpuState>, MicrovmStateError> {
         for handle in self.vcpus_handles.iter() {
             handle
@@ -558,6 +571,7 @@ impl Vmm {
         Ok(vcpu_states)
     }
 
+    #[log_instrument::instrument]
     /// Dumps CPU configuration.
     pub fn dump_cpu_config(&mut self) -> Result<Vec<CpuConfiguration>, DumpCpuConfigError> {
         for handle in self.vcpus_handles.iter() {
@@ -586,6 +600,7 @@ impl Vmm {
         Ok(cpu_configs)
     }
 
+    #[log_instrument::instrument]
     /// Retrieves the KVM dirty bitmap for each of the guest's memory regions.
     pub fn get_dirty_bitmap(&self) -> Result<DirtyBitmap, VmmError> {
         let mut bitmap: DirtyBitmap = HashMap::new();
@@ -604,6 +619,7 @@ impl Vmm {
         Ok(bitmap)
     }
 
+    #[log_instrument::instrument]
     /// Enables or disables KVM dirty page tracking.
     pub fn set_dirty_page_tracking(&mut self, enable: bool) -> Result<(), VmmError> {
         // This function _always_ results in an ioctl update. The VMM is stateless in the sense
@@ -616,6 +632,7 @@ impl Vmm {
             .map_err(VmmError::Vm)
     }
 
+    #[log_instrument::instrument]
     /// Updates the path of the host file backing the emulated block device with id `drive_id`.
     /// We update the disk image on the device and its virtio configuration.
     pub fn update_block_device_path(
@@ -632,6 +649,7 @@ impl Vmm {
             .map_err(VmmError::DeviceManager)
     }
 
+    #[log_instrument::instrument]
     /// Updates the rate limiter parameters for block device with `drive_id` id.
     pub fn update_block_rate_limiter(
         &mut self,
@@ -647,6 +665,7 @@ impl Vmm {
             .map_err(VmmError::DeviceManager)
     }
 
+    #[log_instrument::instrument]
     /// Updates the rate limiter parameters for net device with `net_id` id.
     pub fn update_net_rate_limiters(
         &mut self,
@@ -664,6 +683,7 @@ impl Vmm {
             .map_err(VmmError::DeviceManager)
     }
 
+    #[log_instrument::instrument]
     /// Returns a reference to the balloon device if present.
     pub fn balloon_config(&self) -> Result<BalloonConfig, BalloonError> {
         if let Some(busdev) = self.get_bus_device(DeviceType::Virtio(TYPE_BALLOON), BALLOON_DEV_ID)
@@ -689,6 +709,7 @@ impl Vmm {
         }
     }
 
+    #[log_instrument::instrument]
     /// Returns the latest balloon statistics if they are enabled.
     pub fn latest_balloon_stats(&self) -> Result<BalloonStats, BalloonError> {
         if let Some(busdev) = self.get_bus_device(DeviceType::Virtio(TYPE_BALLOON), BALLOON_DEV_ID)
@@ -716,6 +737,7 @@ impl Vmm {
         }
     }
 
+    #[log_instrument::instrument]
     /// Updates configuration for the balloon device target size.
     pub fn update_balloon_config(&mut self, amount_mib: u32) -> Result<(), BalloonError> {
         // The balloon cannot have a target size greater than the size of
@@ -749,6 +771,7 @@ impl Vmm {
         }
     }
 
+    #[log_instrument::instrument]
     /// Updates configuration for the balloon device as described in `balloon_stats_update`.
     pub fn update_balloon_stats_config(
         &mut self,
@@ -778,6 +801,7 @@ impl Vmm {
         }
     }
 
+    #[log_instrument::instrument]
     /// Signals Vmm to stop and exit.
     pub fn stop(&mut self, exit_code: FcExitCode) {
         // To avoid cycles, all teardown paths take the following route:
@@ -818,6 +842,7 @@ impl Vmm {
     }
 }
 
+#[log_instrument::instrument]
 /// Process the content of the MPIDR_EL1 register in order to be able to pass it to KVM
 ///
 /// The kernel expects to find the four affinity levels of the MPIDR in the first 32 bits of the
@@ -844,6 +869,7 @@ fn construct_kvm_mpidrs(vcpu_states: &[VcpuState]) -> Vec<u64> {
 }
 
 impl Drop for Vmm {
+    #[log_instrument::instrument]
     fn drop(&mut self) {
         // There are two cases when `drop()` is called:
         // 1) before the Vmm has been mutexed and subscribed to the event manager, or
@@ -888,6 +914,7 @@ impl Drop for Vmm {
 }
 
 impl MutEventSubscriber for Vmm {
+    #[log_instrument::instrument]
     /// Handle a read event (EPOLLIN).
     fn process(&mut self, event: Events, _: &mut EventOps) {
         let source = event.fd();
@@ -919,6 +946,7 @@ impl MutEventSubscriber for Vmm {
         }
     }
 
+    #[log_instrument::instrument]
     fn init(&mut self, ops: &mut EventOps) {
         if let Err(err) = ops.add(Events::new(&self.vcpus_exit_evt, EventSet::IN)) {
             error!("Failed to register vmm exit event: {}", err);

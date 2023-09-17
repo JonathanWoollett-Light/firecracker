@@ -56,20 +56,24 @@ impl VgicRegEngine for RedistRegEngine {
     type Reg = SimpleReg;
     type RegChunk = u32;
 
+    #[log_instrument::instrument]
     fn group() -> u32 {
         KVM_DEV_ARM_VGIC_GRP_REDIST_REGS
     }
 
+    #[log_instrument::instrument]
     #[allow(clippy::cast_sign_loss)] // bit mask
     fn mpidr_mask() -> u64 {
         KVM_DEV_ARM_VGIC_V3_MPIDR_MASK as u64
     }
 }
 
+#[log_instrument::instrument]
 fn redist_regs() -> Box<dyn Iterator<Item = &'static SimpleReg>> {
     Box::new(VGIC_RDIST_REGS.iter().chain(VGIC_SGI_REGS))
 }
 
+#[log_instrument::instrument]
 pub(crate) fn get_redist_regs(
     fd: &DeviceFd,
     mpidr: u64,
@@ -77,6 +81,7 @@ pub(crate) fn get_redist_regs(
     RedistRegEngine::get_regs_data(fd, redist_regs(), mpidr)
 }
 
+#[log_instrument::instrument]
 pub(crate) fn set_redist_regs(
     fd: &DeviceFd,
     mpidr: u64,

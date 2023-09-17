@@ -38,6 +38,7 @@ struct MsrRange {
 }
 
 impl MsrRange {
+    #[log_instrument::instrument]
     /// Returns whether `msr` is contained in this MSR range.
     fn contains(&self, msr: u32) -> bool {
         self.base <= msr && msr < self.base + self.nmsrs
@@ -238,6 +239,7 @@ static SERIALIZABLE_MSR_RANGES: &[MsrRange] = &[
     MSR_RANGE!(MSR_KVM_ASYNC_PF_INT),
 ];
 
+#[log_instrument::instrument]
 /// Specifies whether a particular MSR should be included in vcpu serialization.
 ///
 /// # Arguments
@@ -253,6 +255,7 @@ pub fn msr_should_serialize(index: u32) -> bool {
         .any(|range| range.contains(index))
 }
 
+#[log_instrument::instrument]
 /// Returns the list of serializable MSR indices.
 ///
 /// # Arguments
@@ -389,6 +392,7 @@ static UNDUMPABLE_MSR_RANGES: &[MsrRange] = &[
     MSR_RANGE!(HV_X64_MSR_SYNDBG_OPTIONS),
 ];
 
+#[log_instrument::instrument]
 /// Specifies whether a particular MSR should be dumped.
 ///
 /// # Arguments
@@ -411,6 +415,7 @@ static UNDUMPABLE_MSR_RANGES_AMD: &[MsrRange] = &[
     MSR_RANGE!(MSR_IA32_ARCH_CAPABILITIES),
 ];
 
+#[log_instrument::instrument]
 /// Specifies whether a particular MSR should be dumped on AMD
 ///
 /// # Arguments
@@ -422,6 +427,7 @@ pub fn msr_should_dump_amd(index: u32) -> bool {
         .any(|range| range.contains(index))
 }
 
+#[log_instrument::instrument]
 /// Returns the list of dumpable MSR indices.
 ///
 /// # Arguments
@@ -445,6 +451,7 @@ pub fn get_msrs_to_dump(kvm_fd: &Kvm) -> Result<MsrList, MsrError> {
     Ok(msr_index_list)
 }
 
+#[log_instrument::instrument]
 /// Creates and populates required MSR entries for booting Linux on X86_64.
 pub fn create_boot_msr_entries() -> Vec<kvm_msr_entry> {
     let msr_entry_default = |msr| kvm_msr_entry {
@@ -473,6 +480,7 @@ pub fn create_boot_msr_entries() -> Vec<kvm_msr_entry> {
     ]
 }
 
+#[log_instrument::instrument]
 /// Configure Model Specific Registers (MSRs) required to boot Linux for a given x86_64 vCPU.
 ///
 /// # Arguments
@@ -504,6 +512,7 @@ mod tests {
 
     use super::*;
 
+    #[log_instrument::instrument]
     fn create_vcpu() -> VcpuFd {
         let kvm = Kvm::new().unwrap();
         let vm = kvm.create_vm().unwrap();

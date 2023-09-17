@@ -40,6 +40,7 @@ pub enum EditMemorySubCommand {
     },
 }
 
+#[log_instrument::instrument]
 pub fn edit_memory_command(command: EditMemorySubCommand) -> Result<(), EditMemoryError> {
     match command {
         EditMemorySubCommand::Rebase {
@@ -50,6 +51,7 @@ pub fn edit_memory_command(command: EditMemorySubCommand) -> Result<(), EditMemo
     Ok(())
 }
 
+#[log_instrument::instrument]
 fn rebase(memory_path: PathBuf, diff_path: PathBuf) -> Result<(), EditMemoryError> {
     let mut base_file = OpenOptions::new()
         .write(true)
@@ -111,6 +113,7 @@ mod tests {
 
     use super::*;
 
+    #[log_instrument::instrument]
     fn check_file_content(file: &File, expected_content: &[u8]) {
         assert_eq!(
             file.metadata().unwrap().len() as usize,

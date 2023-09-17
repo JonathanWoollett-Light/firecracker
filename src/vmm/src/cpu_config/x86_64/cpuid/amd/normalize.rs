@@ -86,6 +86,7 @@ impl super::AmdCpuid {
     const DEFAULT_BRAND_STRING: &[u8; BRAND_STRING_LENGTH] =
         b"AMD EPYC\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
+    #[log_instrument::instrument]
     /// Applies required modifications to CPUID respective of a vCPU.
     ///
     /// # Errors
@@ -114,6 +115,7 @@ impl super::AmdCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Passthrough cache topology.
     ///
     /// # Errors
@@ -181,6 +183,7 @@ impl super::AmdCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Update largest extended fn entry.
     #[allow(clippy::unwrap_used, clippy::unwrap_in_result)]
     fn update_largest_extended_fn_entry(&mut self) -> Result<(), NormalizeCpuidError> {
@@ -198,6 +201,7 @@ impl super::AmdCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Updated extended feature fn entry.
     fn update_extended_feature_fn_entry(&mut self) -> Result<(), NormalizeCpuidError> {
         // set the Topology Extension bit since we use the Extended Cache Topology leaf
@@ -213,6 +217,7 @@ impl super::AmdCpuid {
     }
 
     // Update structured extended feature entry.
+    #[log_instrument::instrument]
     fn update_structured_extended_entry(&mut self) -> Result<(), NormalizeCpuidError> {
         let leaf_7_subleaf_0 = self
             .get_mut(&CpuidKey::subleaf(0x7, 0x0))
@@ -226,6 +231,7 @@ impl super::AmdCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Update AMD feature entry.
     #[allow(clippy::unwrap_used, clippy::unwrap_in_result)]
     fn update_amd_feature_entry(&mut self, cpu_count: u8) -> Result<(), FeatureEntryError> {
@@ -264,6 +270,7 @@ impl super::AmdCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Update extended cache topology entry.
     #[allow(clippy::unwrap_in_result, clippy::unwrap_used)]
     fn update_extended_cache_topology_entry(
@@ -327,6 +334,7 @@ impl super::AmdCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Update extended apic id entry
     #[allow(clippy::unwrap_used, clippy::unwrap_in_result)]
     fn update_extended_apic_id_entry(
@@ -401,6 +409,7 @@ impl super::AmdCpuid {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Update brand string entry
     fn update_brand_string_entry(&mut self) -> Result<(), NormalizeCpuidError> {
         self.apply_brand_string(Self::DEFAULT_BRAND_STRING)

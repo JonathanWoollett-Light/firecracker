@@ -20,6 +20,7 @@ pub enum FingerprintDumpError {
     ShellCommand(String, String),
 }
 
+#[log_instrument::instrument]
 pub fn dump(vmm: Arc<Mutex<Vmm>>) -> Result<Fingerprint, FingerprintDumpError> {
     Ok(Fingerprint {
         firecracker_version: crate::utils::CPU_TEMPLATE_HELPER_VERSION.to_string(),
@@ -42,6 +43,7 @@ pub fn dump(vmm: Arc<Mutex<Vmm>>) -> Result<Fingerprint, FingerprintDumpError> {
     })
 }
 
+#[log_instrument::instrument]
 fn get_kernel_version() -> Result<String, FingerprintDumpError> {
     // SAFETY: An all-zeroed value for `libc::utsname` is valid.
     let mut name: libc::utsname = unsafe { std::mem::zeroed() };
@@ -61,12 +63,14 @@ fn get_kernel_version() -> Result<String, FingerprintDumpError> {
     Ok(version.to_string())
 }
 
+#[log_instrument::instrument]
 fn read_sysfs_file(path: &str) -> Result<String, FingerprintDumpError> {
     let s = read_to_string(path)
         .map_err(|err| FingerprintDumpError::ReadSysfsFile(path.to_string(), err))?;
     Ok(s.trim_end_matches('\n').to_string())
 }
 
+#[log_instrument::instrument]
 fn run_shell_command(cmd: &str) -> Result<String, FingerprintDumpError> {
     let output = std::process::Command::new("bash")
         .args(["-c", cmd])

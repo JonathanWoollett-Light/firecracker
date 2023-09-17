@@ -41,6 +41,7 @@ struct VsockAndUnixPath {
 }
 
 impl From<&VsockAndUnixPath> for VsockDeviceConfig {
+    #[log_instrument::instrument]
     fn from(vsock: &VsockAndUnixPath) -> Self {
         let vsock_lock = vsock.vsock.lock().unwrap();
         VsockDeviceConfig {
@@ -58,11 +59,13 @@ pub struct VsockBuilder {
 }
 
 impl VsockBuilder {
+    #[log_instrument::instrument]
     /// Creates an empty Vsock with Unix backend Store.
     pub fn new() -> Self {
         Self { inner: None }
     }
 
+    #[log_instrument::instrument]
     /// Inserts an existing vsock device.
     pub fn set_device(&mut self, device: Arc<Mutex<Vsock<VsockUnixBackend>>>) {
         self.inner = Some(VsockAndUnixPath {
@@ -76,6 +79,7 @@ impl VsockBuilder {
         });
     }
 
+    #[log_instrument::instrument]
     /// Inserts a Unix backend Vsock in the store.
     /// If an entry already exists, it will overwrite it.
     pub fn insert(&mut self, cfg: VsockDeviceConfig) -> Result<(), VsockConfigError> {
@@ -90,11 +94,13 @@ impl VsockBuilder {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Provides a reference to the Vsock if present.
     pub fn get(&self) -> Option<&MutexVsockUnix> {
         self.inner.as_ref().map(|pair| &pair.vsock)
     }
 
+    #[log_instrument::instrument]
     /// Creates a Vsock device from a VsockDeviceConfig.
     pub fn create_unixsock_vsock(
         cfg: VsockDeviceConfig,
@@ -104,6 +110,7 @@ impl VsockBuilder {
         Vsock::new(u64::from(cfg.guest_cid), backend).map_err(VsockConfigError::CreateVsockDevice)
     }
 
+    #[log_instrument::instrument]
     /// Returns the structure used to configure the vsock device.
     pub fn config(&self) -> Option<VsockDeviceConfig> {
         self.inner.as_ref().map(VsockDeviceConfig::from)
@@ -117,6 +124,7 @@ pub(crate) mod tests {
     use super::*;
     use crate::devices::virtio::vsock::VSOCK_DEV_ID;
 
+    #[log_instrument::instrument]
     pub(crate) fn default_config(tmp_sock_file: &TempFile) -> VsockDeviceConfig {
         VsockDeviceConfig {
             vsock_id: None,

@@ -33,6 +33,7 @@ pub enum VcpuError {
     GetMidrEl1(String),
 }
 
+#[log_instrument::instrument]
 /// Extract the Manufacturer ID from a VCPU state's registers.
 /// The ID is found between bits 24-31 of MIDR_EL1 register.
 ///
@@ -49,6 +50,7 @@ pub fn get_manufacturer_id_from_state(regs: &Aarch64RegisterVec) -> Result<u32, 
     }
 }
 
+#[log_instrument::instrument]
 /// Extract the Manufacturer ID from the host.
 /// The ID is found between bits 24-31 of MIDR_EL1 register.
 pub fn get_manufacturer_id_from_host() -> Result<u32, VcpuError> {
@@ -65,6 +67,7 @@ pub fn get_manufacturer_id_from_host() -> Result<u32, VcpuError> {
     Ok(manufacturer_id >> 24)
 }
 
+#[log_instrument::instrument]
 /// Configure relevant boot registers for a given vCPU.
 ///
 /// # Arguments
@@ -109,6 +112,7 @@ pub fn setup_boot_regs(
     Ok(())
 }
 
+#[log_instrument::instrument]
 /// Read the MPIDR - Multiprocessor Affinity Register.
 pub fn get_mpidr(vcpufd: &VcpuFd) -> Result<u64, VcpuError> {
     // MPIDR register is 64 bit wide on aarch64
@@ -119,6 +123,7 @@ pub fn get_mpidr(vcpufd: &VcpuFd) -> Result<u64, VcpuError> {
     }
 }
 
+#[log_instrument::instrument]
 /// Saves the states of the system registers into `state`.
 ///
 /// # Arguments
@@ -128,6 +133,7 @@ pub fn get_all_registers(vcpufd: &VcpuFd, state: &mut Aarch64RegisterVec) -> Res
     get_registers(vcpufd, &get_all_registers_ids(vcpufd)?, state)
 }
 
+#[log_instrument::instrument]
 /// Saves states of registers into `state`.
 ///
 /// # Arguments
@@ -150,6 +156,7 @@ pub fn get_registers(
     Ok(())
 }
 
+#[log_instrument::instrument]
 /// Returns all registers ids, including core and system
 pub fn get_all_registers_ids(vcpufd: &VcpuFd) -> Result<Vec<u64>, VcpuError> {
     // Call KVM_GET_REG_LIST to get all registers available to the guest. For ArmV8 there are
@@ -161,6 +168,7 @@ pub fn get_all_registers_ids(vcpufd: &VcpuFd) -> Result<Vec<u64>, VcpuError> {
     Ok(reg_list.as_slice().to_vec())
 }
 
+#[log_instrument::instrument]
 /// Set the state of the system registers.
 ///
 /// # Arguments
@@ -175,6 +183,7 @@ pub fn set_registers(vcpufd: &VcpuFd, regs: &Aarch64RegisterVec) -> Result<(), V
     Ok(())
 }
 
+#[log_instrument::instrument]
 /// Get the multistate processor.
 ///
 /// # Arguments
@@ -184,6 +193,7 @@ pub fn get_mpstate(vcpufd: &VcpuFd) -> Result<kvm_mp_state, VcpuError> {
     vcpufd.get_mp_state().map_err(VcpuError::GetMp)
 }
 
+#[log_instrument::instrument]
 /// Set the state of the system registers.
 ///
 /// # Arguments

@@ -48,6 +48,7 @@ pub struct JsonFile(pub BTreeMap<String, Filter>);
 
 // Implement a custom deserializer, that returns an error for duplicate thread keys.
 impl<'de> Deserialize<'de> for JsonFile {
+    #[log_instrument::instrument]
     fn deserialize<D>(deserializer: D) -> result::Result<Self, D::Error>
     where
         D: de::Deserializer<'de>,
@@ -58,10 +59,12 @@ impl<'de> Deserialize<'de> for JsonFile {
         impl<'d> Visitor<'d> for JsonFileVisitor {
             type Value = BTreeMap<String, Filter>;
 
+            #[log_instrument::instrument]
             fn expecting(&self, f: &mut fmt::Formatter<'_>) -> result::Result<(), fmt::Error> {
                 f.write_str("a map of filters")
             }
 
+            #[log_instrument::instrument]
             fn visit_map<M>(self, mut access: M) -> result::Result<Self::Value, M::Error>
             where
                 M: MapAccess<'d>,
@@ -95,6 +98,7 @@ pub struct SyscallRule {
 }
 
 impl SyscallRule {
+    #[log_instrument::instrument]
     /// Perform semantic checks after deserialization.
     fn validate(&self) -> Result<(), CompilationError> {
         // Validate all `SeccompCondition`s.
@@ -123,6 +127,7 @@ pub struct Filter {
 }
 
 impl Filter {
+    #[log_instrument::instrument]
     /// Perform semantic checks after deserialization.
     fn validate(&self) -> Result<(), CompilationError> {
         // Doesn't make sense to have equal default and on-match actions.
@@ -151,6 +156,7 @@ pub struct Compiler {
 }
 
 impl Compiler {
+    #[log_instrument::instrument]
     /// Create a new `Compiler` instance, for the given target architecture.
     pub fn new(arch: TargetArch) -> Self {
         Self {
@@ -159,6 +165,7 @@ impl Compiler {
         }
     }
 
+    #[log_instrument::instrument]
     /// Perform semantic checks after deserialization.
     fn validate_filters(&self, filters: &BTreeMap<String, Filter>) -> Result<(), CompilationError> {
         // Validate all `Filter`s.
@@ -169,6 +176,7 @@ impl Compiler {
             .map_or(Ok(()), Err)
     }
 
+    #[log_instrument::instrument]
     /// Main compilation function.
     pub fn compile_blob(
         &self,
@@ -191,6 +199,7 @@ impl Compiler {
         Ok(bpf_map)
     }
 
+    #[log_instrument::instrument]
     /// Transforms the deserialized `Filter` into a `SeccompFilter` (IR language).
     fn make_seccomp_filter(&self, filter: Filter) -> Result<SeccompFilter, CompilationError> {
         let mut rule_map: SeccompRuleMap = SeccompRuleMap::new();
@@ -215,6 +224,7 @@ impl Compiler {
             .map_err(CompilationError::Filter)
     }
 
+    #[log_instrument::instrument]
     /// Transforms the deserialized `Filter` into a basic `SeccompFilter` (IR language).
     /// This filter will drop any argument checks and any rule-level action.
     /// All rules will trigger the filter-level `filter_action`.
@@ -258,6 +268,7 @@ mod tests {
     };
 
     impl Filter {
+        #[log_instrument::instrument]
         pub fn new(
             default_action: SeccompAction,
             filter_action: SeccompAction,
@@ -272,6 +283,7 @@ mod tests {
     }
 
     impl SyscallRule {
+        #[log_instrument::instrument]
         pub fn new(syscall: String, conditions: Option<Vec<Cond>>) -> SyscallRule {
             SyscallRule {
                 syscall,
@@ -281,10 +293,12 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn match_syscall(syscall_number: i64, action: SeccompAction) -> (i64, Vec<SeccompRule>) {
         (syscall_number, vec![SeccompRule::new(vec![], action)])
     }
 
+    #[log_instrument::instrument]
     fn match_syscall_if(syscall_number: i64, rules: Vec<SeccompRule>) -> (i64, Vec<SeccompRule>) {
         (syscall_number, rules)
     }

@@ -69,6 +69,7 @@ impl PortIODeviceManager {
     /// i8042 keyboard data register size.
     const I8042_KDB_DATA_REGISTER_SIZE: u64 = 0x5;
 
+    #[log_instrument::instrument]
     /// Create a new DeviceManager handling legacy devices (uart, i8042).
     pub fn new(
         serial: Arc<Mutex<BusDevice>>,
@@ -101,6 +102,7 @@ impl PortIODeviceManager {
         })
     }
 
+    #[log_instrument::instrument]
     /// Register supported legacy devices.
     pub fn register_devices(&mut self, vm_fd: &VmFd) -> Result<(), LegacyDeviceError> {
         let serial_2_4 = Arc::new(Mutex::new(BusDevice::Serial(SerialDevice {

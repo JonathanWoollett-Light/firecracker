@@ -27,6 +27,7 @@ impl TxBuf {
     /// Total buffer size, in bytes.
     const SIZE: usize = defs::CONN_TX_BUF_SIZE as usize;
 
+    #[log_instrument::instrument]
     /// Ring-buffer constructor.
     pub fn new() -> Self {
         Self {
@@ -36,12 +37,14 @@ impl TxBuf {
         }
     }
 
+    #[log_instrument::instrument]
     /// Get the used length of this buffer - number of bytes that have been pushed in, but not
     /// yet flushed out.
     pub fn len(&self) -> usize {
         (self.head - self.tail).0 as usize
     }
 
+    #[log_instrument::instrument]
     /// Push a byte slice onto the ring-buffer.
     ///
     /// Either the entire source slice will be pushed to the ring-buffer, or none of it, if
@@ -81,6 +84,7 @@ impl TxBuf {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Flush the contents of the ring-buffer to a writable stream.
     ///
     /// Return the number of bytes that have been transferred out of the ring-buffer and into
@@ -129,6 +133,7 @@ impl TxBuf {
         Ok(written + self.flush_to(sink).unwrap_or(0))
     }
 
+    #[log_instrument::instrument]
     /// Check if the buffer holds any data that hasn't yet been flushed out.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
@@ -136,6 +141,7 @@ impl TxBuf {
 }
 
 impl WriteVolatile for TxBuf {
+    #[log_instrument::instrument]
     fn write_volatile<B: BitmapSlice>(
         &mut self,
         buf: &VolatileSlice<B>,
@@ -161,6 +167,7 @@ mod tests {
 
     impl TestSink {
         const DEFAULT_CAPACITY: usize = 2 * TxBuf::SIZE;
+        #[log_instrument::instrument]
         fn new() -> Self {
             Self {
                 data: Vec::with_capacity(Self::DEFAULT_CAPACITY),
@@ -171,6 +178,7 @@ mod tests {
     }
 
     impl Write for TestSink {
+        #[log_instrument::instrument]
         fn write(&mut self, src: &[u8]) -> Result<usize, IoError> {
             if self.err.is_some() {
                 return Err(self.err.take().unwrap());
@@ -179,19 +187,23 @@ mod tests {
             self.data.extend_from_slice(&src[..len_to_push]);
             Ok(len_to_push)
         }
+        #[log_instrument::instrument]
         fn flush(&mut self) -> Result<(), IoError> {
             Ok(())
         }
     }
 
     impl TestSink {
+        #[log_instrument::instrument]
         fn clear(&mut self) {
             self.data = Vec::with_capacity(self.capacity);
             self.err = None;
         }
+        #[log_instrument::instrument]
         fn set_err(&mut self, err: IoError) {
             self.err = Some(err);
         }
+        #[log_instrument::instrument]
         fn set_capacity(&mut self, capacity: usize) {
             self.capacity = capacity;
             if self.data.len() > self.capacity {

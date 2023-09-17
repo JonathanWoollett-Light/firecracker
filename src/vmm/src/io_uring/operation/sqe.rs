@@ -14,17 +14,20 @@ unsafe impl ByteValued for io_uring_sqe {}
 pub(crate) struct Sqe(pub(crate) io_uring_sqe);
 
 impl fmt::Debug for Sqe {
+    #[log_instrument::instrument]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Sqe").finish()
     }
 }
 
 impl Sqe {
+    #[log_instrument::instrument]
     /// Construct a new sqe.
     pub(crate) fn new(inner: io_uring_sqe) -> Self {
         Self(inner)
     }
 
+    #[log_instrument::instrument]
     /// Consume the sqe and return the `user_data`.
     ///
     /// # Safety

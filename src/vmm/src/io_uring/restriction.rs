@@ -25,6 +25,7 @@ pub enum Restriction {
 }
 
 impl From<&Restriction> for bindings::io_uring_restriction {
+    #[log_instrument::instrument]
     fn from(restriction: &Restriction) -> Self {
         use Restriction::*;
 

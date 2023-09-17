@@ -43,6 +43,7 @@ enum Command {
     InfoVmstate(InfoVmStateSubCommand),
 }
 
+#[log_instrument::instrument]
 fn main_exec() -> Result<(), SnapEditorError> {
     let cli = Cli::parse();
 
@@ -56,6 +57,7 @@ fn main_exec() -> Result<(), SnapEditorError> {
     Ok(())
 }
 
+#[log_instrument::instrument]
 fn main() -> Result<(), SnapEditorError> {
     let result = main_exec();
     if let Err(e) = result {

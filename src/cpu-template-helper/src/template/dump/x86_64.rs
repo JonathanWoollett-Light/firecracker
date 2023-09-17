@@ -11,6 +11,7 @@ use vmm::cpu_config::x86_64::custom_cpu_template::{
 
 use crate::utils::x86_64::{cpuid_leaf_modifier, cpuid_reg_modifier, msr_modifier};
 
+#[log_instrument::instrument]
 /// Convert `&CpuConfiguration` to `CustomCputemplate`.
 pub fn config_to_template(cpu_config: &CpuConfiguration) -> CustomCpuTemplate {
     CustomCpuTemplate {
@@ -20,6 +21,7 @@ pub fn config_to_template(cpu_config: &CpuConfiguration) -> CustomCpuTemplate {
     }
 }
 
+#[log_instrument::instrument]
 fn cpuid_to_modifiers(cpuid: &Cpuid) -> Vec<CpuidLeafModifier> {
     cpuid
         .inner()
@@ -40,6 +42,7 @@ fn cpuid_to_modifiers(cpuid: &Cpuid) -> Vec<CpuidLeafModifier> {
         .collect()
 }
 
+#[log_instrument::instrument]
 fn msrs_to_modifier(msrs: &HashMap<u32, u64>) -> Vec<RegisterModifier> {
     let mut msrs: Vec<RegisterModifier> = msrs
         .iter()
@@ -59,6 +62,7 @@ mod tests {
 
     use super::*;
 
+    #[log_instrument::instrument]
     fn build_sample_cpuid() -> Cpuid {
         Cpuid::Intel(IntelCpuid(BTreeMap::from([
             (
@@ -94,6 +98,7 @@ mod tests {
         ])))
     }
 
+    #[log_instrument::instrument]
     fn build_expected_cpuid_modifiers() -> Vec<CpuidLeafModifier> {
         vec![
             cpuid_leaf_modifier!(
@@ -121,6 +126,7 @@ mod tests {
         ]
     }
 
+    #[log_instrument::instrument]
     fn build_sample_msrs() -> HashMap<u32, u64> {
         HashMap::from([
             (0x1, 0xffff_ffff_ffff_ffff),
@@ -130,6 +136,7 @@ mod tests {
         ])
     }
 
+    #[log_instrument::instrument]
     fn build_expected_msr_modifiers() -> Vec<RegisterModifier> {
         vec![
             msr_modifier!(0x1, 0xffff_ffff_ffff_ffff),

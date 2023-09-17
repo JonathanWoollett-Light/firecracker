@@ -36,6 +36,7 @@ pub trait DiffString<V> {
 impl<V: Numeric> DiffString<V> for V {
     // Generate a string to display difference of filtered values between CPU template and guest
     // CPU config.
+    #[log_instrument::instrument]
     #[rustfmt::skip]
     fn to_diff_string(template: V, config: V) -> String {
         let mut diff = String::new();
@@ -66,6 +67,7 @@ pub enum UtilsError {
     BuildMicroVm(#[from] StartMicrovmError),
 }
 
+#[log_instrument::instrument]
 pub fn build_microvm_from_config(
     config: &str,
 ) -> Result<(Arc<Mutex<Vmm>>, VmResources), UtilsError> {
@@ -92,6 +94,7 @@ pub fn build_microvm_from_config(
     Ok((vmm, vm_resources))
 }
 
+#[log_instrument::instrument]
 pub fn add_suffix(path: &Path, suffix: &str) -> PathBuf {
     // Extract the part of the filename before the extension.
     let mut new_file_name = OsString::from(path.file_stem().unwrap());
@@ -124,6 +127,7 @@ pub mod tests {
 
     impl ModifierMapKey for MockModifierMapKey {}
     impl Display for MockModifierMapKey {
+        #[log_instrument::instrument]
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             write!(f, "ID={:#x}", self.0)
         }

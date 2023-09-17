@@ -40,6 +40,7 @@ pub(crate) struct ParsingInfo {
 }
 
 impl ParsingInfo {
+    #[log_instrument::instrument]
     pub fn append_deprecation_message(&mut self, message: &str) {
         match self.deprecation_message.as_mut() {
             None => self.deprecation_message = Some(message.to_owned()),
@@ -47,6 +48,7 @@ impl ParsingInfo {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn take_deprecation_message(&mut self) -> Option<String> {
         self.deprecation_message.take()
     }
@@ -60,6 +62,7 @@ pub(crate) struct ParsedRequest {
 
 impl TryFrom<&Request> for ParsedRequest {
     type Error = Error;
+    #[log_instrument::instrument]
     fn try_from(request: &Request) -> Result<Self, Self::Error> {
         let request_uri = request.uri().get_abs_path().to_string();
         log_received_api_request(describe(
@@ -117,6 +120,7 @@ impl TryFrom<&Request> for ParsedRequest {
 }
 
 impl ParsedRequest {
+    #[log_instrument::instrument]
     pub(crate) fn new(action: RequestAction) -> Self {
         Self {
             action,
@@ -124,14 +128,17 @@ impl ParsedRequest {
         }
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn into_parts(self) -> (RequestAction, ParsingInfo) {
         (self.action, self.parsing_info)
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn parsing_info(&mut self) -> &mut ParsingInfo {
         &mut self.parsing_info
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn success_response_with_data<T>(body_data: &T) -> Response
     where
         T: ?Sized + Serialize + Debug,
@@ -142,6 +149,7 @@ impl ParsedRequest {
         response
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn success_response_with_mmds_value(body_data: &Value) -> Response {
         info!("The request was executed successfully. Status code: 200 OK.");
         let mut response = Response::new(Version::Http11, StatusCode::OK);
@@ -153,6 +161,7 @@ impl ParsedRequest {
         response
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn convert_to_response(
         request_outcome: &std::result::Result<VmmData, VmmActionError>,
     ) -> Response {
@@ -201,12 +210,14 @@ impl ParsedRequest {
         }
     }
 
+    #[log_instrument::instrument]
     /// Helper function to avoid boiler-plate code.
     pub(crate) fn new_sync(vmm_action: VmmAction) -> ParsedRequest {
         ParsedRequest::new(RequestAction::Sync(Box::new(vmm_action)))
     }
 }
 
+#[log_instrument::instrument]
 /// Helper function for writing the received API requests to the log.
 ///
 /// The `info` macro is used for logging.
@@ -215,6 +226,7 @@ fn log_received_api_request(api_description: String) {
     info!("The API server received a {}.", api_description);
 }
 
+#[log_instrument::instrument]
 /// Helper function for metric-logging purposes on API requests.
 ///
 /// # Arguments
@@ -242,6 +254,7 @@ fn describe(method: Method, path: &str, body: Option<&Body>) -> String {
     }
 }
 
+#[log_instrument::instrument]
 fn describe_with_body(method: Method, path: &str, payload_value: &Body) -> String {
     format!(
         "{:?} request on {:?} with body {:?}",
@@ -253,6 +266,7 @@ fn describe_with_body(method: Method, path: &str, payload_value: &Body) -> Strin
     )
 }
 
+#[log_instrument::instrument]
 /// Generates a `GenericError` for each request method.
 pub(crate) fn method_to_error(method: Method) -> Result<ParsedRequest, Error> {
     match method {
@@ -292,6 +306,7 @@ pub(crate) enum Error {
 
 // It's convenient to turn errors into HTTP responses directly.
 impl From<Error> for Response {
+    #[log_instrument::instrument]
     fn from(err: Error) -> Self {
         let msg = ApiServer::json_fault_message(format!("{}", err));
         match err {
@@ -305,6 +320,7 @@ impl From<Error> for Response {
 }
 
 // This function is supposed to do id validation for requests.
+#[log_instrument::instrument]
 pub(crate) fn checked_id(id: &str) -> Result<&str, Error> {
     // todo: are there any checks we want to do on id's?
     // not allow them to be empty strings maybe?
@@ -337,6 +353,7 @@ pub mod tests {
     use super::*;
 
     impl PartialEq for ParsedRequest {
+        #[log_instrument::instrument]
         fn eq(&self, other: &ParsedRequest) -> bool {
             if self.parsing_info.deprecation_message != other.parsing_info.deprecation_message {
                 return false;
@@ -350,12 +367,14 @@ pub mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn vmm_action_from_request(req: ParsedRequest) -> VmmAction {
         match req.action {
             RequestAction::Sync(vmm_action) => *vmm_action,
         }
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn depr_action_from_req(req: ParsedRequest, msg: Option<String>) -> VmmAction {
         let (action_req, mut parsing_info) = req.into_parts();
         match action_req {
@@ -368,6 +387,7 @@ pub mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn http_response(body: &str, status_code: i32) -> String {
         let header = format!(
             "HTTP/1.1 {} \r\nServer: Firecracker API\r\nConnection: keep-alive\r\n",
@@ -387,6 +407,7 @@ pub mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn http_request(request_type: &str, endpoint: &str, body: Option<&str>) -> String {
         let req_no_body = format!(
             "{} {} HTTP/1.1\r\nContent-Type: application/json\r\n",

@@ -83,10 +83,12 @@ pub trait AsAny {
 }
 
 impl<T: Any> AsAny for T {
+    #[log_instrument::instrument]
     fn as_any(&self) -> &dyn Any {
         self
     }
 
+    #[log_instrument::instrument]
     fn as_mut_any(&mut self) -> &mut dyn Any {
         self
     }

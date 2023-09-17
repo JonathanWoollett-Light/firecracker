@@ -34,6 +34,7 @@ pub enum InfoVmStateSubCommand {
     },
 }
 
+#[log_instrument::instrument]
 pub fn info_vmstate_command(command: InfoVmStateSubCommand) -> Result<(), InfoVmStateError> {
     match command {
         InfoVmStateSubCommand::Version { vmstate_path } => info(&vmstate_path, info_version)?,
@@ -45,6 +46,7 @@ pub fn info_vmstate_command(command: InfoVmStateSubCommand) -> Result<(), InfoVm
     Ok(())
 }
 
+#[log_instrument::instrument]
 fn info(
     vmstate_path: &PathBuf,
     f: impl Fn(&MicrovmState, u16) -> Result<(), InfoVmStateError>,
@@ -54,6 +56,7 @@ fn info(
     Ok(())
 }
 
+#[log_instrument::instrument]
 fn info_version(_: &MicrovmState, version: u16) -> Result<(), InfoVmStateError> {
     match FC_VERSION_TO_SNAP_VERSION
         .iter()
@@ -67,6 +70,7 @@ fn info_version(_: &MicrovmState, version: u16) -> Result<(), InfoVmStateError> 
     }
 }
 
+#[log_instrument::instrument]
 #[cfg(target_arch = "aarch64")]
 fn info_vcpu_states(state: &MicrovmState, _: u16) -> Result<(), InfoVmStateError> {
     for (i, state) in state.vcpu_states.iter().enumerate() {

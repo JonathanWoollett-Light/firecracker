@@ -58,12 +58,14 @@ pub enum FileEngineType {
 }
 
 impl Default for FileEngineType {
+    #[log_instrument::instrument]
     fn default() -> Self {
         Self::Sync
     }
 }
 
 impl FileEngineType {
+    #[log_instrument::instrument]
     /// Whether the Async engine is supported on the current host kernel.
     pub fn is_supported(&self) -> Result<bool, utils::kernel_version::Error> {
         match self {
@@ -84,6 +86,7 @@ pub(crate) struct DiskProperties {
 }
 
 impl DiskProperties {
+    #[log_instrument::instrument]
     pub fn new(
         disk_image_path: String,
         is_disk_read_only: bool,
@@ -119,27 +122,33 @@ impl DiskProperties {
         })
     }
 
+    #[log_instrument::instrument]
     pub fn file_engine(&self) -> &FileEngine<PendingRequest> {
         &self.file_engine
     }
 
+    #[log_instrument::instrument]
     pub fn file_engine_mut(&mut self) -> &mut FileEngine<PendingRequest> {
         &mut self.file_engine
     }
 
+    #[log_instrument::instrument]
     #[cfg(test)]
     pub fn file(&self) -> &File {
         self.file_engine.file()
     }
 
+    #[log_instrument::instrument]
     pub fn nsectors(&self) -> u64 {
         self.nsectors
     }
 
+    #[log_instrument::instrument]
     pub fn image_id(&self) -> &[u8] {
         &self.image_id
     }
 
+    #[log_instrument::instrument]
     fn build_device_id(disk_file: &File) -> Result<String, BlockError> {
         let blk_metadata = disk_file.metadata().map_err(BlockError::GetFileMetadata)?;
         // This is how kvmtool does it.
@@ -152,6 +161,7 @@ impl DiskProperties {
         Ok(device_id)
     }
 
+    #[log_instrument::instrument]
     fn build_disk_image_id(disk_file: &File) -> [u8; VIRTIO_BLK_ID_BYTES as usize] {
         let mut default_id = [0; VIRTIO_BLK_ID_BYTES as usize];
         match Self::build_device_id(disk_file) {
@@ -169,11 +179,13 @@ impl DiskProperties {
         default_id
     }
 
+    #[log_instrument::instrument]
     /// Backing file path.
     pub fn file_path(&self) -> &String {
         &self.file_path
     }
 
+    #[log_instrument::instrument]
     /// Provides vec containing the virtio block configuration space
     /// buffer. The config space is populated with the disk size based
     /// on the backing file size.
@@ -186,6 +198,7 @@ impl DiskProperties {
         config
     }
 
+    #[log_instrument::instrument]
     pub fn cache_type(&self) -> CacheType {
         self.cache_type
     }
@@ -230,6 +243,7 @@ macro_rules! unwrap_async_file_engine_or_return {
 }
 
 impl Block {
+    #[log_instrument::instrument]
     /// Create a new virtio block device that operates on the given file.
     ///
     /// The given file must be seekable and sizable.
@@ -283,6 +297,7 @@ impl Block {
         })
     }
 
+    #[log_instrument::instrument]
     /// Process a single event in the VirtIO queue.
     ///
     /// This function is called by the event manager when the guest notifies us
@@ -301,11 +316,13 @@ impl Block {
         }
     }
 
+    #[log_instrument::instrument]
     /// Process device virtio queue(s).
     pub fn process_virtio_queues(&mut self) {
         self.process_queue(0);
     }
 
+    #[log_instrument::instrument]
     pub(crate) fn process_rate_limiter_event(&mut self) {
         METRICS.block.rate_limiter_event_count.inc();
         // Upon rate limiter event, call the rate limiter handler
@@ -315,6 +332,7 @@ impl Block {
         }
     }
 
+    #[log_instrument::instrument]
     fn add_used_descriptor(
         queue: &mut Queue,
         index: u16,
@@ -333,6 +351,7 @@ impl Block {
         }
     }
 
+    #[log_instrument::instrument]
     /// Device specific function for peaking inside a queue and processing descriptors.
     pub fn process_queue(&mut self, queue_index: usize) {
         // This is safe since we checked in the event handler that the device is activated.
@@ -395,6 +414,7 @@ impl Block {
         }
     }
 
+    #[log_instrument::instrument]
     fn process_async_completion_queue(&mut self) {
         let engine = unwrap_async_file_engine_or_return!(&mut self.disk.file_engine);
 
@@ -436,6 +456,7 @@ impl Block {
         }
     }
 
+    #[log_instrument::instrument]
     pub fn process_async_completion_event(&mut self) {
         let engine = unwrap_async_file_engine_or_return!(&mut self.disk.file_engine);
 
@@ -451,6 +472,7 @@ impl Block {
         }
     }
 
+    #[log_instrument::instrument]
     /// Update the backing file and the config space of the block device.
     pub fn update_disk_image(&mut self, disk_image_path: String) -> Result<(), BlockError> {
         let disk_properties = DiskProperties::new(
@@ -469,46 +491,55 @@ impl Block {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     /// Updates the parameters for the rate limiter
     pub fn update_rate_limiter(&mut self, bytes: BucketUpdate, ops: BucketUpdate) {
         self.rate_limiter.update_buckets(bytes, ops);
     }
 
+    #[log_instrument::instrument]
     /// Provides the ID of this block device.
     pub fn id(&self) -> &String {
         &self.id
     }
 
+    #[log_instrument::instrument]
     /// Provides backing file path of this block device.
     pub fn file_path(&self) -> &String {
         self.disk.file_path()
     }
 
+    #[log_instrument::instrument]
     /// Provides the PARTUUID of this block device.
     pub fn partuuid(&self) -> Option<&String> {
         self.partuuid.as_ref()
     }
 
+    #[log_instrument::instrument]
     /// Specifies if this block device is read only.
     pub fn is_read_only(&self) -> bool {
         self.avail_features & (1u64 << VIRTIO_BLK_F_RO) != 0
     }
 
+    #[log_instrument::instrument]
     /// Specifies if this block device is read only.
     pub fn is_root_device(&self) -> bool {
         self.root_device
     }
 
+    #[log_instrument::instrument]
     /// Specifies block device cache type.
     pub fn cache_type(&self) -> CacheType {
         self.disk.cache_type()
     }
 
+    #[log_instrument::instrument]
     /// Provides non-mutable reference to this device's rate limiter.
     pub fn rate_limiter(&self) -> &RateLimiter {
         &self.rate_limiter
     }
 
+    #[log_instrument::instrument]
     /// Retrieve the file engine type.
     pub fn file_engine_type(&self) -> FileEngineType {
         match self.disk.file_engine() {
@@ -517,12 +548,14 @@ impl Block {
         }
     }
 
+    #[log_instrument::instrument]
     fn drain_and_flush(&mut self, discard: bool) {
         if let Err(err) = self.disk.file_engine_mut().drain_and_flush(discard) {
             error!("Failed to drain ops and flush block data: {:?}", err);
         }
     }
 
+    #[log_instrument::instrument]
     /// Prepare device for being snapshotted.
     pub fn prepare_save(&mut self) {
         if !self.is_activated() {
@@ -537,43 +570,53 @@ impl Block {
 }
 
 impl VirtioDevice for Block {
+    #[log_instrument::instrument]
     fn avail_features(&self) -> u64 {
         self.avail_features
     }
 
+    #[log_instrument::instrument]
     fn acked_features(&self) -> u64 {
         self.acked_features
     }
 
+    #[log_instrument::instrument]
     fn set_acked_features(&mut self, acked_features: u64) {
         self.acked_features = acked_features;
     }
 
+    #[log_instrument::instrument]
     fn device_type(&self) -> u32 {
         TYPE_BLOCK
     }
 
+    #[log_instrument::instrument]
     fn queues(&self) -> &[Queue] {
         &self.queues
     }
 
+    #[log_instrument::instrument]
     fn queues_mut(&mut self) -> &mut [Queue] {
         &mut self.queues
     }
 
+    #[log_instrument::instrument]
     fn queue_events(&self) -> &[EventFd] {
         &self.queue_evts
     }
 
+    #[log_instrument::instrument]
     fn interrupt_evt(&self) -> &EventFd {
         &self.irq_trigger.irq_evt
     }
 
+    #[log_instrument::instrument]
     /// Returns the current device interrupt status.
     fn interrupt_status(&self) -> Arc<AtomicUsize> {
         self.irq_trigger.irq_status.clone()
     }
 
+    #[log_instrument::instrument]
     fn read_config(&self, offset: u64, mut data: &mut [u8]) {
         let config_len = self.config_space.len() as u64;
         if offset >= config_len {
@@ -588,6 +631,7 @@ impl VirtioDevice for Block {
         }
     }
 
+    #[log_instrument::instrument]
     fn write_config(&mut self, offset: u64, data: &[u8]) {
         let start = usize::try_from(offset).ok();
         let end = start.and_then(|s| s.checked_add(data.len()));
@@ -603,6 +647,7 @@ impl VirtioDevice for Block {
         dst.copy_from_slice(data);
     }
 
+    #[log_instrument::instrument]
     fn activate(&mut self, mem: GuestMemoryMmap) -> Result<(), ActivateError> {
         let event_idx = self.has_feature(u64::from(VIRTIO_RING_F_EVENT_IDX));
         if event_idx {
@@ -619,12 +664,14 @@ impl VirtioDevice for Block {
         Ok(())
     }
 
+    #[log_instrument::instrument]
     fn is_activated(&self) -> bool {
         self.device_state.is_activated()
     }
 }
 
 impl Drop for Block {
+    #[log_instrument::instrument]
     fn drop(&mut self) {
         match self.disk.cache_type {
             CacheType::Unsafe => {
@@ -1377,6 +1424,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn add_flush_requests_batch(block: &mut Block, vq: &VirtQueue, count: u16) {
         let mem = vq.memory();
         vq.avail.idx.set(0);
@@ -1416,6 +1464,7 @@ mod tests {
         }
     }
 
+    #[log_instrument::instrument]
     fn check_flush_requests_batch(count: u16, vq: &VirtQueue) {
         let used_idx = vq.used.idx.get();
         assert_eq!(used_idx, count);

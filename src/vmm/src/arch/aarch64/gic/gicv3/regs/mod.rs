@@ -10,6 +10,7 @@ use kvm_ioctls::DeviceFd;
 use crate::arch::aarch64::gic::regs::{GicState, GicVcpuState};
 use crate::arch::aarch64::gic::GicError;
 
+#[log_instrument::instrument]
 /// Save the state of the GIC device.
 pub fn save_state(fd: &DeviceFd, mpidrs: &[u64]) -> Result<GicState, GicError> {
     // Flush redistributors pending tables to guest RAM.
@@ -29,6 +30,7 @@ pub fn save_state(fd: &DeviceFd, mpidrs: &[u64]) -> Result<GicState, GicError> {
     })
 }
 
+#[log_instrument::instrument]
 /// Restore the state of the GIC device.
 pub fn restore_state(fd: &DeviceFd, mpidrs: &[u64], state: &GicState) -> Result<(), GicError> {
     dist_regs::set_dist_regs(fd, &state.dist)?;

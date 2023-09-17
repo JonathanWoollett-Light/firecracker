@@ -73,6 +73,7 @@ pub struct EthIPv4ArpFrame<'a, T: 'a> {
 
 #[allow(clippy::len_without_is_empty)]
 impl<'a, T: NetworkBytes + Debug> EthIPv4ArpFrame<'a, T> {
+    #[log_instrument::instrument]
     /// Interprets the given bytes as an ARP frame, without doing any validity checks beforehand.
     ///
     ///  # Panics
@@ -86,6 +87,7 @@ impl<'a, T: NetworkBytes + Debug> EthIPv4ArpFrame<'a, T> {
         }
     }
 
+    #[log_instrument::instrument]
     /// Tries to interpret a byte slice as a valid IPv4 over Ethernet ARP request.
     ///
     /// If no error occurs, it guarantees accessor methods (which make use of various `_unchecked`
@@ -122,60 +124,70 @@ impl<'a, T: NetworkBytes + Debug> EthIPv4ArpFrame<'a, T> {
         Ok(maybe)
     }
 
+    #[log_instrument::instrument]
     /// Returns the hardware type of the frame.
     #[inline]
     pub fn htype(&self) -> u16 {
         self.bytes.ntohs_unchecked(HTYPE_OFFSET)
     }
 
+    #[log_instrument::instrument]
     /// Returns the protocol type of the frame.
     #[inline]
     pub fn ptype(&self) -> u16 {
         self.bytes.ntohs_unchecked(PTYPE_OFFSET)
     }
 
+    #[log_instrument::instrument]
     /// Returns the hardware address length of the frame.
     #[inline]
     pub fn hlen(&self) -> u8 {
         self.bytes[HLEN_OFFSET]
     }
 
+    #[log_instrument::instrument]
     /// Returns the protocol address length of the frame.
     #[inline]
     pub fn plen(&self) -> u8 {
         self.bytes[PLEN_OFFSET]
     }
 
+    #[log_instrument::instrument]
     /// Returns the type of operation within the frame.
     #[inline]
     pub fn operation(&self) -> u16 {
         self.bytes.ntohs_unchecked(OPER_OFFSET)
     }
 
+    #[log_instrument::instrument]
     /// Returns the sender hardware address.
     #[inline]
     pub fn sha(&self) -> MacAddr {
         MacAddr::from_bytes_unchecked(&self.bytes[SHA_OFFSET..ETH_IPV4_SPA_OFFSET])
     }
 
+    #[log_instrument::instrument]
     /// Returns the sender protocol address.
     #[inline]
     pub fn spa(&self) -> Ipv4Addr {
         Ipv4Addr::from(self.bytes.ntohl_unchecked(ETH_IPV4_SPA_OFFSET))
     }
 
+    #[log_instrument::instrument]
     /// Returns the target hardware address.
     #[inline]
     pub fn tha(&self) -> MacAddr {
         MacAddr::from_bytes_unchecked(&self.bytes[ETH_IPV4_THA_OFFSET..ETH_IPV4_TPA_OFFSET])
     }
 
+    #[log_instrument::instrument]
     /// Returns the target protocol address.
     #[inline]
     pub fn tpa(&self) -> Ipv4Addr {
         Ipv4Addr::from(self.bytes.ntohl_unchecked(ETH_IPV4_TPA_OFFSET))
     }
 
+    #[log_instrument::instrument]
     /// Returns the length of the frame.
     #[inline]
     pub fn len(&self) -> usize {
@@ -186,6 +198,7 @@ impl<'a, T: NetworkBytes + Debug> EthIPv4ArpFrame<'a, T> {
 }
 
 impl<'a, T: NetworkBytesMut + Debug> EthIPv4ArpFrame<'a, T> {
+    #[log_instrument::instrument]
     #[allow(clippy::too_many_arguments)]
     fn write_raw(
         buf: T,
@@ -219,6 +232,7 @@ impl<'a, T: NetworkBytesMut + Debug> EthIPv4ArpFrame<'a, T> {
         Ok(frame)
     }
 
+    #[log_instrument::instrument]
     /// Attempts to write an ARP request to `buf`, based on the specified hardware and protocol
     /// addresses.
     #[inline]
@@ -243,6 +257,7 @@ impl<'a, T: NetworkBytesMut + Debug> EthIPv4ArpFrame<'a, T> {
         )
     }
 
+    #[log_instrument::instrument]
     /// Attempts to write an ARP reply to `buf`, based on the specified hardware and protocol
     /// addresses.
     #[inline]
@@ -267,42 +282,49 @@ impl<'a, T: NetworkBytesMut + Debug> EthIPv4ArpFrame<'a, T> {
         )
     }
 
+    #[log_instrument::instrument]
     /// Sets the hardware type of the frame.
     #[inline]
     pub fn set_htype(&mut self, value: u16) {
         self.bytes.htons_unchecked(HTYPE_OFFSET, value);
     }
 
+    #[log_instrument::instrument]
     /// Sets the protocol type of the frame.
     #[inline]
     pub fn set_ptype(&mut self, value: u16) {
         self.bytes.htons_unchecked(PTYPE_OFFSET, value);
     }
 
+    #[log_instrument::instrument]
     /// Sets the hardware address length of the frame.
     #[inline]
     pub fn set_hlen(&mut self, value: u8) {
         self.bytes[HLEN_OFFSET] = value;
     }
 
+    #[log_instrument::instrument]
     /// Sets the protocol address length of the frame.
     #[inline]
     pub fn set_plen(&mut self, value: u8) {
         self.bytes[PLEN_OFFSET] = value;
     }
 
+    #[log_instrument::instrument]
     /// Sets the operation within the frame.
     #[inline]
     pub fn set_operation(&mut self, value: u16) {
         self.bytes.htons_unchecked(OPER_OFFSET, value);
     }
 
+    #[log_instrument::instrument]
     /// Sets the sender hardware address.
     #[inline]
     pub fn set_sha(&mut self, addr: MacAddr) {
         self.bytes[SHA_OFFSET..ETH_IPV4_SPA_OFFSET].copy_from_slice(addr.get_bytes());
     }
 
+    #[log_instrument::instrument]
     /// Sets the sender protocol address.
     #[inline]
     pub fn set_spa(&mut self, addr: Ipv4Addr) {
@@ -310,12 +332,14 @@ impl<'a, T: NetworkBytesMut + Debug> EthIPv4ArpFrame<'a, T> {
             .htonl_unchecked(ETH_IPV4_SPA_OFFSET, u32::from(addr));
     }
 
+    #[log_instrument::instrument]
     /// Sets the target hardware address.
     #[inline]
     pub fn set_tha(&mut self, addr: MacAddr) {
         self.bytes[ETH_IPV4_THA_OFFSET..ETH_IPV4_TPA_OFFSET].copy_from_slice(addr.get_bytes());
     }
 
+    #[log_instrument::instrument]
     /// Sets the target protocol address.
     #[inline]
     pub fn set_tpa(&mut self, addr: Ipv4Addr) {
@@ -324,6 +348,7 @@ impl<'a, T: NetworkBytesMut + Debug> EthIPv4ArpFrame<'a, T> {
     }
 }
 
+#[log_instrument::instrument]
 /// This function checks if `buf` may hold an Ethernet frame which encapsulates an
 /// `EthIPv4ArpRequest` for the given address. Cannot produce false negatives.
 #[inline]

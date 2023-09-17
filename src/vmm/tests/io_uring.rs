@@ -20,12 +20,14 @@ mod test_utils {
     use vmm::io_uring::operation::{OpCode, Operation};
     use vmm::io_uring::{IoUring, IoUringError, SQueueError};
 
+    #[log_instrument::instrument]
     fn drain_cqueue(ring: &mut IoUring) {
         while let Some(entry) = unsafe { ring.pop::<usize>().unwrap() } {
             assert!(entry.result().is_ok());
         }
     }
 
+    #[log_instrument::instrument]
     pub fn drive_submission_and_completion(
         ring: &mut IoUring,
         mem_region: &MmapRegion,

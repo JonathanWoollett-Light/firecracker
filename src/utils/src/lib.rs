@@ -23,6 +23,7 @@ pub mod vm_memory;
 
 use std::result::Result;
 
+#[log_instrument::instrument]
 /// Return the default page size of the platform, in bytes.
 pub fn get_page_size() -> Result<usize, errno::Error> {
     // SAFETY: Safe because the parameters are valid.

@@ -168,6 +168,7 @@ fn test_disallow_dump_cpu_config_without_pausing() {
     vmm.lock().unwrap().stop(FcExitCode::Ok);
 }
 
+#[log_instrument::instrument]
 fn verify_create_snapshot(is_diff: bool) -> (TempFile, TempFile) {
     let snapshot_file = TempFile::new().unwrap();
     let memory_file = TempFile::new().unwrap();
@@ -232,6 +233,7 @@ fn verify_create_snapshot(is_diff: bool) -> (TempFile, TempFile) {
     (snapshot_file, memory_file)
 }
 
+#[log_instrument::instrument]
 fn verify_load_snapshot(snapshot_file: TempFile, memory_file: TempFile) {
     use utils::vm_memory::GuestMemoryMmap;
     use vmm::memory_snapshot::SnapshotMemory;
@@ -339,6 +341,7 @@ fn test_snapshot_load_sanity_checks() {
     );
 }
 
+#[log_instrument::instrument]
 fn get_microvm_state_from_snapshot() -> MicrovmState {
     // Create a diff snapshot
     let (snapshot_file, _) = verify_create_snapshot(true);

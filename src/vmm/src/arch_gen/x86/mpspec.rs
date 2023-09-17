@@ -79,6 +79,7 @@ fn bindgen_test_layout_mpf_intel() {
         4usize,
         concat!("Alignment of ", stringify!(mpf_intel))
     );
+    #[log_instrument::instrument]
     fn test_field_signature() {
         assert_eq!(
             unsafe {
@@ -96,6 +97,7 @@ fn bindgen_test_layout_mpf_intel() {
         );
     }
     test_field_signature();
+    #[log_instrument::instrument]
     fn test_field_physptr() {
         assert_eq!(
             unsafe {
@@ -113,6 +115,7 @@ fn bindgen_test_layout_mpf_intel() {
         );
     }
     test_field_physptr();
+    #[log_instrument::instrument]
     fn test_field_length() {
         assert_eq!(
             unsafe {
@@ -130,6 +133,7 @@ fn bindgen_test_layout_mpf_intel() {
         );
     }
     test_field_length();
+    #[log_instrument::instrument]
     fn test_field_specification() {
         assert_eq!(
             unsafe {
@@ -147,6 +151,7 @@ fn bindgen_test_layout_mpf_intel() {
         );
     }
     test_field_specification();
+    #[log_instrument::instrument]
     fn test_field_checksum() {
         assert_eq!(
             unsafe {
@@ -164,6 +169,7 @@ fn bindgen_test_layout_mpf_intel() {
         );
     }
     test_field_checksum();
+    #[log_instrument::instrument]
     fn test_field_feature1() {
         assert_eq!(
             unsafe {
@@ -181,6 +187,7 @@ fn bindgen_test_layout_mpf_intel() {
         );
     }
     test_field_feature1();
+    #[log_instrument::instrument]
     fn test_field_feature2() {
         assert_eq!(
             unsafe {
@@ -198,6 +205,7 @@ fn bindgen_test_layout_mpf_intel() {
         );
     }
     test_field_feature2();
+    #[log_instrument::instrument]
     fn test_field_feature3() {
         assert_eq!(
             unsafe {
@@ -215,6 +223,7 @@ fn bindgen_test_layout_mpf_intel() {
         );
     }
     test_field_feature3();
+    #[log_instrument::instrument]
     fn test_field_feature4() {
         assert_eq!(
             unsafe {
@@ -232,6 +241,7 @@ fn bindgen_test_layout_mpf_intel() {
         );
     }
     test_field_feature4();
+    #[log_instrument::instrument]
     fn test_field_feature5() {
         assert_eq!(
             unsafe {
@@ -277,6 +287,7 @@ fn bindgen_test_layout_mpc_table() {
         4usize,
         concat!("Alignment of ", stringify!(mpc_table))
     );
+    #[log_instrument::instrument]
     fn test_field_signature() {
         assert_eq!(
             unsafe {
@@ -294,6 +305,7 @@ fn bindgen_test_layout_mpc_table() {
         );
     }
     test_field_signature();
+    #[log_instrument::instrument]
     fn test_field_length() {
         assert_eq!(
             unsafe {
@@ -311,6 +323,7 @@ fn bindgen_test_layout_mpc_table() {
         );
     }
     test_field_length();
+    #[log_instrument::instrument]
     fn test_field_spec() {
         assert_eq!(
             unsafe {
@@ -328,6 +341,7 @@ fn bindgen_test_layout_mpc_table() {
         );
     }
     test_field_spec();
+    #[log_instrument::instrument]
     fn test_field_checksum() {
         assert_eq!(
             unsafe {
@@ -345,6 +359,7 @@ fn bindgen_test_layout_mpc_table() {
         );
     }
     test_field_checksum();
+    #[log_instrument::instrument]
     fn test_field_oem() {
         assert_eq!(
             unsafe {
@@ -362,6 +377,7 @@ fn bindgen_test_layout_mpc_table() {
         );
     }
     test_field_oem();
+    #[log_instrument::instrument]
     fn test_field_productid() {
         assert_eq!(
             unsafe {
@@ -379,6 +395,7 @@ fn bindgen_test_layout_mpc_table() {
         );
     }
     test_field_productid();
+    #[log_instrument::instrument]
     fn test_field_oemptr() {
         assert_eq!(
             unsafe {
@@ -396,6 +413,7 @@ fn bindgen_test_layout_mpc_table() {
         );
     }
     test_field_oemptr();
+    #[log_instrument::instrument]
     fn test_field_oemsize() {
         assert_eq!(
             unsafe {
@@ -413,6 +431,7 @@ fn bindgen_test_layout_mpc_table() {
         );
     }
     test_field_oemsize();
+    #[log_instrument::instrument]
     fn test_field_oemcount() {
         assert_eq!(
             unsafe {
@@ -430,6 +449,7 @@ fn bindgen_test_layout_mpc_table() {
         );
     }
     test_field_oemcount();
+    #[log_instrument::instrument]
     fn test_field_lapic() {
         assert_eq!(
             unsafe {
@@ -447,6 +467,7 @@ fn bindgen_test_layout_mpc_table() {
         );
     }
     test_field_lapic();
+    #[log_instrument::instrument]
     fn test_field_reserved() {
         assert_eq!(
             unsafe {
@@ -488,6 +509,7 @@ fn bindgen_test_layout_mpc_cpu() {
         4usize,
         concat!("Alignment of ", stringify!(mpc_cpu))
     );
+    #[log_instrument::instrument]
     fn test_field_type() {
         assert_eq!(
             unsafe {
@@ -505,6 +527,7 @@ fn bindgen_test_layout_mpc_cpu() {
         );
     }
     test_field_type();
+    #[log_instrument::instrument]
     fn test_field_apicid() {
         assert_eq!(
             unsafe {
@@ -522,6 +545,7 @@ fn bindgen_test_layout_mpc_cpu() {
         );
     }
     test_field_apicid();
+    #[log_instrument::instrument]
     fn test_field_apicver() {
         assert_eq!(
             unsafe {
@@ -539,6 +563,7 @@ fn bindgen_test_layout_mpc_cpu() {
         );
     }
     test_field_apicver();
+    #[log_instrument::instrument]
     fn test_field_cpuflag() {
         assert_eq!(
             unsafe {
@@ -556,6 +581,7 @@ fn bindgen_test_layout_mpc_cpu() {
         );
     }
     test_field_cpuflag();
+    #[log_instrument::instrument]
     fn test_field_cpufeature() {
         assert_eq!(
             unsafe {
@@ -573,6 +599,7 @@ fn bindgen_test_layout_mpc_cpu() {
         );
     }
     test_field_cpufeature();
+    #[log_instrument::instrument]
     fn test_field_featureflag() {
         assert_eq!(
             unsafe {
@@ -590,6 +617,7 @@ fn bindgen_test_layout_mpc_cpu() {
         );
     }
     test_field_featureflag();
+    #[log_instrument::instrument]
     fn test_field_reserved() {
         assert_eq!(
             unsafe {
@@ -627,6 +655,7 @@ fn bindgen_test_layout_mpc_bus() {
         1usize,
         concat!("Alignment of ", stringify!(mpc_bus))
     );
+    #[log_instrument::instrument]
     fn test_field_type() {
         assert_eq!(
             unsafe {
@@ -644,6 +673,7 @@ fn bindgen_test_layout_mpc_bus() {
         );
     }
     test_field_type();
+    #[log_instrument::instrument]
     fn test_field_busid() {
         assert_eq!(
             unsafe {
@@ -661,6 +691,7 @@ fn bindgen_test_layout_mpc_bus() {
         );
     }
     test_field_busid();
+    #[log_instrument::instrument]
     fn test_field_bustype() {
         assert_eq!(
             unsafe {
@@ -700,6 +731,7 @@ fn bindgen_test_layout_mpc_ioapic() {
         4usize,
         concat!("Alignment of ", stringify!(mpc_ioapic))
     );
+    #[log_instrument::instrument]
     fn test_field_type() {
         assert_eq!(
             unsafe {
@@ -717,6 +749,7 @@ fn bindgen_test_layout_mpc_ioapic() {
         );
     }
     test_field_type();
+    #[log_instrument::instrument]
     fn test_field_apicid() {
         assert_eq!(
             unsafe {
@@ -734,6 +767,7 @@ fn bindgen_test_layout_mpc_ioapic() {
         );
     }
     test_field_apicid();
+    #[log_instrument::instrument]
     fn test_field_apicver() {
         assert_eq!(
             unsafe {
@@ -751,6 +785,7 @@ fn bindgen_test_layout_mpc_ioapic() {
         );
     }
     test_field_apicver();
+    #[log_instrument::instrument]
     fn test_field_flags() {
         assert_eq!(
             unsafe {
@@ -768,6 +803,7 @@ fn bindgen_test_layout_mpc_ioapic() {
         );
     }
     test_field_flags();
+    #[log_instrument::instrument]
     fn test_field_apicaddr() {
         assert_eq!(
             unsafe {
@@ -809,6 +845,7 @@ fn bindgen_test_layout_mpc_intsrc() {
         2usize,
         concat!("Alignment of ", stringify!(mpc_intsrc))
     );
+    #[log_instrument::instrument]
     fn test_field_type() {
         assert_eq!(
             unsafe {
@@ -826,6 +863,7 @@ fn bindgen_test_layout_mpc_intsrc() {
         );
     }
     test_field_type();
+    #[log_instrument::instrument]
     fn test_field_irqtype() {
         assert_eq!(
             unsafe {
@@ -843,6 +881,7 @@ fn bindgen_test_layout_mpc_intsrc() {
         );
     }
     test_field_irqtype();
+    #[log_instrument::instrument]
     fn test_field_irqflag() {
         assert_eq!(
             unsafe {
@@ -860,6 +899,7 @@ fn bindgen_test_layout_mpc_intsrc() {
         );
     }
     test_field_irqflag();
+    #[log_instrument::instrument]
     fn test_field_srcbus() {
         assert_eq!(
             unsafe {
@@ -877,6 +917,7 @@ fn bindgen_test_layout_mpc_intsrc() {
         );
     }
     test_field_srcbus();
+    #[log_instrument::instrument]
     fn test_field_srcbusirq() {
         assert_eq!(
             unsafe {
@@ -894,6 +935,7 @@ fn bindgen_test_layout_mpc_intsrc() {
         );
     }
     test_field_srcbusirq();
+    #[log_instrument::instrument]
     fn test_field_dstapic() {
         assert_eq!(
             unsafe {
@@ -911,6 +953,7 @@ fn bindgen_test_layout_mpc_intsrc() {
         );
     }
     test_field_dstapic();
+    #[log_instrument::instrument]
     fn test_field_dstirq() {
         assert_eq!(
             unsafe {
@@ -957,6 +1000,7 @@ fn bindgen_test_layout_mpc_lintsrc() {
         2usize,
         concat!("Alignment of ", stringify!(mpc_lintsrc))
     );
+    #[log_instrument::instrument]
     fn test_field_type() {
         assert_eq!(
             unsafe {
@@ -974,6 +1018,7 @@ fn bindgen_test_layout_mpc_lintsrc() {
         );
     }
     test_field_type();
+    #[log_instrument::instrument]
     fn test_field_irqtype() {
         assert_eq!(
             unsafe {
@@ -991,6 +1036,7 @@ fn bindgen_test_layout_mpc_lintsrc() {
         );
     }
     test_field_irqtype();
+    #[log_instrument::instrument]
     fn test_field_irqflag() {
         assert_eq!(
             unsafe {
@@ -1008,6 +1054,7 @@ fn bindgen_test_layout_mpc_lintsrc() {
         );
     }
     test_field_irqflag();
+    #[log_instrument::instrument]
     fn test_field_srcbusid() {
         assert_eq!(
             unsafe {
@@ -1025,6 +1072,7 @@ fn bindgen_test_layout_mpc_lintsrc() {
         );
     }
     test_field_srcbusid();
+    #[log_instrument::instrument]
     fn test_field_srcbusirq() {
         assert_eq!(
             unsafe {
@@ -1042,6 +1090,7 @@ fn bindgen_test_layout_mpc_lintsrc() {
         );
     }
     test_field_srcbusirq();
+    #[log_instrument::instrument]
     fn test_field_destapic() {
         assert_eq!(
             unsafe {
@@ -1059,6 +1108,7 @@ fn bindgen_test_layout_mpc_lintsrc() {
         );
     }
     test_field_destapic();
+    #[log_instrument::instrument]
     fn test_field_destapiclint() {
         assert_eq!(
             unsafe {
@@ -1098,6 +1148,7 @@ fn bindgen_test_layout_mpc_oemtable() {
         2usize,
         concat!("Alignment of ", stringify!(mpc_oemtable))
     );
+    #[log_instrument::instrument]
     fn test_field_signature() {
         assert_eq!(
             unsafe {
@@ -1115,6 +1166,7 @@ fn bindgen_test_layout_mpc_oemtable() {
         );
     }
     test_field_signature();
+    #[log_instrument::instrument]
     fn test_field_length() {
         assert_eq!(
             unsafe {
@@ -1132,6 +1184,7 @@ fn bindgen_test_layout_mpc_oemtable() {
         );
     }
     test_field_length();
+    #[log_instrument::instrument]
     fn test_field_rev() {
         assert_eq!(
             unsafe {
@@ -1149,6 +1202,7 @@ fn bindgen_test_layout_mpc_oemtable() {
         );
     }
     test_field_rev();
+    #[log_instrument::instrument]
     fn test_field_checksum() {
         assert_eq!(
             unsafe {
@@ -1166,6 +1220,7 @@ fn bindgen_test_layout_mpc_oemtable() {
         );
     }
     test_field_checksum();
+    #[log_instrument::instrument]
     fn test_field_mpc() {
         assert_eq!(
             unsafe {
