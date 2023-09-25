@@ -4,7 +4,7 @@
 use std::fmt::{self, Debug};
 use std::sync::{Arc, Mutex, MutexGuard};
 
-use logger::{error, info, warn, *};
+use logger::{error, info, warn, LoggerConfig, *};
 use mmds::data_store::{self, Mmds};
 use seccompiler::BpfThreadMap;
 use serde_json::Value;
@@ -33,7 +33,6 @@ use crate::vmm_config::boot_source::{BootSourceConfig, BootSourceConfigError};
 use crate::vmm_config::drive::{BlockDeviceConfig, BlockDeviceUpdateConfig, DriveError};
 use crate::vmm_config::entropy::{EntropyDeviceConfig, EntropyDeviceError};
 use crate::vmm_config::instance_info::InstanceInfo;
-use crate::vmm_config::logger::{LoggerConfig, LoggerConfigError};
 use crate::vmm_config::machine_config::{MachineConfig, MachineConfigUpdate, VmConfigError};
 use crate::vmm_config::metrics::{MetricsConfig, MetricsConfigError};
 use crate::vmm_config::mmds::{MmdsConfig, MmdsConfigError};
@@ -151,7 +150,7 @@ pub enum VmmActionError {
     /// Load microVM snapshot error: {0}
     LoadSnapshot(LoadSnapshotError),
     /// {0}
-    Logger(LoggerConfigError),
+    Logger(logger::LoggerUpdateError),
     /// {0}
     MachineConfig(VmConfigError),
     /// {0}
@@ -398,11 +397,10 @@ impl<'a> PrebootApiController<'a> {
         match request {
             // Supported operations allowed pre-boot.
             ConfigureBootSource(config) => self.set_boot_source(config),
-            ConfigureLogger(logger_cfg) => {
-                vmm_config::logger::init_logger(logger_cfg, &self.instance_info)
-                    .map(|()| VmmData::Empty)
-                    .map_err(VmmActionError::Logger)
-            }
+            ConfigureLogger(logger_cfg) => logger::LOGGER
+                .update(logger_cfg)
+                .map(|()| VmmData::Empty)
+                .map_err(VmmActionError::Logger),
             ConfigureMetrics(metrics_cfg) => vmm_config::metrics::init_metrics(metrics_cfg)
                 .map(|()| VmmData::Empty)
                 .map_err(VmmActionError::Metrics),
@@ -867,7 +865,6 @@ mod tests {
     use crate::devices::virtio::VsockError;
     use crate::vmm_config::balloon::BalloonBuilder;
     use crate::vmm_config::drive::{CacheType, FileEngineType};
-    use crate::vmm_config::logger::LoggerLevel;
     use crate::vmm_config::machine_config::VmConfig;
     use crate::vmm_config::snapshot::{MemBackendConfig, MemBackendType};
     use crate::vmm_config::vsock::VsockBuilder;
@@ -2025,10 +2022,10 @@ mod tests {
         );
         check_runtime_request_err(
             VmmAction::ConfigureLogger(LoggerConfig {
-                log_path: PathBuf::new(),
-                level: LoggerLevel::Debug,
-                show_level: false,
-                show_log_origin: false,
+                log_path: Some(PathBuf::new()),
+                level: Some(logger::LevelFilter::Debug),
+                show_level: Some(false),
+                show_log_origin: Some(false),
             }),
             VmmActionError::OperationNotSupportedPostBoot,
         );

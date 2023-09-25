@@ -319,7 +319,11 @@ class Microvm:
     def firecracker_version(self):
         """Return the version of the Firecracker executable."""
         _, stdout, _ = utils.run_cmd(f"{self._fc_binary_path} --version")
-        return re.match(r"^Firecracker v(.+)", stdout.partition("\n")[0]).group(1)
+        # The 1st line will be `Running Firecracker vX.Y.Z`
+        # The 2nd line will be the output from `--version`.
+        line = stdout.split("\n")[1]
+        result = re.match(r"^Firecracker v(.+)", line)
+        return result.group(1)
 
     @property
     def path(self):
@@ -503,7 +507,7 @@ class Microvm:
         # and leave 0.2 delay between them.
         if "no-api" not in self.jailer.extra_args:
             self._wait_create()
-        if self.log_file:
+        if self.log_file and log_level in ("Trace", "Debug", "Info"):
             self.check_log_message("Running Firecracker")
 
     @retry(delay=0.2, tries=5, logger=None)

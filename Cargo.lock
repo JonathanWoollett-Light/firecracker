@@ -106,6 +106,7 @@ version = "0.1.0"
 dependencies = [
  "displaydoc",
  "libc",
+ "log",
  "logger",
  "micro_http",
  "mmds",
@@ -559,6 +560,7 @@ dependencies = [
  "displaydoc",
  "event-manager",
  "libc",
+ "log",
  "logger",
  "mmds",
  "regex",

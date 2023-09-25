@@ -5,6 +5,7 @@ use std::convert::From;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, MutexGuard};
 
+use logger::LoggerConfig;
 use mmds::data_store::{Mmds, MmdsVersion};
 use mmds::ns::MmdsNetworkStack;
 use serde::{Deserialize, Serialize};
@@ -19,7 +20,6 @@ use crate::vmm_config::boot_source::{
 use crate::vmm_config::drive::*;
 use crate::vmm_config::entropy::*;
 use crate::vmm_config::instance_info::InstanceInfo;
-use crate::vmm_config::logger::{init_logger, LoggerConfig, LoggerConfigError};
 use crate::vmm_config::machine_config::{
     MachineConfig, MachineConfigUpdate, VmConfig, VmConfigError,
 };
@@ -42,7 +42,7 @@ pub enum ResourcesError {
     /// Invalid JSON: {0}
     InvalidJson(serde_json::Error),
     /// Logger error: {0}
-    Logger(LoggerConfigError),
+    Logger(logger::LoggerUpdateError),
     /// Metrics error: {0}
     Metrics(MetricsConfigError),
     /// MMDS error: {0}
@@ -124,8 +124,8 @@ impl VmResources {
     ) -> Result<Self, ResourcesError> {
         let vmm_config = serde_json::from_str::<VmmConfig>(config_json)?;
 
-        if let Some(logger) = vmm_config.logger {
-            init_logger(logger, instance_info)?;
+        if let Some(logger_config) = vmm_config.logger {
+            logger::LOGGER.update(logger_config)?;
         }
 
         if let Some(metrics) = vmm_config.metrics {
@@ -469,7 +469,7 @@ mod tests {
     use std::os::linux::fs::MetadataExt;
     use std::str::FromStr;
 
-    use logger::{LevelFilter, LOGGER};
+    use logger::LoggerUpdateError;
     use serde_json::{Map, Value};
     use utils::net::mac::MacAddr;
     use utils::tempfile::TempFile;
@@ -849,12 +849,9 @@ mod tests {
             HTTP_MAX_PAYLOAD_SIZE,
             None,
         ) {
-            Err(ResourcesError::Logger(LoggerConfigError::InitializationFailure { .. })) => (),
+            Err(ResourcesError::Logger(LoggerUpdateError(_))) => (),
             _ => unreachable!(),
         }
-
-        // The previous call enables the logger. We need to disable it.
-        LOGGER.set_max_level(LevelFilter::Off);
 
         // Invalid path for metrics pipe.
         json = format!(
