@@ -186,6 +186,7 @@ impl super::Cpuid {
         self.update_feature_info_entry(cpu_index, cpu_count)?;
         self.update_extended_topology_entry(cpu_index, cpu_count, cpu_bits, cpus_per_core)?;
         self.update_extended_cache_features()?;
+        self.update_kvm_feature_entry();
 
         // Apply manufacturer specific modifications.
         match self {
@@ -456,6 +457,13 @@ impl super::Cpuid {
         guest_leaf_0x80000006.result = cpuid(0x80000006).into();
         guest_leaf_0x80000006.result.edx &= !0x00030000; // bits [17:16] are reserved
         Ok(())
+    }
+
+    fn update_kvm_feature_entry(&mut self) {
+        const KVM_FEATURE_ASYNC_PF_INT_BIT: u8 = 14;
+
+        let leaf = self.get_mut(&CpuidKey::leaf(0x4000_0001)).unwrap();
+        set_bit(&mut leaf.result.eax, KVM_FEATURE_ASYNC_PF_INT_BIT, false);
     }
 }
 
