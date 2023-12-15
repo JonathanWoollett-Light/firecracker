@@ -37,7 +37,7 @@ pub const FC_V1_4_SNAP_VERSION: u16 = 8;
 /// Snap version for Firecracker v1.5
 pub const FC_V1_5_SNAP_VERSION: u16 = 9;
 /// Snap version for Firecracker v1.6
-pub const FC_V1_6_SNAP_VERSION: u16 = 10;
+pub const FC_V1_6_SNAP_VERSION: u16 = 11;
 
 lazy_static! {
     // Note: until we have a better design, this needs to be updated when the version changes.
