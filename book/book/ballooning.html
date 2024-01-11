@@ -1,0 +1,472 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Ballooning - Firecracker</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="CHARTER.html"><strong aria-hidden="true">2.</strong> Firecracker Charter</a></li><li class="chapter-item expanded "><a href="CODE_OF_CONDUCT.html"><strong aria-hidden="true">3.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="SECURITY.html"><strong aria-hidden="true">4.</strong> Security</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CONTRIBUTING.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="dev-machine-setup.html"><strong aria-hidden="true">7.</strong> Development Machine Setup</a></li><li class="chapter-item expanded "><a href="api-change-runbook.html"><strong aria-hidden="true">8.</strong> API Change Runbook</a></li><li class="chapter-item expanded "><a href="RELEASE_POLICY.html"><strong aria-hidden="true">9.</strong> Releases</a></li><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">10.</strong> Design</a></li><li class="chapter-item expanded "><a href="prod-host-setup.html"><strong aria-hidden="true">11.</strong> Production Host Setup</a></li><li class="chapter-item expanded "><a href="network-setup.html"><strong aria-hidden="true">12.</strong> Network Setup</a></li><li class="chapter-item expanded "><a href="kernel-policy.html"><strong aria-hidden="true">13.</strong> Kernel Support Policy</a></li><li class="chapter-item expanded "><a href="SPECIFICATION.html"><strong aria-hidden="true">14.</strong> Specification</a></li><li class="chapter-item expanded "><a href="network-performance.html"><strong aria-hidden="true">15.</strong> Network Performance</a></li><li class="chapter-item expanded "><a href="FAQ.html"><strong aria-hidden="true">16.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="rootfs-and-kernel-setup.html"><strong aria-hidden="true">17.</strong> Creating Custom rootfs and kernel Images</a></li><li class="chapter-item expanded "><a href="ballooning.html" class="active"><strong aria-hidden="true">18.</strong> Ballooning</a></li><li class="chapter-item expanded "><a href="devctr-image.html"><strong aria-hidden="true">19.</strong> Development Container</a></li><li class="chapter-item expanded "><a href="device-api.html"><strong aria-hidden="true">20.</strong> Device API</a></li><li class="chapter-item expanded "><a href="entropy.html"><strong aria-hidden="true">21.</strong> Entropy</a></li><li class="chapter-item expanded "><a href="formal-verification.html"><strong aria-hidden="true">22.</strong> Formal Verification</a></li><li class="chapter-item expanded "><a href="initrd.html"><strong aria-hidden="true">23.</strong> initrd</a></li><li class="chapter-item expanded "><a href="jailer.html"><strong aria-hidden="true">24.</strong> Jailer</a></li><li class="chapter-item expanded "><a href="logger.html"><strong aria-hidden="true">25.</strong> Logger</a></li><li class="chapter-item expanded "><a href="metrics.html"><strong aria-hidden="true">26.</strong> Metrics</a></li><li class="chapter-item expanded "><a href="seccomp.html"><strong aria-hidden="true">27.</strong> Seccomp</a></li><li class="chapter-item expanded "><a href="seccompiler.html"><strong aria-hidden="true">28.</strong> Seccompiler</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">29.</strong> Tracing</a></li><li class="chapter-item expanded "><a href="vsock.html"><strong aria-hidden="true">30.</strong> VSock</a></li><li class="chapter-item expanded "><a href="api-requests.html"><strong aria-hidden="true">31.</strong> API Requests</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="actions.html"><strong aria-hidden="true">31.1.</strong> Actons</a></li><li class="chapter-item expanded "><a href="block-caching.html"><strong aria-hidden="true">31.2.</strong> Block Caching</a></li><li class="chapter-item expanded "><a href="block-io-engine.html"><strong aria-hidden="true">31.3.</strong> Block IO Engine</a></li><li class="chapter-item expanded "><a href="block-vhost-user.html"><strong aria-hidden="true">31.4.</strong> Block VHost User</a></li><li class="chapter-item expanded "><a href="patch-block.html"><strong aria-hidden="true">31.5.</strong> Patch Block</a></li><li class="chapter-item expanded "><a href="patch-network-interface.html"><strong aria-hidden="true">31.6.</strong> Patch Network Interface</a></li></ol></li><li class="chapter-item expanded "><a href="state-serialize.html"><strong aria-hidden="true">32.</strong> State Serialization Benchmarks</a></li><li class="chapter-item expanded "><a href="cpu-templates.html"><strong aria-hidden="true">33.</strong> CPU Templates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="boot-protocol.html"><strong aria-hidden="true">33.1.</strong> Boot Protocol</a></li><li class="chapter-item expanded "><a href="cpu-template-helper.html"><strong aria-hidden="true">33.2.</strong> CPU Template Helper</a></li><li class="chapter-item expanded "><a href="cpuid-normalization.html"><strong aria-hidden="true">33.3.</strong> CPUID Normalization</a></li></ol></li><li class="chapter-item expanded "><a href="mmds.html"><strong aria-hidden="true">34.</strong> MMDS</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="mmds-design.html"><strong aria-hidden="true">34.1.</strong> MMDS Design</a></li><li class="chapter-item expanded "><a href="mmds-user-guide.html"><strong aria-hidden="true">34.2.</strong> MMDS User Guide</a></li></ol></li><li class="chapter-item expanded "><a href="snapshotting.html"><strong aria-hidden="true">35.</strong> Snapshotting</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="handling-page-faults-on-snapshot-resume.html"><strong aria-hidden="true">35.1.</strong> Handling Page Faults on Snapshot Resume</a></li><li class="chapter-item expanded "><a href="network-for-clones.html"><strong aria-hidden="true">35.2.</strong> Network For Clones</a></li><li class="chapter-item expanded "><a href="random-for-clones.html"><strong aria-hidden="true">35.3.</strong> Random For Clones</a></li><li class="chapter-item expanded "><a href="snapshot-editor.html"><strong aria-hidden="true">35.4.</strong> Snapshot Editor</a></li><li class="chapter-item expanded "><a href="snapshot-support.html"><strong aria-hidden="true">35.5.</strong> Snapshot Support</a></li><li class="chapter-item expanded "><a href="versioning.html"><strong aria-hidden="true">35.6.</strong> Versioning</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Firecracker</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="using-the-balloon-device-with-firecracker"><a class="header" href="#using-the-balloon-device-with-firecracker">Using the balloon device with Firecracker</a></h1>
+<h2 id="what-is-the-balloon-device"><a class="header" href="#what-is-the-balloon-device">What is the balloon device</a></h2>
+<p>A memory balloon device is a virtio device that can be used to reclaim and
+give back guest memory through API commands issued by the host. It does this
+by allocating memory in the guest, and then sending the
+addresses of that memory to the host; the host may then remove that memory at
+will. The device is configured through a number of options, and an integer,
+which represents the target size of the balloon, in MiB. The options cannot be
+changed during operation, but the target size can be changed.</p>
+<p>The behaviour of the balloon is the following: while the actual size of the
+balloon (i.e. the memory it has allocated) is smaller than the target size,
+it continually tries to allocate new memory -- if it fails, it prints an
+error message (<code>Out of puff! Can't get %d pages</code>), sleeps for 0.2 seconds, and
+then tries again. While the actual size of the balloon is larger than the
+target size, it will free memory until it hits the target size.</p>
+<p>The device can be configured with the following options:</p>
+<ul>
+<li><code>deflate_on_oom</code>: if this is set to <code>true</code> and a guest process wants to
+allocate some memory which would make the guest enter an out-of-memory state,
+the kernel will take some pages from the balloon and give them to said
+process instead asking the OOM killer process to kill some processes to free
+memory. Note that this applies to physical page allocations in the kernel
+which belong to guest processes. This does not apply to instances when the
+kernel needs memory for its activities (i.e. constructing caches), when the
+user requests more memory than the currently available to the balloon for
+releasing, or when guest processes try to allocate large amounts of memory
+that are refused by the guest memory manager, which is possible when the
+guest runs with <code>vm.overcommit_memory=0</code> and the allocation does not pass
+the MM basic checks. Setting <code>vm.memory_overcommit</code> to 1 would make the MM
+approve all allocations, no matter how large, and using the memory mapped
+for those allocations will always deflate the balloon instead of making the
+guest enter an OOM state. Note: we do not recommend running with
+<code>vm.overcommit_memory=1</code> because it requires complete control over what
+allocations are done in the guest and can easily result in unexpected OOM
+scenarios.</li>
+<li><code>stats_polling_interval_s</code>: unsigned integer value which if set to 0
+disables the virtio balloon statistics and otherwise represents the interval
+of time in seconds at which the balloon statistics are updated.</li>
+</ul>
+<h2 id="security-disclaimer"><a class="header" href="#security-disclaimer">Security disclaimer</a></h2>
+<p><strong>The balloon device is a paravirtualized virtio device that requires cooperation
+from a driver in the guest.</strong></p>
+<p>In normal conditions, the balloon device will:</p>
+<ul>
+<li>not change the target size, which is set directly by the host</li>
+<li>consume exactly as many pages as required to achieve the target size</li>
+<li>correctly update the value of the actual size of the balloon seen by the host</li>
+<li>not use pages that were previously inflated if they were not returned to the
+guest via a deflate operation (unless the <code>deflate_on_oom</code> flag was set and the
+guest is in an out of memory state)</li>
+<li>provide correct statistics when available</li>
+</ul>
+<p>However, Firecracker does not and cannot introspect into the guest to check the
+integrity of the balloon driver. As the guest is not trusted, if the driver in
+the guest becomes compromised, the above statements are
+<strong>no longer guaranteed</strong>.</p>
+<p>This means that even though users use the balloon to impose restrictions on
+memory usage, they can be broken by a compromised driver in the guest. The
+balloon device operates on a best effort model and users should always ensure
+the host is prepared to handle a situation in which the Firecracker process
+uses all of the memory it was given at boot even if the balloon was used to
+restrict the amount of memory available to the guest. It is also the users'
+responsibility to monitor the memory consumption of the VM and, in case
+unexpected increases in memory usage are observed, we recommend the following
+options:</p>
+<ul>
+<li>migrate the VM to a machine with higher memory availability through
+snapshotting at the cost of disrupting the workload;</li>
+<li>kill the Firecracker process that exceeds memory restrictions;</li>
+<li>enable swap with a sufficient amount of memory to handle the demand at the
+cost of memory access speed;</li>
+</ul>
+<p>Users should also never rely solely on the statistics provided by the balloon
+when controlling the Firecracker process as they are provided directly by the
+guest driver and should always be viewed as an indication rather than a
+guarantee of what the memory state looks like in the guest.</p>
+<p>Please note that even in the case where the driver is not working properly,
+the balloon will never leak memory from one Firecracker process to another,
+nor can a guest within Firecracker access information in memory outside its
+own guest memory. In other words, memory cannot leak in or out of Firecracker
+if the driver becomes corrupted. This is guaranteed by the fact that the page
+frame numbers coming from the driver are checked to be inside the guest
+memory, then <code>madvise</code>d with the <code>MADV_DONTNEED</code> flag, which breaks the
+mappings between host physical memory (where the information is ultimately
+stored) and Firecracker virtual memory, which is what Firecracker uses to
+build the guest memory. On subsequent accesses on previously <code>madvise</code>d
+memory addresses, the memory is zeroed. Furthermore, the guest memory is
+<code>mmap</code>ped with the <code>MAP_PRIVATE</code> and <code>MAP_ANONYMOUS</code> flags, which ensure that
+even if a Firecracker yields some information through an inflate and that
+same physical page containing the information is mapped onto another
+Firecracker process, reads on that address space will see zeroes.</p>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>To support memory ballooning, you must use a kernel that has the memory
+ballooning driver installed (on Linux 4.14.193, the relevant settings are
+<code>CONFIG_MEMORY_BALLOON=y</code>, <code>CONFIG_VIRTIO_BALLOON=y</code>). Other than that, only
+the requirements mentioned in the <code>getting-started</code> document are needed.</p>
+<h2 id="installing-the-balloon-device"><a class="header" href="#installing-the-balloon-device">Installing the balloon device</a></h2>
+<p>In order to use a balloon device, you must install it during virtual machine
+setup (i.e. before starting the virtual machine). This can be done either
+through a PUT request on &quot;/balloon&quot; or by inserting the balloon into the JSON
+configuration file given as a command line argument to the Firecracker process.</p>
+<p>Here is an example command on how to install the balloon through the API:</p>
+<pre><code class="language-console">socket_location=...
+amount_mib=...
+deflate_on_oom=...
+polling_interval=...
+
+curl --unix-socket $socket_location -i \
+    -X PUT 'http://localhost/balloon' \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d &quot;{
+        \&quot;amount_mib\&quot;: $amount_mib, \
+        \&quot;deflate_on_oom\&quot;: $deflate_on_oom, \
+        \&quot;stats_polling_interval_s\&quot;: $polling_interval \
+    }&quot;
+</code></pre>
+<p>To use this, set <code>socket_location</code> to the location of the firecracker socket
+(by default, at <code>/run/firecracker.socket</code>. Then, set <code>amount_mib</code>,
+<code>deflate_on_oom</code> and <code>stats_polling_interval_s</code> as desired: <code>amount_mib</code>
+represents the target size of the balloon, and <code>deflate_on_oom</code> and
+<code>stats_polling_interval_s</code> represent the options mentioned before.</p>
+<p>To install the balloon via the JSON config file, insert the following JSON
+object into your configuration file:</p>
+<pre><code class="language-console">&quot;balloon&quot;: {
+    &quot;amount_mib&quot;: 0,
+    &quot;deflate_on_oom&quot;: false,
+    &quot;stats_polling_interval_s&quot;: 1
+},
+</code></pre>
+<p>After installing the balloon device, users can poll the configuration of the
+device at any time by sending a GET request on &quot;/balloon&quot;. Here is an example
+of such a request:</p>
+<pre><code class="language-console">socket_location=...
+
+curl --unix-socket $socket_location -i \
+    -X GET 'http://localhost/balloon' \
+    -H 'Accept: application/json'
+</code></pre>
+<p>On success, this request returns a JSON object of the same structure as the
+one used to configure the device (via a PUT request on &quot;/balloon&quot;).</p>
+<h2 id="operating-the-balloon-device"><a class="header" href="#operating-the-balloon-device">Operating the balloon device</a></h2>
+<p>After it has been installed, the balloon device can only be operated via the
+API through the following command:</p>
+<pre><code class="language-console">socket_location=...
+amount_mib=...
+polling_interval=...
+
+curl --unix-socket $socket_location -i \
+    -X PATCH 'http://localhost/balloon' \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d &quot;{
+        \&quot;amount_mib\&quot;: $amount_mib, \
+        \&quot;stats_polling_interval_s\&quot;: $polling_interval \
+    }&quot;
+</code></pre>
+<p>This will update the target size of the balloon to <code>amount_mib</code> and the
+statistics polling interval to <code>polling_interval</code>.</p>
+<h2 id="virtio-balloon-statistics"><a class="header" href="#virtio-balloon-statistics">Virtio balloon statistics</a></h2>
+<p>The statistics are enabled by setting the <code>stats_polling_interval_s</code> field
+in the balloon configuration to a non-zero value. If enabled, users can receive
+the latest balloon statistics by issuing a GET request on &quot;/balloon&quot;. Here is
+an example of such a request:</p>
+<pre><code class="language-console">socket_location=...
+
+curl --unix-socket $socket_location -i \
+    -X GET 'http://localhost/balloon/statistics' \
+    -H 'Accept: application/json'
+</code></pre>
+<p>The request, if successful, will return a JSON object containing the latest
+statistics. The JSON object contains information about the target and actual
+sizes of the balloon as well as virtio traditional memory balloon statistics.</p>
+<p>The target and actual sizes of the balloon are expressed as follows:</p>
+<ul>
+<li><code>target_pages</code>: The target size of the balloon, in 4K pages.</li>
+<li><code>actual_pages</code>: The number of 4K pages the device is currently holding.</li>
+<li><code>target_mib</code>: The target size of the balloon, in MiB.</li>
+<li><code>actual_mib</code>: The number of MiB the device is currently holding.</li>
+</ul>
+<p>These values are taken directly from the config space of the device and are
+always up to date, in the sense that they are exactly what the Firecracker
+process reads when polling the config space. The <code>actual</code> fields being
+accurate are subject to the guest driver working correctly.</p>
+<p>As defined in the virtio 1.1 specification, the traditional virtio balloon
+device has support for the following statistics:</p>
+<ul>
+<li><code>VIRTIO_BALLOON_S_SWAP_IN</code>: The amount of memory that has been swapped in
+(in bytes).</li>
+<li><code>VIRTIO_BALLOON_S_SWAP_OUT</code>: The amount of memory that has been swapped out
+to disk (in bytes).</li>
+<li><code>VIRTIO_BALLOON_S_MAJFLT</code>: The number of major page faults that have
+occurred.</li>
+<li><code>VIRTIO_BALLOON_S_MINFLT</code>: The number of minor page faults that have
+occurred.</li>
+<li><code>VIRTIO_BALLOON_S_MEMFREE</code>: The amount of memory not being used for any
+purpose (in bytes).</li>
+<li><code>VIRTIO_BALLOON_S_MEMTOT</code>: The total amount of memory available (in bytes).</li>
+<li><code>VIRTIO_BALLOON_S_AVAIL</code>: An estimate of how much memory is available (in
+bytes) for starting new applications, without pushing the system to swap.</li>
+<li><code>VIRTIO_BALLOON_S_CACHES</code>: The amount of memory, in bytes, that can be
+quickly reclaimed without additional I/O. Typically these pages are used for
+caching files from disk.</li>
+<li><code>VIRTIO_BALLOON_S_HTLB_PGALLOC</code>: The number of successful hugetlb page
+allocations in the guest.</li>
+<li><code>VIRTIO_BALLOON_S_HTLB_PGFAIL</code>: The number of failed hugetlb page allocations
+in the guest.</li>
+</ul>
+<p>The driver is querried for updated statistics every time the amount
+of time specified in that field passes. The driver may not provide all the
+statistics when querried, in which case the old values of the missing
+statistics are preserved.</p>
+<p>To change the statistics polling interval, users can sent a PATCH request
+on &quot;/balloon/statistics&quot;. Here is an example of such a request:</p>
+<pre><code class="language-console">socket_location=...
+polling_interval=...
+
+curl --unix-socket $socket_location -i \
+    -X PATCH 'http://localhost/balloon' \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d &quot;{ \&quot;stats_polling_interval_s\&quot;: $polling_interval }&quot;
+</code></pre>
+<p>This will change the statistics polling interval to <code>polling_interval</code>. Note
+that if the balloon was configured without statistics pre-boot, the statistics
+cannot be enabled later by providing a <code>polling_interval</code> non-zero value.
+Furthermore, if the balloon was configured with statistics pre-boot through a
+non-zero <code>stats_polling_interval_s</code> value, the statistics cannot be
+disabled through a <code>polling_interval</code> value of zero post-boot.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="rootfs-and-kernel-setup.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="devctr-image.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="rootfs-and-kernel-setup.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="devctr-image.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

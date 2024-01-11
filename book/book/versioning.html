@@ -1,0 +1,406 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Versioning - Firecracker</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="CHARTER.html"><strong aria-hidden="true">2.</strong> Firecracker Charter</a></li><li class="chapter-item expanded "><a href="CODE_OF_CONDUCT.html"><strong aria-hidden="true">3.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="SECURITY.html"><strong aria-hidden="true">4.</strong> Security</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CONTRIBUTING.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="dev-machine-setup.html"><strong aria-hidden="true">7.</strong> Development Machine Setup</a></li><li class="chapter-item expanded "><a href="api-change-runbook.html"><strong aria-hidden="true">8.</strong> API Change Runbook</a></li><li class="chapter-item expanded "><a href="RELEASE_POLICY.html"><strong aria-hidden="true">9.</strong> Releases</a></li><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">10.</strong> Design</a></li><li class="chapter-item expanded "><a href="prod-host-setup.html"><strong aria-hidden="true">11.</strong> Production Host Setup</a></li><li class="chapter-item expanded "><a href="network-setup.html"><strong aria-hidden="true">12.</strong> Network Setup</a></li><li class="chapter-item expanded "><a href="kernel-policy.html"><strong aria-hidden="true">13.</strong> Kernel Support Policy</a></li><li class="chapter-item expanded "><a href="SPECIFICATION.html"><strong aria-hidden="true">14.</strong> Specification</a></li><li class="chapter-item expanded "><a href="network-performance.html"><strong aria-hidden="true">15.</strong> Network Performance</a></li><li class="chapter-item expanded "><a href="FAQ.html"><strong aria-hidden="true">16.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="rootfs-and-kernel-setup.html"><strong aria-hidden="true">17.</strong> Creating Custom rootfs and kernel Images</a></li><li class="chapter-item expanded "><a href="ballooning.html"><strong aria-hidden="true">18.</strong> Ballooning</a></li><li class="chapter-item expanded "><a href="devctr-image.html"><strong aria-hidden="true">19.</strong> Development Container</a></li><li class="chapter-item expanded "><a href="device-api.html"><strong aria-hidden="true">20.</strong> Device API</a></li><li class="chapter-item expanded "><a href="entropy.html"><strong aria-hidden="true">21.</strong> Entropy</a></li><li class="chapter-item expanded "><a href="formal-verification.html"><strong aria-hidden="true">22.</strong> Formal Verification</a></li><li class="chapter-item expanded "><a href="initrd.html"><strong aria-hidden="true">23.</strong> initrd</a></li><li class="chapter-item expanded "><a href="jailer.html"><strong aria-hidden="true">24.</strong> Jailer</a></li><li class="chapter-item expanded "><a href="logger.html"><strong aria-hidden="true">25.</strong> Logger</a></li><li class="chapter-item expanded "><a href="metrics.html"><strong aria-hidden="true">26.</strong> Metrics</a></li><li class="chapter-item expanded "><a href="seccomp.html"><strong aria-hidden="true">27.</strong> Seccomp</a></li><li class="chapter-item expanded "><a href="seccompiler.html"><strong aria-hidden="true">28.</strong> Seccompiler</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">29.</strong> Tracing</a></li><li class="chapter-item expanded "><a href="vsock.html"><strong aria-hidden="true">30.</strong> VSock</a></li><li class="chapter-item expanded "><a href="api-requests.html"><strong aria-hidden="true">31.</strong> API Requests</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="actions.html"><strong aria-hidden="true">31.1.</strong> Actons</a></li><li class="chapter-item expanded "><a href="block-caching.html"><strong aria-hidden="true">31.2.</strong> Block Caching</a></li><li class="chapter-item expanded "><a href="block-io-engine.html"><strong aria-hidden="true">31.3.</strong> Block IO Engine</a></li><li class="chapter-item expanded "><a href="block-vhost-user.html"><strong aria-hidden="true">31.4.</strong> Block VHost User</a></li><li class="chapter-item expanded "><a href="patch-block.html"><strong aria-hidden="true">31.5.</strong> Patch Block</a></li><li class="chapter-item expanded "><a href="patch-network-interface.html"><strong aria-hidden="true">31.6.</strong> Patch Network Interface</a></li></ol></li><li class="chapter-item expanded "><a href="state-serialize.html"><strong aria-hidden="true">32.</strong> State Serialization Benchmarks</a></li><li class="chapter-item expanded "><a href="cpu-templates.html"><strong aria-hidden="true">33.</strong> CPU Templates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="boot-protocol.html"><strong aria-hidden="true">33.1.</strong> Boot Protocol</a></li><li class="chapter-item expanded "><a href="cpu-template-helper.html"><strong aria-hidden="true">33.2.</strong> CPU Template Helper</a></li><li class="chapter-item expanded "><a href="cpuid-normalization.html"><strong aria-hidden="true">33.3.</strong> CPUID Normalization</a></li></ol></li><li class="chapter-item expanded "><a href="mmds.html"><strong aria-hidden="true">34.</strong> MMDS</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="mmds-design.html"><strong aria-hidden="true">34.1.</strong> MMDS Design</a></li><li class="chapter-item expanded "><a href="mmds-user-guide.html"><strong aria-hidden="true">34.2.</strong> MMDS User Guide</a></li></ol></li><li class="chapter-item expanded "><a href="snapshotting.html"><strong aria-hidden="true">35.</strong> Snapshotting</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="handling-page-faults-on-snapshot-resume.html"><strong aria-hidden="true">35.1.</strong> Handling Page Faults on Snapshot Resume</a></li><li class="chapter-item expanded "><a href="network-for-clones.html"><strong aria-hidden="true">35.2.</strong> Network For Clones</a></li><li class="chapter-item expanded "><a href="random-for-clones.html"><strong aria-hidden="true">35.3.</strong> Random For Clones</a></li><li class="chapter-item expanded "><a href="snapshot-editor.html"><strong aria-hidden="true">35.4.</strong> Snapshot Editor</a></li><li class="chapter-item expanded "><a href="snapshot-support.html"><strong aria-hidden="true">35.5.</strong> Snapshot Support</a></li><li class="chapter-item expanded "><a href="versioning.html" class="active"><strong aria-hidden="true">35.6.</strong> Versioning</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Firecracker</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="firecracker-snapshot-versioning"><a class="header" href="#firecracker-snapshot-versioning">Firecracker snapshot versioning</a></h1>
+<p>This document describes how Firecracker persists its state across multiple
+versions, diving deep into the snapshot format, encoding, compatibility and
+limitations.</p>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<p>The design behind the snapshot implementation enables version tolerant save
+and restore across multiple Firecracker versions which we call a version space.
+For example, one can pause a microVM, save it to disk with Firecracker version
+<strong>0.23.0</strong> and later load it in Firecracker version <strong>0.24.0</strong>. It also works
+in reverse: Firecracker version <strong>0.23.0</strong> loads what  <strong>0.24.0</strong> saves.</p>
+<p>Below is an example graph showing backward and forward snapshot compatibility.
+This is the general picture, but keep in mind that when adding new features
+some version translations would not be possible.</p>
+<p><img src="../images/version_graph.png?raw=true" alt="Version graph" title="Version graph" /></p>
+<p>A non-exhaustive list of how cross-version snapshot support can be used:</p>
+<p>Example scenario #1 - load snapshot from older version:</p>
+<ul>
+<li>Start Firecracker v0.23 → Boot microVM → <em>Workload starts</em> → Pause →
+CreateSnapshot(snap) → kill microVM</li>
+<li>Start Firecracker v0.24 → LoadSnapshot → Resume → <em>Workload continues</em></li>
+</ul>
+<p>Example scenario #2 - load snapshot in older version:</p>
+<ul>
+<li>Start Firecracker v0.24 → Boot microVM → <em>Workload starts</em> → Pause →
+CreateSnapshot(snap, “0.23”) → kill microVM</li>
+<li>Start Firecracker v0.23 → LoadSnapshot(snap) → Resume → <em>Workload continues</em></li>
+</ul>
+<p>Example scenario #3 - load snapshot in older version:</p>
+<ul>
+<li>Start Firecracker v0.24 →  LoadSnapshot(older_snap) → Resume →
+<em>Workload continues</em> → Pause → CreateSnapshot(snap, “0.23”) → kill microVM</li>
+<li>Start Firecracker v0.23 → LoadSnapshot(snap) → Resume → <em>Workload continues</em></li>
+</ul>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Firecracker persists the microVM state as 2 separate objects:</p>
+<ul>
+<li>a <strong>guest memory</strong> file</li>
+<li>a <strong>microVM state</strong> file.</li>
+</ul>
+<p><em>The block devices attached to the microVM are not considered part of the
+state and need to be managed separately.</em></p>
+<h3 id="guest-memory"><a class="header" href="#guest-memory">Guest memory</a></h3>
+<p>The guest memory file contains the microVM memory saved as a dump of all pages.</p>
+<h3 id="microvm-state"><a class="header" href="#microvm-state">MicroVM state</a></h3>
+<p>In the VM state file, Firecracker stores the internal state of the VMM (device
+emulation, KVM and vCPUs) with 2 exceptions - serial emulation and vsock backend.</p>
+<p>While we continuously improve and extend Firecracker's features by adding new
+capabilities, devices or enhancements, the microVM state file may change both
+structurally and semantically with each new release. The state file includes
+versioning information and each Firecracker release implements distinct
+save/restore logic for the supported version space.</p>
+<h2 id="microvm-state-file-format"><a class="header" href="#microvm-state-file-format">MicroVM state file format</a></h2>
+<p>A microVM state file is further split into four different fields:</p>
+<div class="table-wrapper"><table><thead><tr><th>Field</th><th>Bits</th><th>Description</th></tr></thead><tbody>
+<tr><td>magic_id</td><td>64</td><td>Firecracker snapshot, architecture (x86_64/aarch64) and storage version.</td></tr>
+<tr><td>version</td><td>16</td><td>The snapshot version number internally mapped 1:1 to a specific Firecracker version.</td></tr>
+<tr><td>state</td><td>N</td><td>Bincode blob containing the microVM state.</td></tr>
+<tr><td>crc</td><td>64</td><td>Optional CRC64 sum of magic_id, version and state fields.</td></tr>
+</tbody></table>
+</div>
+<p><strong>Note</strong>: the last 16 bits of <code>magic_id</code> encode the storage version which specifies
+the encoding used for the <code>version</code> and <code>state</code> fields. The current
+implementation sets this field to 1, which identifies it as a <a href="https://github.com/servo/bincode">Serde bincode</a>
+compatible encoder/decoder.</p>
+<h3 id="version-tolerant-serde"><a class="header" href="#version-tolerant-serde">Version tolerant ser/de</a></h3>
+<p>Firecracker reads and writes the <code>state</code> blob of the snapshot by using per
+version, separate serialization and deserialization logic. This logic is mostly
+autogenerated by a Rust procedural macro based on <code>struct</code> and <code>enum</code>
+annotations. Basically, one can say that these structures support versioning.
+The versioning logic is generated by parsing a structure's history log (encoded
+using Rust annotations) and emitting Rust code.</p>
+<p>Versioned serialization and deserialization is divided into two translation layers:</p>
+<ul>
+<li>field translator,</li>
+<li>semantic translator.</li>
+</ul>
+<p>The <em>field translator</em> implements the logic to convert between different
+versions of the same Rust POD structure: it can deserialize or serialize from
+source version to target.
+The translation is done field by field - the common fields are copied from
+source to target, and the fields that are unique to the target are
+(de)serialized with their default values.</p>
+<p>The <em>semantic translator</em> is only concerned with translating the semantics of
+the serialized/deserialized fields.</p>
+<p>The <em>field translator</em> is generated automatically through a procedural macro,
+and the <em>semantic translation methods</em> have to be annotated in the structure
+by the user.</p>
+<p>This block diagram illustrates the concept:</p>
+<p><img src="../images/versionize.png?raw=true" alt="Versionize" title="Versionize layers" /></p>
+<h2 id="vm-state-encoding"><a class="header" href="#vm-state-encoding">VM state encoding</a></h2>
+<p>During research and prototyping we considered multiple storage formats. The
+criteria used for comparing these are: performance, size, rust support,
+specification, versioning support, community and tooling. Performance, size
+and Rust support are hard requirements while all others can be the subject
+of trade offs.
+More info about this comparison can be found <a href="https://github.com/firecracker-microvm/firecracker/blob/9d427b33d989c3225d874210f6c2849465941dc0/docs/snapshotting/design.md#snapshot-format">here</a>.</p>
+<p>Key benefits of using <em>bincode</em>:</p>
+<ul>
+<li>Minimal snapshot size overhead</li>
+<li>Minimal CPU overhead</li>
+<li>Simple implementation</li>
+</ul>
+<p>The current implementation relies on the <a href="https://github.com/servo/bincode">Serde bincode encoder</a>.</p>
+<p>Versionize is compatible to Serde with bincode backend: structures serialized
+with versionize at a specific version can be deserialized with Serde. Also
+structures serialized with serde can be deserialized with versionize.</p>
+<h2 id="snapshot-compatibility"><a class="header" href="#snapshot-compatibility">Snapshot compatibility</a></h2>
+<h3 id="host-kernel"><a class="header" href="#host-kernel">Host kernel</a></h3>
+<p>The minimum kernel version required by Firecracker snapshots is 4.14. Snapshots
+can be saved and restored on the same kernel version without any issues. There
+might be issues when restoring snapshots created on different host kernel
+version even when using the same Firecracker version.</p>
+<p>SnapshotCreate and SnapshotLoad operations across different host kernels is
+considered unstable in Firecracker as the saved KVM state might have different
+semantics on different kernels.</p>
+<h3 id="device-model"><a class="header" href="#device-model">Device model</a></h3>
+<p>The current Firecracker devices are backwards compatible up to the version that
+introduces them. Ideally this property would be kept over time, but there are
+situations when a new version of a device exposes new features to the guest
+that do not exist in an older version. In such cases restoring a snapshot at
+an older version becomes impossible without breaking the guest workload.</p>
+<p>The microVM state file links some resources that are external to the snapshot:</p>
+<ul>
+<li>tap devices by device name,</li>
+<li>block devices by block file path,</li>
+<li>vsock backing Unix domain socket by socket name.</li>
+</ul>
+<p>To successfully restore a microVM one should check that:</p>
+<ul>
+<li>tap devices are available, their names match their original names since these
+are the values saved in the microVM state file, and they are accessible to
+the Firecracker process where the microVM is being restored,</li>
+<li>block devices are set up at their original relative or absolute paths with
+the proper permissions, as the Firecracker process with the restored microVM
+will attempt to access them exactly as they were accessed in the original
+Firecracker process,</li>
+<li>the vsock backing Unix domain socket is available, its name matches the
+original name, and it is accessible to the new Firecracker process.</li>
+</ul>
+<h3 id="cpu-model"><a class="header" href="#cpu-model">CPU model</a></h3>
+<p>Firecracker microVMs snapshot functionality is available for Intel/AMD/ARM64
+CPU models that support the hardware virtualizations extensions, more details
+are available <a href="../../README.html#supported-platforms">here</a>. Snapshots are not
+compatible across CPU architectures and even across CPU models of the same
+architecture. They are only compatible if the CPU features exposed to the guest
+are an invariant when saving and restoring the snapshot. The trivial scenario
+is creating and restoring snapshots on hosts that have the same CPU model.</p>
+<p>Restoring from an Intel snapshot on AMD (or vice-versa) is not supported.</p>
+<p>It is important to note that guest workloads can still execute instructions
+that are being <a href="../cpu_templates/cpu-templates.html">masked</a> by CPUID and
+restoring and saving of such workloads will lead to undefined result.
+Firecracker retrieves the state of a discrete list of MSRs from KVM, more
+specifically, the MSRs corresponding to the guest exposed features.</p>
+<h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
+<p>To enable Firecracker cross version snapshots we have designed and built two
+crates:</p>
+<ul>
+<li><a href="https://crates.io/crates/versionize">versionize</a> - defines the <code>Versionize</code>
+trait, implements serialization of primitive types and provides a helper
+class to map Firecracker versions to individual structure versions.</li>
+<li><a href="https://crates.io/crates/versionize_derive">versionize_derive</a> - exports
+a procedural macro that consumes structures and enums and their annotations
+to produce an implementation of the <code>Versionize</code> trait.</li>
+</ul>
+<p>The microVM state file format is implemented in the <a href="../../src/snapshot/src/lib.rs">snapshot crate</a>
+in the Firecracker repository.
+All Firecracker devices implement the <a href="../../src/snapshot/src/persist.rs">Persist</a>
+trait which exposes an interface that enables creating from and saving to the
+microVM state.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="snapshot-support.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="snapshot-support.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

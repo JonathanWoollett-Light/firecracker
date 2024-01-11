@@ -1,0 +1,382 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Introduction - Firecracker</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html" class="active"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="CHARTER.html"><strong aria-hidden="true">2.</strong> Firecracker Charter</a></li><li class="chapter-item expanded "><a href="CODE_OF_CONDUCT.html"><strong aria-hidden="true">3.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="SECURITY.html"><strong aria-hidden="true">4.</strong> Security</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CONTRIBUTING.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="dev-machine-setup.html"><strong aria-hidden="true">7.</strong> Development Machine Setup</a></li><li class="chapter-item expanded "><a href="api-change-runbook.html"><strong aria-hidden="true">8.</strong> API Change Runbook</a></li><li class="chapter-item expanded "><a href="RELEASE_POLICY.html"><strong aria-hidden="true">9.</strong> Releases</a></li><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">10.</strong> Design</a></li><li class="chapter-item expanded "><a href="prod-host-setup.html"><strong aria-hidden="true">11.</strong> Production Host Setup</a></li><li class="chapter-item expanded "><a href="network-setup.html"><strong aria-hidden="true">12.</strong> Network Setup</a></li><li class="chapter-item expanded "><a href="kernel-policy.html"><strong aria-hidden="true">13.</strong> Kernel Support Policy</a></li><li class="chapter-item expanded "><a href="SPECIFICATION.html"><strong aria-hidden="true">14.</strong> Specification</a></li><li class="chapter-item expanded "><a href="network-performance.html"><strong aria-hidden="true">15.</strong> Network Performance</a></li><li class="chapter-item expanded "><a href="FAQ.html"><strong aria-hidden="true">16.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="rootfs-and-kernel-setup.html"><strong aria-hidden="true">17.</strong> Creating Custom rootfs and kernel Images</a></li><li class="chapter-item expanded "><a href="ballooning.html"><strong aria-hidden="true">18.</strong> Ballooning</a></li><li class="chapter-item expanded "><a href="devctr-image.html"><strong aria-hidden="true">19.</strong> Development Container</a></li><li class="chapter-item expanded "><a href="device-api.html"><strong aria-hidden="true">20.</strong> Device API</a></li><li class="chapter-item expanded "><a href="entropy.html"><strong aria-hidden="true">21.</strong> Entropy</a></li><li class="chapter-item expanded "><a href="formal-verification.html"><strong aria-hidden="true">22.</strong> Formal Verification</a></li><li class="chapter-item expanded "><a href="initrd.html"><strong aria-hidden="true">23.</strong> initrd</a></li><li class="chapter-item expanded "><a href="jailer.html"><strong aria-hidden="true">24.</strong> Jailer</a></li><li class="chapter-item expanded "><a href="logger.html"><strong aria-hidden="true">25.</strong> Logger</a></li><li class="chapter-item expanded "><a href="metrics.html"><strong aria-hidden="true">26.</strong> Metrics</a></li><li class="chapter-item expanded "><a href="seccomp.html"><strong aria-hidden="true">27.</strong> Seccomp</a></li><li class="chapter-item expanded "><a href="seccompiler.html"><strong aria-hidden="true">28.</strong> Seccompiler</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">29.</strong> Tracing</a></li><li class="chapter-item expanded "><a href="vsock.html"><strong aria-hidden="true">30.</strong> VSock</a></li><li class="chapter-item expanded "><a href="api-requests.html"><strong aria-hidden="true">31.</strong> API Requests</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="actions.html"><strong aria-hidden="true">31.1.</strong> Actons</a></li><li class="chapter-item expanded "><a href="block-caching.html"><strong aria-hidden="true">31.2.</strong> Block Caching</a></li><li class="chapter-item expanded "><a href="block-io-engine.html"><strong aria-hidden="true">31.3.</strong> Block IO Engine</a></li><li class="chapter-item expanded "><a href="block-vhost-user.html"><strong aria-hidden="true">31.4.</strong> Block VHost User</a></li><li class="chapter-item expanded "><a href="patch-block.html"><strong aria-hidden="true">31.5.</strong> Patch Block</a></li><li class="chapter-item expanded "><a href="patch-network-interface.html"><strong aria-hidden="true">31.6.</strong> Patch Network Interface</a></li></ol></li><li class="chapter-item expanded "><a href="state-serialize.html"><strong aria-hidden="true">32.</strong> State Serialization Benchmarks</a></li><li class="chapter-item expanded "><a href="cpu-templates.html"><strong aria-hidden="true">33.</strong> CPU Templates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="boot-protocol.html"><strong aria-hidden="true">33.1.</strong> Boot Protocol</a></li><li class="chapter-item expanded "><a href="cpu-template-helper.html"><strong aria-hidden="true">33.2.</strong> CPU Template Helper</a></li><li class="chapter-item expanded "><a href="cpuid-normalization.html"><strong aria-hidden="true">33.3.</strong> CPUID Normalization</a></li></ol></li><li class="chapter-item expanded "><a href="mmds.html"><strong aria-hidden="true">34.</strong> MMDS</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="mmds-design.html"><strong aria-hidden="true">34.1.</strong> MMDS Design</a></li><li class="chapter-item expanded "><a href="mmds-user-guide.html"><strong aria-hidden="true">34.2.</strong> MMDS User Guide</a></li></ol></li><li class="chapter-item expanded "><a href="snapshotting.html"><strong aria-hidden="true">35.</strong> Snapshotting</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="handling-page-faults-on-snapshot-resume.html"><strong aria-hidden="true">35.1.</strong> Handling Page Faults on Snapshot Resume</a></li><li class="chapter-item expanded "><a href="network-for-clones.html"><strong aria-hidden="true">35.2.</strong> Network For Clones</a></li><li class="chapter-item expanded "><a href="random-for-clones.html"><strong aria-hidden="true">35.3.</strong> Random For Clones</a></li><li class="chapter-item expanded "><a href="snapshot-editor.html"><strong aria-hidden="true">35.4.</strong> Snapshot Editor</a></li><li class="chapter-item expanded "><a href="snapshot-support.html"><strong aria-hidden="true">35.5.</strong> Snapshot Support</a></li><li class="chapter-item expanded "><a href="versioning.html"><strong aria-hidden="true">35.6.</strong> Versioning</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Firecracker</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="./images/fc_logo_full_transparent-bg_white-fg.png">
+   <source media="(prefers-color-scheme: light)" srcset="./images/fc_logo_full_transparent-bg.png">
+   <img alt="Firecracker Logo Title" width="750" src="./images/fc_logo_full_transparent-bg.png">
+</picture>
+<p>Our mission is to enable secure, multi-tenant, minimal-overhead execution of
+container and function workloads.</p>
+<p>Read more about the Firecracker Charter <a href="CHARTER.html">here</a>.</p>
+<h2 id="what-is-firecracker"><a class="header" href="#what-is-firecracker">What is Firecracker?</a></h2>
+<p>Firecracker is an open source virtualization technology that is purpose-built
+for creating and managing secure, multi-tenant container and function-based
+services that provide serverless operational models. Firecracker runs workloads
+in lightweight virtual machines, called microVMs, which combine the security and
+isolation properties provided by hardware virtualization technology with the
+speed and flexibility of containers.</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The main component of Firecracker is a virtual machine monitor (VMM) that uses
+the Linux Kernel Virtual Machine (KVM) to create and run microVMs. Firecracker
+has a minimalist design. It excludes unnecessary devices and guest-facing
+functionality to reduce the memory footprint and attack surface area of each
+microVM. This improves security, decreases the startup time, and increases
+hardware utilization. Firecracker has also been integrated in container runtimes,
+for example
+<a href="https://github.com/kata-containers/documentation/wiki/Initial-release-of-Kata-Containers-with-Firecracker-support">Kata Containers</a>
+and <a href="https://github.com/weaveworks/ignite">Weaveworks Ignite</a>.</p>
+<p>Firecracker was developed at Amazon Web Services to accelerate the speed and
+efficiency of services like <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> and
+<a href="https://aws.amazon.com/fargate/">AWS Fargate</a>. Firecracker is open
+sourced under <a href="LICENSE">Apache version 2.0</a>.</p>
+<p>To read more about Firecracker, check out
+<a href="https://firecracker-microvm.github.io">firecracker-microvm.io</a>.</p>
+<h2 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h2>
+<p>To get started with Firecracker, download the latest
+<a href="https://github.com/firecracker-microvm/firecracker/releases">release</a> binaries
+or build it from source.</p>
+<p>You can build Firecracker on any Unix/Linux system that has Docker running
+(we use a development container) and <code>bash</code> installed, as follows:</p>
+<pre><code class="language-bash">git clone https://github.com/firecracker-microvm/firecracker
+cd firecracker
+tools/devtool build
+toolchain=&quot;$(uname -m)-unknown-linux-musl&quot;
+</code></pre>
+<p>The Firecracker binary will be placed at
+<code>build/cargo_target/${toolchain}/debug/firecracker</code>. For more information on
+building, testing, and running Firecracker, go to the
+<a href="./getting-started.html">quickstart guide</a>.</p>
+<p>The overall security of Firecracker microVMs, including the ability to meet the
+criteria for safe multi-tenant computing, depends on a well configured Linux
+host operating system. A configuration that we believe meets this bar is
+included in <a href="./prod-host-setup.html">the production host setup document</a>.</p>
+<h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
+<p>Firecracker is already running production workloads within AWS, but it's still
+Day 1 on the journey guided by our <a href="CHARTER.html">mission</a>. There's a lot more to
+build and we welcome all contributions.</p>
+<p>To contribute to Firecracker, check out the development setup section in the
+<a href="./getting-started.html">getting started guide</a> and then the Firecracker
+<a href="CONTRIBUTING.html">contribution guidelines</a>.</p>
+<h2 id="releases"><a class="header" href="#releases">Releases</a></h2>
+<p>New Firecracker versions are released via the GitHub repository
+<a href="https://github.com/firecracker-microvm/firecracker/releases">releases</a> page,
+typically every two or three months. A history of changes is recorded in our
+<a href="CHANGELOG.html">changelog</a>.</p>
+<p>The Firecracker release policy is detailed <a href="./RELEASE_POLICY.html">here</a>.</p>
+<h2 id="design"><a class="header" href="#design">Design</a></h2>
+<p>Firecracker's overall architecture is described in
+<a href="./design.html">the design document</a>.</p>
+<h2 id="features--capabilities"><a class="header" href="#features--capabilities">Features &amp; Capabilities</a></h2>
+<p>Firecracker consists of a single micro Virtual Machine Manager process that
+exposes an API endpoint to the host once started. The API is
+<a href="src/api_server/swagger/firecracker.yaml">specified in OpenAPI format</a>. Read more
+about it in the <a href="./api_requests">API docs</a>.</p>
+<p>The <strong>API endpoint</strong> can be used to:</p>
+<ul>
+<li>Configure the microvm by:
+<ul>
+<li>Setting the number of vCPUs (the default is 1).</li>
+<li>Setting the memory size (the default is 128 MiB).</li>
+<li>Configuring a <a href="./cpu_templates/cpu-templates.html">CPU template</a>.</li>
+</ul>
+</li>
+<li>Add one or more network interfaces to the microVM.</li>
+<li>Add one or more read-write or read-only disks to the microVM, each represented
+by a file-backed block device.</li>
+<li>Trigger a block device re-scan while the guest is running. This enables the
+guest OS to pick up size changes to the block device's backing file.</li>
+<li>Change the backing file for a block device, before or after the guest boots.</li>
+<li>Configure rate limiters for virtio devices which can limit the bandwidth,
+operations per second, or both.</li>
+<li>Configure the logging and metric system.</li>
+<li><code>[BETA]</code> Configure the data tree of the guest-facing metadata service. The
+service is only available to the guest if this resource is configured.</li>
+<li>Add a <a href="./vsock.html">vsock socket</a> to the microVM.</li>
+<li>Add a <a href="./entropy.html">entropy device</a> to the microVM.</li>
+<li>Start the microVM using a given kernel image, root file system, and boot
+arguments.</li>
+<li>[x86_64 only] Stop the microVM.</li>
+</ul>
+<p><strong>Built-in Capabilities</strong>:</p>
+<ul>
+<li>Demand fault paging and CPU oversubscription enabled by default.</li>
+<li>Advanced, thread-specific seccomp filters for enhanced security.</li>
+<li><a href="./jailer.html">Jailer</a> process for starting Firecracker in production
+scenarios; applies a cgroup/namespace isolation barrier and then
+drops privileges.</li>
+</ul>
+<h2 id="tested-platforms"><a class="header" href="#tested-platforms">Tested platforms</a></h2>
+<p>We test all combinations of:</p>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: left">Instance</th><th style="text-align: left">Host OS &amp; Kernel</th><th style="text-align: left">Guest Rootfs</th><th style="text-align: left">Guest Kernel</th></tr></thead><tbody>
+<tr><td style="text-align: left">m5d.metal</td><td style="text-align: left">al2    linux_4.1</td><td style="text-align: left">ubuntu 22.04</td><td style="text-align: left">linux_4.14</td></tr>
+<tr><td style="text-align: left">m6i.metal</td><td style="text-align: left">al2    linux_5.10</td><td style="text-align: left"></td><td style="text-align: left">linux_5.10</td></tr>
+<tr><td style="text-align: left">m6a.metal</td><td style="text-align: left">al2023 linux_6.1</td><td style="text-align: left"></td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left">m6g.metal</td><td style="text-align: left"></td><td style="text-align: left"></td><td style="text-align: left"></td></tr>
+<tr><td style="text-align: left">c7g.metal</td><td style="text-align: left"></td><td style="text-align: left"></td><td style="text-align: left"></td></tr>
+</tbody></table>
+</div>
+<h2 id="known-issues-and-limitations"><a class="header" href="#known-issues-and-limitations">Known issues and Limitations</a></h2>
+<ul>
+<li>The <code>pl031</code> RTC device on aarch64 does not support interrupts, so guest
+programs which use an RTC alarm (e.g. <code>hwclock</code>) will not work.</li>
+</ul>
+<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
+<p>Firecracker's performance characteristics are listed as part of the
+<a href="SPECIFICATION.html">specification documentation</a>. All specifications are a part
+of our commitment to supporting container and function workloads in serverless
+operational models, and are therefore enforced via continuous integration
+testing.</p>
+<h2 id="policy-for-security-disclosures"><a class="header" href="#policy-for-security-disclosures">Policy for Security Disclosures</a></h2>
+<p>The security of Firecracker is our top priority. If you suspect you have
+uncovered a vulnerability, contact us privately, as outlined in our
+<a href="SECURITY.html">security policy document</a>; we will immediately prioritize
+your disclosure.</p>
+<h2 id="faq--contact"><a class="header" href="#faq--contact">FAQ &amp; Contact</a></h2>
+<p>Frequently asked questions are collected in our <a href="FAQ.html">FAQ doc</a>.</p>
+<p>You can get in touch with the Firecracker community in the following ways:</p>
+<ul>
+<li>Security-related issues, see our <a href="SECURITY.html">security policy document</a>.</li>
+<li>Chat with us on our
+<a href="https://join.slack.com/t/firecracker-microvm/shared_invite/zt-1zlb87h4z-NED1rBhVqOQ1ygBgT76wlg">Slack workspace</a>
+<em>Note: most of the maintainers are on a European time zone.</em></li>
+<li>Open a GitHub issue in this repository.</li>
+<li>Email the maintainers at
+<a href="mailto:firecracker-maintainers@amazon.com">firecracker-maintainers@amazon.com</a>.</li>
+</ul>
+<p>When communicating within the Firecracker community, please mind our
+<a href="CODE_OF_CONDUCT.html">code of conduct</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+                            <a rel="next prefetch" href="CHARTER.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+                    <a rel="next prefetch" href="CHARTER.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

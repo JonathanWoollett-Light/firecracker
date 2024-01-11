@@ -1,0 +1,531 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>API Change Runbook - Firecracker</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="CHARTER.html"><strong aria-hidden="true">2.</strong> Firecracker Charter</a></li><li class="chapter-item expanded "><a href="CODE_OF_CONDUCT.html"><strong aria-hidden="true">3.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="SECURITY.html"><strong aria-hidden="true">4.</strong> Security</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CONTRIBUTING.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="dev-machine-setup.html"><strong aria-hidden="true">7.</strong> Development Machine Setup</a></li><li class="chapter-item expanded "><a href="api-change-runbook.html" class="active"><strong aria-hidden="true">8.</strong> API Change Runbook</a></li><li class="chapter-item expanded "><a href="RELEASE_POLICY.html"><strong aria-hidden="true">9.</strong> Releases</a></li><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">10.</strong> Design</a></li><li class="chapter-item expanded "><a href="prod-host-setup.html"><strong aria-hidden="true">11.</strong> Production Host Setup</a></li><li class="chapter-item expanded "><a href="network-setup.html"><strong aria-hidden="true">12.</strong> Network Setup</a></li><li class="chapter-item expanded "><a href="kernel-policy.html"><strong aria-hidden="true">13.</strong> Kernel Support Policy</a></li><li class="chapter-item expanded "><a href="SPECIFICATION.html"><strong aria-hidden="true">14.</strong> Specification</a></li><li class="chapter-item expanded "><a href="network-performance.html"><strong aria-hidden="true">15.</strong> Network Performance</a></li><li class="chapter-item expanded "><a href="FAQ.html"><strong aria-hidden="true">16.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="rootfs-and-kernel-setup.html"><strong aria-hidden="true">17.</strong> Creating Custom rootfs and kernel Images</a></li><li class="chapter-item expanded "><a href="ballooning.html"><strong aria-hidden="true">18.</strong> Ballooning</a></li><li class="chapter-item expanded "><a href="devctr-image.html"><strong aria-hidden="true">19.</strong> Development Container</a></li><li class="chapter-item expanded "><a href="device-api.html"><strong aria-hidden="true">20.</strong> Device API</a></li><li class="chapter-item expanded "><a href="entropy.html"><strong aria-hidden="true">21.</strong> Entropy</a></li><li class="chapter-item expanded "><a href="formal-verification.html"><strong aria-hidden="true">22.</strong> Formal Verification</a></li><li class="chapter-item expanded "><a href="initrd.html"><strong aria-hidden="true">23.</strong> initrd</a></li><li class="chapter-item expanded "><a href="jailer.html"><strong aria-hidden="true">24.</strong> Jailer</a></li><li class="chapter-item expanded "><a href="logger.html"><strong aria-hidden="true">25.</strong> Logger</a></li><li class="chapter-item expanded "><a href="metrics.html"><strong aria-hidden="true">26.</strong> Metrics</a></li><li class="chapter-item expanded "><a href="seccomp.html"><strong aria-hidden="true">27.</strong> Seccomp</a></li><li class="chapter-item expanded "><a href="seccompiler.html"><strong aria-hidden="true">28.</strong> Seccompiler</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">29.</strong> Tracing</a></li><li class="chapter-item expanded "><a href="vsock.html"><strong aria-hidden="true">30.</strong> VSock</a></li><li class="chapter-item expanded "><a href="api-requests.html"><strong aria-hidden="true">31.</strong> API Requests</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="actions.html"><strong aria-hidden="true">31.1.</strong> Actons</a></li><li class="chapter-item expanded "><a href="block-caching.html"><strong aria-hidden="true">31.2.</strong> Block Caching</a></li><li class="chapter-item expanded "><a href="block-io-engine.html"><strong aria-hidden="true">31.3.</strong> Block IO Engine</a></li><li class="chapter-item expanded "><a href="block-vhost-user.html"><strong aria-hidden="true">31.4.</strong> Block VHost User</a></li><li class="chapter-item expanded "><a href="patch-block.html"><strong aria-hidden="true">31.5.</strong> Patch Block</a></li><li class="chapter-item expanded "><a href="patch-network-interface.html"><strong aria-hidden="true">31.6.</strong> Patch Network Interface</a></li></ol></li><li class="chapter-item expanded "><a href="state-serialize.html"><strong aria-hidden="true">32.</strong> State Serialization Benchmarks</a></li><li class="chapter-item expanded "><a href="cpu-templates.html"><strong aria-hidden="true">33.</strong> CPU Templates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="boot-protocol.html"><strong aria-hidden="true">33.1.</strong> Boot Protocol</a></li><li class="chapter-item expanded "><a href="cpu-template-helper.html"><strong aria-hidden="true">33.2.</strong> CPU Template Helper</a></li><li class="chapter-item expanded "><a href="cpuid-normalization.html"><strong aria-hidden="true">33.3.</strong> CPUID Normalization</a></li></ol></li><li class="chapter-item expanded "><a href="mmds.html"><strong aria-hidden="true">34.</strong> MMDS</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="mmds-design.html"><strong aria-hidden="true">34.1.</strong> MMDS Design</a></li><li class="chapter-item expanded "><a href="mmds-user-guide.html"><strong aria-hidden="true">34.2.</strong> MMDS User Guide</a></li></ol></li><li class="chapter-item expanded "><a href="snapshotting.html"><strong aria-hidden="true">35.</strong> Snapshotting</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="handling-page-faults-on-snapshot-resume.html"><strong aria-hidden="true">35.1.</strong> Handling Page Faults on Snapshot Resume</a></li><li class="chapter-item expanded "><a href="network-for-clones.html"><strong aria-hidden="true">35.2.</strong> Network For Clones</a></li><li class="chapter-item expanded "><a href="random-for-clones.html"><strong aria-hidden="true">35.3.</strong> Random For Clones</a></li><li class="chapter-item expanded "><a href="snapshot-editor.html"><strong aria-hidden="true">35.4.</strong> Snapshot Editor</a></li><li class="chapter-item expanded "><a href="snapshot-support.html"><strong aria-hidden="true">35.5.</strong> Snapshot Support</a></li><li class="chapter-item expanded "><a href="versioning.html"><strong aria-hidden="true">35.6.</strong> Versioning</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Firecracker</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="runbook-for-firecracker-api-changes"><a class="header" href="#runbook-for-firecracker-api-changes">Runbook for Firecracker API changes</a></h1>
+<p>This runbook will cover triaging API changes and ways to implement them
+appropriately.</p>
+<h2 id="definitions"><a class="header" href="#definitions">Definitions</a></h2>
+<ul>
+<li><em>Deprecated</em> - We will consider a deprecated API element (endpoint and/or
+parts of an endpoint) to be an element which still provides users with
+access to its backing functionality and can be used, but will soon be
+removed completely along with said functionality in an upcoming version.</li>
+<li><em>Mandatory endpoint</em> - We will consider an endpoint mandatory if Firecracker
+cannot operate normally without performing a request to it.</li>
+<li><em>Optional endpoint</em> - We will consider an endpoint optional if Firecracker
+can operate normally without performing a request to it and the
+functionality behind it is not essential.</li>
+<li><em>Mandatory header/field</em> - We will consider a header/field mandatory in an
+HTTP message if the request will fail without specifying said header/field.</li>
+<li><em>Optional header/field</em> - We will consider a header/field optional in an
+HTTP message if the request will succeeds without specifying said
+header/field.</li>
+</ul>
+<h2 id="triaging-api-changes"><a class="header" href="#triaging-api-changes">Triaging API changes</a></h2>
+<p>For the purposes of this document, there are 2 main categories for API changes,
+namely <em>breaking</em> and <em>non-breaking</em>.</p>
+<h3 id="what-is-a-breaking-change"><a class="header" href="#what-is-a-breaking-change">What is a breaking change?</a></h3>
+<p>A breaking change in the API is a change that makes the API incompatible with
+the previous version (backwards incompatible). In an effort to avoid a breaking
+change, we may take the route of deprecation and incrementing the minor
+version in an effort to preserve backwards compatibility, but breaking changes
+will always ultimately result in incrementing the major version. Here is a
+non-exhaustive list of such changes:</p>
+<ol>
+<li>Adding a new mandatory endpoint/HTTP method.</li>
+<li>Removing an endpoint/method.</li>
+<li>Adding a mandatory request header/field.</li>
+<li>Removing a request header/field.</li>
+<li>Adding a mandatory response field.</li>
+<li>Removing a response header/field.</li>
+</ol>
+<h3 id="what-is-not-a-breaking-change"><a class="header" href="#what-is-not-a-breaking-change">What is NOT a breaking change?</a></h3>
+<p>A change in the API is not a breaking change if the version resulting from it
+is compatible with the previous one (backwards compatible). The outcome of a
+non-breaking change should always include incrementing the minor version but
+must not lead to incrementing the major version by itself. Here is a
+non-exhaustive list of such changes:</p>
+<ol>
+<li>Deprecating an endpoint/method/field.</li>
+<li>Adding a new optional endpoint/method.</li>
+<li>Adding an optional request header/field.</li>
+<li>Adding a response header.</li>
+<li>Adding additional valid inputs for fields in API requests.</li>
+<li>Making mandatory headers/fields optional.</li>
+<li>Making mandatory endpoints optional.</li>
+<li>Changing the URI of an endpoint.</li>
+<li>Changing the metrics output format.</li>
+</ol>
+<h2 id="implementing-api-changes"><a class="header" href="#implementing-api-changes">Implementing API changes</a></h2>
+<p>API changes result in version increases. As Firecracker’s support policy is
+based on <a href="https://semver.org/spec/v2.0.0.html">semantic versioning 2.0.0</a>, we will look at API changes from this
+point of view.</p>
+<blockquote>
+<p>Given a version number MAJOR.MINOR.PATCH, increment the:
+MAJOR version when you make incompatible API changes;
+MINOR version when you add functionality in a backwards compatible manner;
+PATCH version when you make backwards compatible bug fixes.</p>
+</blockquote>
+<p><img src="images/api_change_flowchart.png?raw=true" alt="Flowchart for changing the Firecracker API" title="Flowchart for changing the Firecracker API" /></p>
+<p><em>All deprecated endpoints are supported until at least the next major version
+release, where they may be <em>removed</em>.</em></p>
+<h3 id="how-to-follow-the-flowchart---with-examples"><a class="header" href="#how-to-follow-the-flowchart---with-examples">How to follow the flowchart - with examples</a></h3>
+<p>We will go through multiple types of API changes and provide ways to ensure we
+don’t break our backwards compatibility promise to our customers. The list is
+split into categories of components changed.</p>
+<ul>
+<li><em>Entire endpoints</em>
+<ul>
+<li>Adding an optional endpoint with new functionality - Increment minor
+version.</li>
+<li>Adding a command line parameter - Increment minor version.</li>
+<li>Removing an endpoint - Deprecate endpoint and increment minor version →
+Remove endpoint when incrementing major version.</li>
+<li>Adding a mandatory endpoint - Increment major version.</li>
+</ul>
+</li>
+<li><em>Request</em>
+<ul>
+<li>Adding an optional header/field - Increment minor version.</li>
+<li>Renaming a header/field - Accept both names and deprecate the old one →
+Remove old name when incrementing major version.</li>
+<li>Removing a header/field - Make said header/field optional → Remove
+header/field when incrementing major version.</li>
+<li>Changing the URI of an endpoint - Redirect the old endpoint to the new
+one and deprecate the old one → Remove old endpoint when incrementing
+major version.</li>
+<li>Adding a mandatory header/field - Increment major version.</li>
+</ul>
+</li>
+<li><em>Response</em>
+<ul>
+<li>Adding a header/field - Create a new, separate endpoint with the changes
+and deprecate the old one → Remove old endpoint when incrementing major
+version.</li>
+<li>Removing a header/field - Create a new, separate endpoint with the
+changes and deprecate the old one → Remove old endpoint when incrementing
+major version.</li>
+</ul>
+</li>
+<li><em>Command line parameter</em>
+<ul>
+<li>Renaming a command line parameter - Accept both names and deprecate the
+old one → Remove old name when incrementing major version.</li>
+<li>Changing expected value taken by a command line parameter - Accept both
+names and deprecate the old one → Remove old name when incrementing major
+version.</li>
+</ul>
+</li>
+</ul>
+<p>In case the outlined solution for your case is not feasible (e.g. because of
+security concerns), break the glass and increment the major version.</p>
+<h2 id="how-to-deprecate"><a class="header" href="#how-to-deprecate">How to deprecate</a></h2>
+<p>As outlined in the diagram above, sometimes we have to deprecate endpoints
+partially or entirely. In this section we will go through different situations
+where we have to deprecate something and ways of avoiding common pitfalls when
+doing so.</p>
+<h3 id="deprecating-endpoints"><a class="header" href="#deprecating-endpoints">Deprecating endpoints</a></h3>
+<p>Some paths in the flowchart above lead to deprecation. Based on the initial
+conditions, there are 2 major cases where we need to deprecate an endpoint:</p>
+<ul>
+<li><em>Changing an existing endpoint</em>
+<ul>
+<li>Often happens because directly changing the endpoint would be a breaking
+change.</li>
+<li>We usually create a clone of the old endpoint we want to deprecate and
+make the necessary changes to it.</li>
+<li>We usually expose both endpoints in the next minor version while marking
+the old one as deprecated.</li>
+<li>The old endpoint retains its previous name. When naming the new endpoint:
+<ul>
+<li>for HTTP endpoints we follow a “per-endpoint versioning” scheme; in
+cases where we can’t find a fitting name for the new endpoint, the
+simplest way forward is to take the old URI and append <code>/v2</code> to it.</li>
+<li>for command line endpoints, we can usually find a different name for
+the new endpoint.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><em>Deprecating an endpoint without adding a replacement to it</em>
+<ul>
+<li>Often happens when we want to phase out a certain feature or
+functionality, but doing so immediately would be a breaking change.</li>
+<li>We just mark the endpoint as deprecated.</li>
+</ul>
+</li>
+</ul>
+<h3 id="keeping-swagger-updated"><a class="header" href="#keeping-swagger-updated">Keeping Swagger updated</a></h3>
+<p>Make sure that any changes you make in the code are also reflected in the
+swagger specification.</p>
+<p>Some tips:</p>
+<ul>
+<li>There is nothing in the swagger file that shows whether an endpoint is
+mandatory or optional, it’s all code logic.</li>
+<li>Mandatory fields in a request or response body are marked with
+<code>required: true</code> in the swagger definition. All other fields are optional.</li>
+<li>If you need to redirect an endpoint, you have to clone the old one under the
+new URI in the swagger specification.</li>
+</ul>
+<h3 id="marking-endpoints-as-deprecated"><a class="header" href="#marking-endpoints-as-deprecated">Marking endpoints as deprecated</a></h3>
+<p>When marking:</p>
+<ul>
+<li>an HTTP endpoint as deprecated:
+<ul>
+<li>Add a comment for the parsing function of the endpoint stating that it
+is deprecated.</li>
+<li>Log a <code>warn!</code> message stating that the user accessed a deprecated
+endpoint.</li>
+<li>Increment the <code>deprecatedHttpApi</code> metric.</li>
+<li>Include the <code>Deprecated</code> header in the response.</li>
+</ul>
+</li>
+<li>a header field in an HTTP endpoint as deprecated:
+<ul>
+<li>Add a comment in the parsing function where we check the presence of the
+header stating that it is deprecated.</li>
+<li>If the header is present, log a <code>warn!</code> message stating that the user
+used a deprecated field.</li>
+<li>Increment the <code>deprecatedHttpApi</code> metric.</li>
+<li>Include the Deprecated header in the response.</li>
+</ul>
+</li>
+<li>a command line parameter as deprecated:
+<ul>
+<li>Mention it is deprecated in the help message of the parameter in the
+argument parser.</li>
+<li>Add it in the <code>warn_deprecated_parameters</code> function where we log it
+and increment the <code>deprecatedCmdLineApi</code> metric.</li>
+</ul>
+</li>
+</ul>
+<h3 id="removing-deprecated-endpoints-on-a-major-release"><a class="header" href="#removing-deprecated-endpoints-on-a-major-release">Removing deprecated endpoints on a major release</a></h3>
+<p>When doing a major release, the API can have breaking changes. This is the
+<em>only time</em> where we can safely remove deprecated elements of the API.
+To remove a deprecated element of the API:</p>
+<ul>
+<li>Remove the associated functionality from the codebase (usually in <code>vmm</code> or
+<code>mmds</code>);</li>
+<li>Remove the parsing logic in <code>api_server</code>;</li>
+<li>Remove any unit and integration tests associated with this element.</li>
+</ul>
+<h2 id="practical-example-of-an-api-change"><a class="header" href="#practical-example-of-an-api-change">Practical example of an API change</a></h2>
+<p>In this guide we set out to remove the <code>vsock_id</code> field in <code>PUT</code>s on <code>/vsock</code>.
+This was implemented in <a href="https://github.com/firecracker-microvm/firecracker/pull/2763">PR #2763</a> and we will go step by step through the
+changes in order to understand the process of changing something in the
+Firecracker API.</p>
+<ul>
+<li>We go through the flowchart; we want to remove a field in the body of a
+HTTP request. So we follow the flowchart like this:
+<ul>
+<li>→ Change an existing endpoint</li>
+<li>→ Request</li>
+<li>→ Remove header or field</li>
+<li>→ Make it optional</li>
+<li>→ Deprecate</li>
+<li>→ Increment minor version.</li>
+</ul>
+</li>
+<li>Now that we know we need to make the field optional and deprecate it, it’s
+time for the code changes (reference implementation in <a href="https://github.com/firecracker-microvm/firecracker/commit/83aa098245a42ad93a6b70ccd70ad593cf453a3c">this commit</a>).
+We go to the function in <code>api_server/src/requests</code> which is responsible for
+parsing this request, which is <code>parse_put_vsock</code> in this case, and do the
+following.
+<ul>
+<li>We find the associated <code>vmm_config</code> struct which <code>serde_json</code> uses for
+deserialization, in this case <code>VsockDeviceConfig</code>.</li>
+<li>In the struct referenced above, we make the parameter optional by
+encapsulating it in an <code>Option</code> with <code>#[serde(default)]</code> and
+<code>#[serde(skip_serializing_if = &quot;Option::is_none&quot;)]</code> so that we don’t break
+existing implementations, but we follow the new, desired usage of the
+endpoint.</li>
+<li>After deserializing the body of the request into the struct, we check
+for the existence of the field we want to deprecate, in this case by
+calling <code>vsock_cfg.vsock_id.is_some()</code>.</li>
+<li>If the field is there, we must mark this request as being deprecated,
+so we craft a deprecation message
+(<code>&quot;PUT /vsock: vsock_id field is deprecated.&quot;</code>) and increment the
+deprecated HTTP API metric
+(<code>METRICS.deprecated_api.deprecated_http_api_calls.inc()</code>).</li>
+<li>We create a new <code>ParsedRequest</code> where, if we marked the request as
+deprecated, we append the deprecation message into its <code>parsing_info</code>
+structure, in this case by calling
+<code>parsed_req.parsing_info().append_deprecation_message(msg)</code>.</li>
+<li>Don’t forget to comment your code! Comments should reflect what is
+deprecated and clearly describe the code paths where you handle the
+deprecation case.</li>
+<li>Add a unit test where you test your new code paths.</li>
+<li>Fix all other failing unit tests.</li>
+<li>Update the swagger file to reflect the change, in this case by removing
+the <code>vsock_id</code> field from the required parameter list in the <code>Vsock</code>
+definition and adding a description to it stating that it is deprecated
+since the current version.</li>
+<li>Update any relevant documentation.</li>
+</ul>
+</li>
+<li>We update the python integration tests to reflect the change (reference
+implementation in <a href="https://github.com/firecracker-microvm/firecracker/commit/472a81dbccd89562578919b76d87c30ee7db17aa">this commit</a>).
+<ul>
+<li>We refactor the relevant
+<code>tests/integration_tests/functional/test_api.py</code> test to use the artifact
+model instead of the fixture one. If the test already uses the artifact
+model, you can skip this step.</li>
+<li>We make sure to run the test with the current build, as well as with
+future Firecracker versions by specifying the unreleased version in the
+<code>min_version</code> parameter of <code>artifacts.firecrackers()</code>. We do this in order
+to ensure that, when we create patch releases on older branches, we test
+the API with future binaries to enforce backwards compatibility.
+<em>Disclaimer</em>: This test will fail when running with the binary artifact
+fetched from S3 until you update the binary there with your current build.
+You should only do this once your PR has all necessary approves and this
+test is the last thing keeping it from getting merged.</li>
+<li>We check that, when the deprecated field is present in the request, the
+<code>Deprecation</code> header is also present in the response by asserting
+<code>response.headers['deprecation']</code>. We do not also check that the header is
+not present when the field is not present because, in a future version,
+some other field may be deprecated in the same request and would return
+the header anyway, resulting in a fail in our test when it shouldn’t.</li>
+<li>Fix all other failing integration tests.</li>
+</ul>
+</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="dev-machine-setup.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="RELEASE_POLICY.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="dev-machine-setup.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="RELEASE_POLICY.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

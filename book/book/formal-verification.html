@@ -1,0 +1,397 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Formal Verification - Firecracker</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="CHARTER.html"><strong aria-hidden="true">2.</strong> Firecracker Charter</a></li><li class="chapter-item expanded "><a href="CODE_OF_CONDUCT.html"><strong aria-hidden="true">3.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="SECURITY.html"><strong aria-hidden="true">4.</strong> Security</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CONTRIBUTING.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="dev-machine-setup.html"><strong aria-hidden="true">7.</strong> Development Machine Setup</a></li><li class="chapter-item expanded "><a href="api-change-runbook.html"><strong aria-hidden="true">8.</strong> API Change Runbook</a></li><li class="chapter-item expanded "><a href="RELEASE_POLICY.html"><strong aria-hidden="true">9.</strong> Releases</a></li><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">10.</strong> Design</a></li><li class="chapter-item expanded "><a href="prod-host-setup.html"><strong aria-hidden="true">11.</strong> Production Host Setup</a></li><li class="chapter-item expanded "><a href="network-setup.html"><strong aria-hidden="true">12.</strong> Network Setup</a></li><li class="chapter-item expanded "><a href="kernel-policy.html"><strong aria-hidden="true">13.</strong> Kernel Support Policy</a></li><li class="chapter-item expanded "><a href="SPECIFICATION.html"><strong aria-hidden="true">14.</strong> Specification</a></li><li class="chapter-item expanded "><a href="network-performance.html"><strong aria-hidden="true">15.</strong> Network Performance</a></li><li class="chapter-item expanded "><a href="FAQ.html"><strong aria-hidden="true">16.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="rootfs-and-kernel-setup.html"><strong aria-hidden="true">17.</strong> Creating Custom rootfs and kernel Images</a></li><li class="chapter-item expanded "><a href="ballooning.html"><strong aria-hidden="true">18.</strong> Ballooning</a></li><li class="chapter-item expanded "><a href="devctr-image.html"><strong aria-hidden="true">19.</strong> Development Container</a></li><li class="chapter-item expanded "><a href="device-api.html"><strong aria-hidden="true">20.</strong> Device API</a></li><li class="chapter-item expanded "><a href="entropy.html"><strong aria-hidden="true">21.</strong> Entropy</a></li><li class="chapter-item expanded "><a href="formal-verification.html" class="active"><strong aria-hidden="true">22.</strong> Formal Verification</a></li><li class="chapter-item expanded "><a href="initrd.html"><strong aria-hidden="true">23.</strong> initrd</a></li><li class="chapter-item expanded "><a href="jailer.html"><strong aria-hidden="true">24.</strong> Jailer</a></li><li class="chapter-item expanded "><a href="logger.html"><strong aria-hidden="true">25.</strong> Logger</a></li><li class="chapter-item expanded "><a href="metrics.html"><strong aria-hidden="true">26.</strong> Metrics</a></li><li class="chapter-item expanded "><a href="seccomp.html"><strong aria-hidden="true">27.</strong> Seccomp</a></li><li class="chapter-item expanded "><a href="seccompiler.html"><strong aria-hidden="true">28.</strong> Seccompiler</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">29.</strong> Tracing</a></li><li class="chapter-item expanded "><a href="vsock.html"><strong aria-hidden="true">30.</strong> VSock</a></li><li class="chapter-item expanded "><a href="api-requests.html"><strong aria-hidden="true">31.</strong> API Requests</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="actions.html"><strong aria-hidden="true">31.1.</strong> Actons</a></li><li class="chapter-item expanded "><a href="block-caching.html"><strong aria-hidden="true">31.2.</strong> Block Caching</a></li><li class="chapter-item expanded "><a href="block-io-engine.html"><strong aria-hidden="true">31.3.</strong> Block IO Engine</a></li><li class="chapter-item expanded "><a href="block-vhost-user.html"><strong aria-hidden="true">31.4.</strong> Block VHost User</a></li><li class="chapter-item expanded "><a href="patch-block.html"><strong aria-hidden="true">31.5.</strong> Patch Block</a></li><li class="chapter-item expanded "><a href="patch-network-interface.html"><strong aria-hidden="true">31.6.</strong> Patch Network Interface</a></li></ol></li><li class="chapter-item expanded "><a href="state-serialize.html"><strong aria-hidden="true">32.</strong> State Serialization Benchmarks</a></li><li class="chapter-item expanded "><a href="cpu-templates.html"><strong aria-hidden="true">33.</strong> CPU Templates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="boot-protocol.html"><strong aria-hidden="true">33.1.</strong> Boot Protocol</a></li><li class="chapter-item expanded "><a href="cpu-template-helper.html"><strong aria-hidden="true">33.2.</strong> CPU Template Helper</a></li><li class="chapter-item expanded "><a href="cpuid-normalization.html"><strong aria-hidden="true">33.3.</strong> CPUID Normalization</a></li></ol></li><li class="chapter-item expanded "><a href="mmds.html"><strong aria-hidden="true">34.</strong> MMDS</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="mmds-design.html"><strong aria-hidden="true">34.1.</strong> MMDS Design</a></li><li class="chapter-item expanded "><a href="mmds-user-guide.html"><strong aria-hidden="true">34.2.</strong> MMDS User Guide</a></li></ol></li><li class="chapter-item expanded "><a href="snapshotting.html"><strong aria-hidden="true">35.</strong> Snapshotting</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="handling-page-faults-on-snapshot-resume.html"><strong aria-hidden="true">35.1.</strong> Handling Page Faults on Snapshot Resume</a></li><li class="chapter-item expanded "><a href="network-for-clones.html"><strong aria-hidden="true">35.2.</strong> Network For Clones</a></li><li class="chapter-item expanded "><a href="random-for-clones.html"><strong aria-hidden="true">35.3.</strong> Random For Clones</a></li><li class="chapter-item expanded "><a href="snapshot-editor.html"><strong aria-hidden="true">35.4.</strong> Snapshot Editor</a></li><li class="chapter-item expanded "><a href="snapshot-support.html"><strong aria-hidden="true">35.5.</strong> Snapshot Support</a></li><li class="chapter-item expanded "><a href="versioning.html"><strong aria-hidden="true">35.6.</strong> Versioning</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Firecracker</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="formal-verification-in-firecracker"><a class="header" href="#formal-verification-in-firecracker">Formal Verification in Firecracker</a></h1>
+<p>According to Firecracker’s <a href="https://github.com/firecracker-microvm/firecracker/blob/main/docs/design.md#threat-containment">threat
+model</a>,
+all vCPUs are considered to be running potentially malicious code from the
+moment they are started. This means Firecracker can make no assumptions about
+well-formedness of data passed to it by the guest, and have to operate <em>safely</em>
+no matter what input it is faced with. Traditional testing methods alone cannot
+guarantee about the general absence of safety issues, as for this we would need
+to write and run every possible unit test, exercising every possible code path -
+a prohibitively large task.</p>
+<p>To partially address these limitations, Firecracker is additionally using
+formal verification to go further in verifying that safety issues such as
+buffer overruns, panics, use-after-frees or integer overflows cannot occur
+in critical components. We employ
+<a href="https://github.com/model-checking/kani/">Kani</a>, a formal verification tool
+written specifically for Rust, which allows us to express functional properties
+(such as any user-specified assertion) in familiar Rust-style by replacing
+concrete values in unit tests with <code>kani::any()</code>. For more details on how Kani
+works, and what properties it can verify, check out its official <a href="https://model-checking.github.io/kani/">Kani
+book</a> or try out this
+<a href="https://model-checking.github.io/kani/kani-tutorial.html">tutorial</a>.</p>
+<p>We aim to have Kani harnesses for components that directly interact with data
+from the guest, such as the TCP/IP stack powering our microVM Metadata Service
+(MMDS) integration, or which are difficult to test traditionally, such as our
+I/O Rate Limiter. Our Kani harnesses live in <code>verification</code> modules that are
+tagged with <code>#[cfg(kani)]</code>, similar to how unit tests in Rust are usually
+structured.</p>
+<p>Note that for some harnesses, Kani uses a “bounded” approach, where the inputs
+are restricted based on some assumptions (e.g. the size of an Ethernet frame
+being 1514 bytes). <strong>Harnesses are only as strong as the assumptions they make,
+so all guarantees from the harness are only valid based on the set of
+assumptions we have in our Kani harnesses.</strong> Generally, they should strive to
+<em>over-approximate</em>, meaning it is preferred they cover some “impossible”
+situations instead of making too strong assumptions that cause them to
+exclude realistic scenarios.</p>
+<h2 id="how-to-run-kani-harnesses"><a class="header" href="#how-to-run-kani-harnesses">How to run Kani harnesses</a></h2>
+<p>To ensure that no incoming code changes cause regressions on formally verified
+properties, <strong>all Kani harnesses are run on every pull request in our CI.</strong> To
+check whether the harnesses all work for your pull request, check out the
+“Kani” <a href="https://buildkite.com/">Buildkite</a> step.</p>
+<p>To run our harnesses locally, you can either enter our CI docker container
+via <code>./tools/devtool shell -p</code>, or by <a href="https://model-checking.github.io/kani/install-guide.html#installing-the-latest-version">installing
+Kani</a>
+locally.  Note that the first invocation
+of Kani post-installation might take a while, due to it setting up some
+dependencies.</p>
+<p>Individual harnesses can then be executed using <code>cargo kani</code> similarly to how
+<code>cargo test</code> can run individual unit tests, the only difference being that the
+harness needs to be specified via <code>--harness</code>. Note, however, that many harnesses
+require significant memory, and might result in OOM conditions.</p>
+<h2 id="an-example-harness"><a class="header" href="#an-example-harness">An example harness</a></h2>
+<p>The following is adapted from our Rate Limiter harness suite. It aims to verify
+that creation of a rate-limiting policy upholds all <a href="https://model-checking.github.io/kani/tutorial-kinds-of-failure.html">Kani supported safety
+invariants</a>
+(which can roughly be summarized as “everything that leads to a panic in a
+debug build”), as well as results in a valid policy. A first attempt might look
+something like this:</p>
+<pre><code>#[kani::proof]
+fn verify_token_bucket_new() {
+    let token_budget = kani::any();
+    let complete_refill_time_ms = kani::any();
+
+    // Checks if the `TokenBucket` is created with invalid inputs, the result
+    // is always `None`.
+    match TokenBucket::new(token_budget, 0, complete_refill_time_ms) {
+        None =&gt; assert!(size == 0 || complete_refill_time_ms == 0),
+        Some(bucket) =&gt; assert!(bucket.is_valid()),
+    }
+}
+</code></pre>
+<p>The <code>#[kani::proof]</code> attribute tells us that the function is a harness to be
+picked up by the Kani compiler. It is the Kani equivalent of <code>#[test]</code>. Lines
+3-5 indicate that we want to verify that policy creation works for arbitrarily
+sized token buckets and arbitrary refill times. <strong>This is the key difference to
+a unit test</strong>, where we would be using concrete values instead (e.g. <code>let token_budget = 10;</code>). Note that Kani will not produce an executable, but
+instead <em>statically</em> verifies that code does not violate invariants. We do not
+actually execute the creation code for all possible inputs.</p>
+<p>The final match statement tells us the property we want to verify, which is
+“<em>bucket creation only fails if size of refill time are zero</em>”. In all other
+cases, we assert <code>new</code> to give us a valid bucket. We mapped these properties
+with assertions. If the verification fails, then that is because one of our
+properties do not hold.</p>
+<p>Now that we understand the code in the harness, let's try to verify
+<code>TokenBucket::new</code> with the Kani!</p>
+<p>If we run <code>cargo kani --harness verify_token_bucket_new</code> we will be greeted by</p>
+<pre><code>SUMMARY: ** 1 of 147 failed Failed Checks: attempt to multiply with overflow
+File: &quot;src/rate_limiter/src/lib.rs&quot;, line 136, in TokenBucket::new
+
+VERIFICATION:- FAILED
+Verification Time: 0.21081695s
+</code></pre>
+<p>In this particular case, Kani has found a safety issue related to an integer
+overflow! Due to <code>complete_refill_time_ms</code> getting converted from milliseconds
+to nanoseconds in the constructor, we have to take into consideration that the
+nanosecond value might not fit into a <code>u64</code> anymore. Here, the finding is
+benign, as no one would reasonably configure a <code>ratelimiter</code> with a replenish
+time of 599730287.457 <em>years</em>. A <a href="https://github.com/firecracker-microvm/firecracker/commit/0db2a130ca4eeffeca9a46e7b6bd45c1bc1c9e21">quick
+check</a>
+in the constructor fixes it. However, we will also have to adjust our harness!
+Rerunning the harness from above now yields:</p>
+<pre><code>SUMMARY: ** 1 of 149 failed Failed Checks: assertion failed: size == 0
+                                            || complete_refill_time_ms == 0
+File: &quot;src/rate_limiter/src/lib.rs&quot;, line 734, in verification::verify_token_bucket_new
+
+VERIFICATION:- FAILED
+Verification Time: 0.21587047s
+</code></pre>
+<p>This makes sense: There are now more scenarios in which we explicitly fail
+construction. Changing our failure property from <code>size == 0 || complete_refill_time_ms == 0</code> to <code>size == 0 || complete_refill_time_ms == 0 || complete_refill_time &gt;= u64::MAX / 1_000_000</code> in the harness will account for
+this change, and rerunning the harness will now tell us that no more issues are
+found:</p>
+<pre><code>SUMMARY: ** 0 of 150 failed
+
+VERIFICATION:- SUCCESSFUL
+Verification Time: 0.19135727s
+</code></pre>
+<h2 id="faq"><a class="header" href="#faq">FAQ</a></h2>
+<p><strong>Q:</strong> What is the Kani verifier?<br />
+<strong>A:</strong> The <a href="https://github.com/model-checking/kani">Kani Rust
+Verifier</a> is a bit-precise model
+checker for Rust. Kani is particularly useful for verifying unsafe code blocks
+in Rust, where the “<a href="https://doc.rust-lang.org/stable/book/ch19-01-unsafe-rust.html#unsafe-superpowers">unsafe
+superpowers</a>&quot;
+are unchecked by the compiler.</p>
+<p><strong>Q:</strong> What safety properties does Kani verify?<br />
+<strong>A:</strong> Kani verifies memory
+safety properties (e.g., invalid-pointer dereferences, out-of-bounds array
+access), user-specified assertions (i.e., <code>assert!(...)</code>), the absence of
+<code>panic!()</code>s (e.g., <code>unwrap()</code> on <code>None</code> values), and the absence of some types of
+unexpected behavior (e.g., arithmetic overflows). For a full overview, see the
+<a href="https://model-checking.github.io/kani/tutorial-kinds-of-failure.html">Kani
+documentation</a>.</p>
+<p><strong>Q:</strong> Do we expect all contributors to write harnesses for newly introduced
+code?<br />
+<strong>A:</strong> No. Kani is complementary to unit testing, and we do not have
+target for “proof coverage”. We employ formal verification in especially
+critical code areas. Generally we do not expect someone who might not be
+familiar with formal tools to contribute harnesses. We do expect all
+contributed code to pass verification though, just like we expect it to pass
+unit test!</p>
+<p><strong>Q:</strong> How should I report issues related to any Firecracker harnesses?<br />
+<strong>A:</strong>
+Our Kani harnesses verify safety critical invariants. If you discover a flaw in
+a harness, please report it using the <a href="https://github.com/firecracker-microvm/firecracker/blob/main/SECURITY.md">security issue disclosure
+process</a>.</p>
+<p><strong>Q:</strong> How do I know which properties I should prove in the Kani harness?<br />
+<strong>A:</strong> Generally, these are given by some sort of specification. This can
+either be the function contract described in its document (e.g. what relation
+between input and output do callers expect?), or even something formal such as
+the TCP/IP standard. Don't forget to mention the specification in your proof
+harness!</p>
+<p><strong>Q:</strong> Where do I debug a broken proof?<br />
+<strong>A:</strong> Check out the Kani book section
+on <a href="https://model-checking.github.io/kani/debugging-verification-failures.html">debugging verification failures</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="entropy.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="initrd.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="entropy.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="initrd.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

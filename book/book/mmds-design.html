@@ -1,0 +1,427 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>MMDS Design - Firecracker</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="CHARTER.html"><strong aria-hidden="true">2.</strong> Firecracker Charter</a></li><li class="chapter-item expanded "><a href="CODE_OF_CONDUCT.html"><strong aria-hidden="true">3.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="SECURITY.html"><strong aria-hidden="true">4.</strong> Security</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CONTRIBUTING.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="dev-machine-setup.html"><strong aria-hidden="true">7.</strong> Development Machine Setup</a></li><li class="chapter-item expanded "><a href="api-change-runbook.html"><strong aria-hidden="true">8.</strong> API Change Runbook</a></li><li class="chapter-item expanded "><a href="RELEASE_POLICY.html"><strong aria-hidden="true">9.</strong> Releases</a></li><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">10.</strong> Design</a></li><li class="chapter-item expanded "><a href="prod-host-setup.html"><strong aria-hidden="true">11.</strong> Production Host Setup</a></li><li class="chapter-item expanded "><a href="network-setup.html"><strong aria-hidden="true">12.</strong> Network Setup</a></li><li class="chapter-item expanded "><a href="kernel-policy.html"><strong aria-hidden="true">13.</strong> Kernel Support Policy</a></li><li class="chapter-item expanded "><a href="SPECIFICATION.html"><strong aria-hidden="true">14.</strong> Specification</a></li><li class="chapter-item expanded "><a href="network-performance.html"><strong aria-hidden="true">15.</strong> Network Performance</a></li><li class="chapter-item expanded "><a href="FAQ.html"><strong aria-hidden="true">16.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="rootfs-and-kernel-setup.html"><strong aria-hidden="true">17.</strong> Creating Custom rootfs and kernel Images</a></li><li class="chapter-item expanded "><a href="ballooning.html"><strong aria-hidden="true">18.</strong> Ballooning</a></li><li class="chapter-item expanded "><a href="devctr-image.html"><strong aria-hidden="true">19.</strong> Development Container</a></li><li class="chapter-item expanded "><a href="device-api.html"><strong aria-hidden="true">20.</strong> Device API</a></li><li class="chapter-item expanded "><a href="entropy.html"><strong aria-hidden="true">21.</strong> Entropy</a></li><li class="chapter-item expanded "><a href="formal-verification.html"><strong aria-hidden="true">22.</strong> Formal Verification</a></li><li class="chapter-item expanded "><a href="initrd.html"><strong aria-hidden="true">23.</strong> initrd</a></li><li class="chapter-item expanded "><a href="jailer.html"><strong aria-hidden="true">24.</strong> Jailer</a></li><li class="chapter-item expanded "><a href="logger.html"><strong aria-hidden="true">25.</strong> Logger</a></li><li class="chapter-item expanded "><a href="metrics.html"><strong aria-hidden="true">26.</strong> Metrics</a></li><li class="chapter-item expanded "><a href="seccomp.html"><strong aria-hidden="true">27.</strong> Seccomp</a></li><li class="chapter-item expanded "><a href="seccompiler.html"><strong aria-hidden="true">28.</strong> Seccompiler</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">29.</strong> Tracing</a></li><li class="chapter-item expanded "><a href="vsock.html"><strong aria-hidden="true">30.</strong> VSock</a></li><li class="chapter-item expanded "><a href="api-requests.html"><strong aria-hidden="true">31.</strong> API Requests</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="actions.html"><strong aria-hidden="true">31.1.</strong> Actons</a></li><li class="chapter-item expanded "><a href="block-caching.html"><strong aria-hidden="true">31.2.</strong> Block Caching</a></li><li class="chapter-item expanded "><a href="block-io-engine.html"><strong aria-hidden="true">31.3.</strong> Block IO Engine</a></li><li class="chapter-item expanded "><a href="block-vhost-user.html"><strong aria-hidden="true">31.4.</strong> Block VHost User</a></li><li class="chapter-item expanded "><a href="patch-block.html"><strong aria-hidden="true">31.5.</strong> Patch Block</a></li><li class="chapter-item expanded "><a href="patch-network-interface.html"><strong aria-hidden="true">31.6.</strong> Patch Network Interface</a></li></ol></li><li class="chapter-item expanded "><a href="state-serialize.html"><strong aria-hidden="true">32.</strong> State Serialization Benchmarks</a></li><li class="chapter-item expanded "><a href="cpu-templates.html"><strong aria-hidden="true">33.</strong> CPU Templates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="boot-protocol.html"><strong aria-hidden="true">33.1.</strong> Boot Protocol</a></li><li class="chapter-item expanded "><a href="cpu-template-helper.html"><strong aria-hidden="true">33.2.</strong> CPU Template Helper</a></li><li class="chapter-item expanded "><a href="cpuid-normalization.html"><strong aria-hidden="true">33.3.</strong> CPUID Normalization</a></li></ol></li><li class="chapter-item expanded "><a href="mmds.html"><strong aria-hidden="true">34.</strong> MMDS</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="mmds-design.html" class="active"><strong aria-hidden="true">34.1.</strong> MMDS Design</a></li><li class="chapter-item expanded "><a href="mmds-user-guide.html"><strong aria-hidden="true">34.2.</strong> MMDS User Guide</a></li></ol></li><li class="chapter-item expanded "><a href="snapshotting.html"><strong aria-hidden="true">35.</strong> Snapshotting</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="handling-page-faults-on-snapshot-resume.html"><strong aria-hidden="true">35.1.</strong> Handling Page Faults on Snapshot Resume</a></li><li class="chapter-item expanded "><a href="network-for-clones.html"><strong aria-hidden="true">35.2.</strong> Network For Clones</a></li><li class="chapter-item expanded "><a href="random-for-clones.html"><strong aria-hidden="true">35.3.</strong> Random For Clones</a></li><li class="chapter-item expanded "><a href="snapshot-editor.html"><strong aria-hidden="true">35.4.</strong> Snapshot Editor</a></li><li class="chapter-item expanded "><a href="snapshot-support.html"><strong aria-hidden="true">35.5.</strong> Snapshot Support</a></li><li class="chapter-item expanded "><a href="versioning.html"><strong aria-hidden="true">35.6.</strong> Versioning</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Firecracker</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="microvm-metadata-service"><a class="header" href="#microvm-metadata-service">microVM Metadata Service</a></h1>
+<p>MMDS consists of three major logical components: the backend, the data store,
+and the minimalist HTTP/TCP/IPv4 stack (named <em>Dumbo</em>). They all exist within
+the Firecracker process, and outside the KVM boundary; the first is a part of
+the API server, the data store is a global entity for a single microVM, and the
+last is a part of the device model.</p>
+<h2 id="the-mmds-backend"><a class="header" href="#the-mmds-backend">The MMDS backend</a></h2>
+<p>Users can add/update the MMDS contents via the backend, which is accessible
+through the Firecracker API. Setting the initial contents involves a <code>PUT</code>
+request to the <code>/mmds</code> API resource, with a JSON body that describes the
+desired data store structure and contents. Here's a JSON example:</p>
+<pre><code class="language-json">{
+&quot;latest&quot;: {
+            &quot;meta-data&quot;: {
+                &quot;ami-id&quot;: &quot;ami-12345678&quot;,
+                &quot;reservation-id&quot;: &quot;r-fea54097&quot;,
+                &quot;local-hostname&quot;: &quot;ip-10-251-50-12.ec2.internal&quot;,
+                &quot;public-hostname&quot;: &quot;ec2-203-0-113-25.compute-1.amazonaws.com&quot;,
+                &quot;network&quot;: {
+                    &quot;interfaces&quot;: {
+                        &quot;macs&quot;: {
+                            &quot;02:29:96:8f:6a:2d&quot;: {
+                                &quot;device-number&quot;: &quot;13345342&quot;,
+                                &quot;local-hostname&quot;: &quot;localhost&quot;,
+                                &quot;subnet-id&quot;: &quot;subnet-be9b61d&quot;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+}
+</code></pre>
+<p>The MMDS contents can be updated either via a subsequent <code>PUT</code> (that replaces them
+entirely), or using <code>PATCH</code> requests, which feed the JSON body into the JSON Merge
+Patch functionality, based on <a href="https://tools.ietf.org/html/rfc7396">RFC 7396</a>. MMDS
+related API requests come from the host, which is considered a trusted environment,
+so there are no checks beside the kind of validation done by HTTP server and
+<code>serde-json</code> (the crate used to de/serialize JSON). The size limit for the stored
+metadata is configurable and defaults to 51200 bytes. When increasing this limit,
+one must take into consideration that storing and retrieving large amount of data
+may induce bottlenecks for the HTTP REST API processing, which is based on
+<code>micro-http</code> crate. MMDS contents can be retrieved using the Firecracker API, via
+a <code>GET</code> request to the <code>/mmds</code> resource.</p>
+<h2 id="the-data-store"><a class="header" href="#the-data-store">The data store</a></h2>
+<p>This is a global data structure, currently referenced using a global variable,
+that represents the strongly-typed version of JSON-based user input describing
+the MMDS contents. It leverages the recursive
+<a href="https://docs.serde.rs/serde_json/value/enum.Value.html">Value</a> type exposed by
+<code>serde-json</code>. It can only be accessed from thread-safe contexts. MMDS data
+store supports at the moment storing and retrieving JSON values. Data store
+contents can be retrieved using the Firecracker API server from host and using
+the embedded MMDS HTTP/TCP/IPv4 network stack from guest.
+MMDS data store is upper bounded to the value of the <code>--mmds-size-limit</code>
+command line parameter.
+If left unconfigured, it will default to the value of
+<code>--http-api-max-payload-size</code>, which is 51200 bytes by default.</p>
+<h2 id="dumbo"><a class="header" href="#dumbo">Dumbo</a></h2>
+<p>The <em>Dumbo</em> HTTP/TCP/IPv4 network stack handles guest HTTP requests heading
+towards the configured MMDS IPv4 address. Before going into <em>Dumbo</em> specifics,
+it's worth going through a brief description of the Firecracker network device
+model. Firecracker only offers Virtio-net paravirtualized devices to guests.
+Drivers running in the guest OS use ring buffers in a shared memory area to
+communicate with the device model when sending or receiving frames. The device
+model associates each guest network device with a TAP device on the host.
+Frames sent by the guest are written to the TAP fd, and frames read from the
+TAP fd are handed over to the guest.</p>
+<p>The <em>Dumbo</em> stack can be instantiated once for every network device, and is
+disabled by default. It can be enabled through the API request body used to
+configure MMDS by specifying the ID of the network interface inside the
+<code>network_interfaces</code> list. In order for the API call to succeed, the network
+device must be attached beforehand, otherwise an error is returned. Once
+enabled, the stack taps into the aforementioned data path. Each frame coming
+from the guest is examined to determine whether it should be processed by
+<em>Dumbo</em> instead of being written to the TAP fd. Also, every time there is room
+in the ring buffer to hand over frames to the guest, the device model first
+checks whether <em>Dumbo</em> has anything to send; if not, it resumes getting frames
+from the TAP fd (when available).</p>
+<p>We chose to implement our own solution, instead of leveraging existing
+libraries/implementations, because responding to guest MMDS queries in the
+context of Firecracker is amenable to a wide swath of simplifications.
+First of all, we only need to handle <code>GET</code> and <code>PUT</code> requests, which require
+a bare-bones HTTP 1.1 server, without support for most headers and more advanced
+features like chunking. Also, we get to choose what subset of HTTP is used when
+building responses. Moving lower in the stack, we are dealing with TCP connections
+over what is essentially a point-to-point link, that seldom loses packets and does
+not reorder them. This means we can do away with congestion control (we only use
+flow control), complex reception logic, and support for most TCP options/features.
+At this point, the layers below (Ethernet and IPv4) don't involve much more than
+sanity checks of frame/packet contents.</p>
+<p><em>Dumbo</em> is built using both general purpose components (which we plan to offer
+as part of one or more libraries), and Firecracker MMDS specific code. The
+former category consists of various helper modules used to process streams of
+bytes as protocol data units (Ethernet &amp; ARP frames, IPv4 packets, and TCP
+segments), a TCP handler which listens for connections while demultiplexing
+incoming segments, a minimalist TCP connection endpoint implementation, and a
+greatly simplified HTTP 1.1 server. The Firecracker MMDS specific code is found
+in the logic which taps into the device model, and the component that parses an
+HTTP request, builds a response based on MMDS contents, and finally sends back
+a reply.</p>
+<h3 id="mmds-network-stack"><a class="header" href="#mmds-network-stack">MMDS Network Stack</a></h3>
+<p>Somewhat confusingly, this is the name of the component which taps the device
+model. It has a user-configured IPv4 address (see
+<a href="../../src/api_server/swagger/firecracker.yaml">Firecracker MMDS configuration API</a>)
+and MAC (<code>06:01:23:45:67:01</code>) addresses. The latter is also used to respond to
+ARP requests.
+For every frame coming from the guest, the following steps take place:</p>
+<ol>
+<li>Apply a heuristic to determine whether the frame may contain an ARP request
+for the MMDS IP address, or an IPv4 packet heading towards the same address.
+There can be no false negatives. Frames that fail both checks are <em>rejected</em>
+(deferred to the device model for regular processing).</li>
+<li><em>Reject</em> invalid Ethernet frames. <em>Reject</em> valid frames if their EtherType
+is neither ARP, nor IPv4.</li>
+<li>(<strong>if EtherType == ARP</strong>) <em>Reject</em> invalid ARP frames. <em>Reject</em> the frame if
+its target protocol address field is different from the MMDS IP address.
+Otherwise, record that an ARP request has been received (the stack only
+remembers the most recent request).</li>
+<li>(<strong>if EtherType == IPv4</strong>) <em>Reject</em> invalid packets. <em>Reject</em> packets if
+their destination address differs from the MMDS IP address. <em>Drop</em> (stop
+processing without deferring to the device model) packets that do not carry
+TCP segments (by looking at the protocol number field). Send the rest to the
+inner TCP handler.</li>
+</ol>
+<p>The current implementation does not support Ethernet 802.1Q tags, and does not
+handle IP fragmentation. Tagged Ethernet frames are most likely going to be
+deferred to the device model for processing, because the heuristics do not take
+the presence of the tag into account. Moreover, their EtherType will not appear
+to be of interest. Fragmented IP packets do not get reassembled; they are
+treated as independent packets.</p>
+<p>Whenever the guest is able to receive a frame, the device model first requests
+one from the MMDS network stack associated with the current network device.</p>
+<ol>
+<li>If an ARP request has been previously recorded, send an ARP reply and forget
+about the request.</li>
+<li>If the inner TCP handler has any packets to transmit, wrap the next one into
+a frame and send it.</li>
+<li>There are no MMDS related frames to send, so tell the device model to read
+from the TAP fd instead.</li>
+</ol>
+<h3 id="tcp-handler"><a class="header" href="#tcp-handler">TCP handler</a></h3>
+<p>Handles received packets that appear to carry TCP segments. Its operation is
+described in the <code>dumbo</code> crate documentation. Each connection is associated
+with an MMDS endpoint.</p>
+<h3 id="mmds-endpoint"><a class="header" href="#mmds-endpoint">MMDS endpoint</a></h3>
+<p>This component gets the byte stream from an inner TCP connection object,
+identifies the boundaries of the next HTTP request, and parses it using an
+HttpRequest object. For each valid <code>GET</code> request, the URI is used to identify
+a key from the metadata store (like in the previous example), and a response is
+built using the Firecracker implementation of HttpResponse logic, based on the
+associated value, and sent back to the guest over the same connection. Each
+endpoint has a fixed size receive buffer, and a variable length response buffer
+(depending on the size of each response). TCP receive window semantics are used
+to ensure the guest does not overrun the receive buffer during normal operation
+(the connection has to drop segments otherwise). There can be at most one
+response pending at any given time.</p>
+<p>Here are more details describing what happens when a segment is received by an
+MMDS endpoint (previously created when a SYN segment arrived at the TCP
+handler):</p>
+<ol>
+<li>Invoke the receive functionality of the inner connection object, and append
+any new data to the receive buffer.</li>
+<li>If no response is currently pending, attempt to identify the end of the
+first request in the receive buffer. If no such boundary can be found, and
+the buffer is full, reset the inner connection (which also causes the
+endpoint itself to be subsequently removed) because the guest exceeded the
+maximum allowed request size.</li>
+<li>If no response is pending, and we can identify a request in the receive
+buffer, parse it, free up the associated buffer space (also update the
+connection receive window), and build an HTTP response, which becomes the
+current pending response.</li>
+<li>If a FIN segment was received, and there's no pending response, call <code>close</code>
+on the inner connection. If a valid RST is received at any time, mark the
+endpoint for removal.</li>
+</ol>
+<p>When the TCP handler asks an MMDS endpoint for any segments to send, the
+transmission logic of the inner connection is invoked, specifying the pending
+response (when present) as the payload source. All packets coming from MMDS
+have the TTL value set to 1 by default.</p>
+<h3 id="connection"><a class="header" href="#connection">Connection</a></h3>
+<p>Connection objects are minimalist implementation of the TCP protocol. They are
+used to reassemble the byte stream which carries guest HTTP requests, and to
+send back segments which contain parts of the response. More details are
+available in the <code>dumbo</code> crate documentation.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="mmds.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="mmds-user-guide.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="mmds.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="mmds-user-guide.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

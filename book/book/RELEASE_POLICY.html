@@ -1,0 +1,366 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Releases - Firecracker</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="CHARTER.html"><strong aria-hidden="true">2.</strong> Firecracker Charter</a></li><li class="chapter-item expanded "><a href="CODE_OF_CONDUCT.html"><strong aria-hidden="true">3.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="SECURITY.html"><strong aria-hidden="true">4.</strong> Security</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CONTRIBUTING.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="dev-machine-setup.html"><strong aria-hidden="true">7.</strong> Development Machine Setup</a></li><li class="chapter-item expanded "><a href="api-change-runbook.html"><strong aria-hidden="true">8.</strong> API Change Runbook</a></li><li class="chapter-item expanded "><a href="RELEASE_POLICY.html" class="active"><strong aria-hidden="true">9.</strong> Releases</a></li><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">10.</strong> Design</a></li><li class="chapter-item expanded "><a href="prod-host-setup.html"><strong aria-hidden="true">11.</strong> Production Host Setup</a></li><li class="chapter-item expanded "><a href="network-setup.html"><strong aria-hidden="true">12.</strong> Network Setup</a></li><li class="chapter-item expanded "><a href="kernel-policy.html"><strong aria-hidden="true">13.</strong> Kernel Support Policy</a></li><li class="chapter-item expanded "><a href="SPECIFICATION.html"><strong aria-hidden="true">14.</strong> Specification</a></li><li class="chapter-item expanded "><a href="network-performance.html"><strong aria-hidden="true">15.</strong> Network Performance</a></li><li class="chapter-item expanded "><a href="FAQ.html"><strong aria-hidden="true">16.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="rootfs-and-kernel-setup.html"><strong aria-hidden="true">17.</strong> Creating Custom rootfs and kernel Images</a></li><li class="chapter-item expanded "><a href="ballooning.html"><strong aria-hidden="true">18.</strong> Ballooning</a></li><li class="chapter-item expanded "><a href="devctr-image.html"><strong aria-hidden="true">19.</strong> Development Container</a></li><li class="chapter-item expanded "><a href="device-api.html"><strong aria-hidden="true">20.</strong> Device API</a></li><li class="chapter-item expanded "><a href="entropy.html"><strong aria-hidden="true">21.</strong> Entropy</a></li><li class="chapter-item expanded "><a href="formal-verification.html"><strong aria-hidden="true">22.</strong> Formal Verification</a></li><li class="chapter-item expanded "><a href="initrd.html"><strong aria-hidden="true">23.</strong> initrd</a></li><li class="chapter-item expanded "><a href="jailer.html"><strong aria-hidden="true">24.</strong> Jailer</a></li><li class="chapter-item expanded "><a href="logger.html"><strong aria-hidden="true">25.</strong> Logger</a></li><li class="chapter-item expanded "><a href="metrics.html"><strong aria-hidden="true">26.</strong> Metrics</a></li><li class="chapter-item expanded "><a href="seccomp.html"><strong aria-hidden="true">27.</strong> Seccomp</a></li><li class="chapter-item expanded "><a href="seccompiler.html"><strong aria-hidden="true">28.</strong> Seccompiler</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">29.</strong> Tracing</a></li><li class="chapter-item expanded "><a href="vsock.html"><strong aria-hidden="true">30.</strong> VSock</a></li><li class="chapter-item expanded "><a href="api-requests.html"><strong aria-hidden="true">31.</strong> API Requests</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="actions.html"><strong aria-hidden="true">31.1.</strong> Actons</a></li><li class="chapter-item expanded "><a href="block-caching.html"><strong aria-hidden="true">31.2.</strong> Block Caching</a></li><li class="chapter-item expanded "><a href="block-io-engine.html"><strong aria-hidden="true">31.3.</strong> Block IO Engine</a></li><li class="chapter-item expanded "><a href="block-vhost-user.html"><strong aria-hidden="true">31.4.</strong> Block VHost User</a></li><li class="chapter-item expanded "><a href="patch-block.html"><strong aria-hidden="true">31.5.</strong> Patch Block</a></li><li class="chapter-item expanded "><a href="patch-network-interface.html"><strong aria-hidden="true">31.6.</strong> Patch Network Interface</a></li></ol></li><li class="chapter-item expanded "><a href="state-serialize.html"><strong aria-hidden="true">32.</strong> State Serialization Benchmarks</a></li><li class="chapter-item expanded "><a href="cpu-templates.html"><strong aria-hidden="true">33.</strong> CPU Templates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="boot-protocol.html"><strong aria-hidden="true">33.1.</strong> Boot Protocol</a></li><li class="chapter-item expanded "><a href="cpu-template-helper.html"><strong aria-hidden="true">33.2.</strong> CPU Template Helper</a></li><li class="chapter-item expanded "><a href="cpuid-normalization.html"><strong aria-hidden="true">33.3.</strong> CPUID Normalization</a></li></ol></li><li class="chapter-item expanded "><a href="mmds.html"><strong aria-hidden="true">34.</strong> MMDS</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="mmds-design.html"><strong aria-hidden="true">34.1.</strong> MMDS Design</a></li><li class="chapter-item expanded "><a href="mmds-user-guide.html"><strong aria-hidden="true">34.2.</strong> MMDS User Guide</a></li></ol></li><li class="chapter-item expanded "><a href="snapshotting.html"><strong aria-hidden="true">35.</strong> Snapshotting</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="handling-page-faults-on-snapshot-resume.html"><strong aria-hidden="true">35.1.</strong> Handling Page Faults on Snapshot Resume</a></li><li class="chapter-item expanded "><a href="network-for-clones.html"><strong aria-hidden="true">35.2.</strong> Network For Clones</a></li><li class="chapter-item expanded "><a href="random-for-clones.html"><strong aria-hidden="true">35.3.</strong> Random For Clones</a></li><li class="chapter-item expanded "><a href="snapshot-editor.html"><strong aria-hidden="true">35.4.</strong> Snapshot Editor</a></li><li class="chapter-item expanded "><a href="snapshot-support.html"><strong aria-hidden="true">35.5.</strong> Snapshot Support</a></li><li class="chapter-item expanded "><a href="versioning.html"><strong aria-hidden="true">35.6.</strong> Versioning</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Firecracker</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="firecracker-release-policy"><a class="header" href="#firecracker-release-policy">Firecracker Release Policy</a></h1>
+<p>This document describes Firecracker release planning, API support, and the
+Firecracker release lifetime. Firecracker provides this Release Policy to help
+customers effectively plan their Firecracker based operations.</p>
+<h2 id="firecracker-releases"><a class="header" href="#firecracker-releases">Firecracker releases</a></h2>
+<p>Firecracker uses <a href="https://semver.org/spec/v2.0.0.html">semantic versioning 2.0.0</a>
+for all releases. By definition, the API version implemented by a Firecracker
+binary is equivalent to that binary’s version. Semantic versions are comprised
+of three fields in the form: <code>vMAJOR.MINOR.PATCH</code>. Additional labels for
+pre-release and build metadata are available as extensions to the
+MAJOR.MINOR.PATCH format.</p>
+<p>For example: v0.20.0, v0.22.0-beta5, and v99.123.77+foo.bar.baz.5.</p>
+<p>Firecracker publishes major, minor and patch releases:</p>
+<ul>
+<li>Patch release - The <code>PATCH</code> field is incremented whenever critical bugs and/or
+security issues are found in a supported release. The fixes in a PATCH release
+do not change existing behavior or the user interface. Upgrade is recommended.</li>
+<li>Minor release - When the <code>MINOR</code> field is incremented, the new release adds
+new features, bug fixes, or both without changing the existing user interface
+or user facing functionality. Adding new APIs can be done in a <code>MINOR</code>
+Firecracker release as long as it doesn’t change the functionality of the APIs
+available in the previous release. Minor releases are shipped when features
+are ready for production. Multiple features may be bundled in the same
+release.</li>
+<li>Major release -  When the <code>MAJOR</code> field is incremented, the new release adds
+new features and/or bug fixes, changing the existing user interface or user
+facing functionality. This may make the new release it incompatible with
+previous ones. A major release will likely require changes from other
+components interacting with Firecracker, e.g. API request, commands, or
+guest components. The changes will be detailed in the release notes.
+Major releases are published whenever features or bug fixes that changes
+the existing user interface, or user facing functionality, are ready for
+production.</li>
+</ul>
+<h2 id="release-support"><a class="header" href="#release-support">Release support</a></h2>
+<p>The Firecracker maintainers will only provide support for Firecracker releases
+under our <a href="https://github.com/firecracker-microvm/firecracker/releases">repository's release page</a>.</p>
+<p>The Firecracker maintainers will provide patch releases for critical bugs and
+security issues when they are found, for:</p>
+<ul>
+<li>the last two Firecracker <code>vMAJOR.MINOR</code> releases for up to 1 year from
+release date;</li>
+<li>any Firecracker <code>vMAJOR.MINOR</code> release for at least 6 months from release date;</li>
+<li>for each <code>vMAJOR</code>, the latest <code>MINOR</code> for 1 year since release date;</li>
+</ul>
+<p>Starting with release v1.0, for each major and minor release, we will
+also be specifying the supported kernel versions.</p>
+<h3 id="examples"><a class="header" href="#examples">Examples</a></h3>
+<ol>
+<li>Considering an example where the last Firecracker releases are:</li>
+</ol>
+<ul>
+<li>v2.10.0 released on 2022-05-01</li>
+<li>v2.11.0 released on 2022-07-10</li>
+<li>v2.12.0 released on 2022-09-11</li>
+</ul>
+<p>In case of an event occurring in 2022-10-03, all three releases will be
+patched since less than 6 months elapsed from their MINOR release time.</p>
+<ol>
+<li>Considering an example where the last Firecracker releases are:</li>
+</ol>
+<ul>
+<li>v2.10.0 released on 2022-05-01</li>
+<li>v2.11.0 released on 2022-07-10</li>
+<li>v2.12.0 released on 2022-09-11</li>
+</ul>
+<p>In case of of an event occurring in 2023-05-04, v2.11 and v2.12 will be
+patched since those were the last 2 Firecracker major releases and less than
+an year passed since their release time.</p>
+<ol>
+<li>Considering an example where the last Firecracker releases are:</li>
+</ol>
+<ul>
+<li>v2.14.0 released on 2022-05-01</li>
+<li>v3.0.0 released on 2022-07-10</li>
+<li>v3.1.0 released on 2022-09-11</li>
+</ul>
+<p>In case of of an event occurring in 2023-01-13, v2.14 will be patched since
+is the last minor of v2 and has less than one year since release while v3.0
+and v3.1 will be patched since were the last two Firecracker releases and
+less than 6 months have passed since release time.</p>
+<h2 id="release-status"><a class="header" href="#release-status">Release Status</a></h2>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: right">Release</th><th style="text-align: right">Release Date</th><th style="text-align: right">Latest Patch</th><th style="text-align: right">Min. end of support</th><th style="text-align: left">Official end of Support</th></tr></thead><tbody>
+<tr><td style="text-align: right">v1.6</td><td style="text-align: right">2023-12-20</td><td style="text-align: right">v1.6.0</td><td style="text-align: right">2024-06-20</td><td style="text-align: left">Supported</td></tr>
+<tr><td style="text-align: right">v1.5</td><td style="text-align: right">2023-10-09</td><td style="text-align: right">v1.5.1</td><td style="text-align: right">2024-04-09</td><td style="text-align: left">Supported</td></tr>
+<tr><td style="text-align: right">v1.4</td><td style="text-align: right">2023-07-20</td><td style="text-align: right">v1.4.1</td><td style="text-align: right">2024-01-20</td><td style="text-align: left">Supported</td></tr>
+<tr><td style="text-align: right">v1.3</td><td style="text-align: right">2023-03-02</td><td style="text-align: right">v1.3.3</td><td style="text-align: right">2023-09-02</td><td style="text-align: left">2023-10-09 (v1.5 released)</td></tr>
+<tr><td style="text-align: right">v1.2</td><td style="text-align: right">2022-11-30</td><td style="text-align: right">v1.2.1</td><td style="text-align: right">2023-05-30</td><td style="text-align: left">2023-07-20 (v1.4 released)</td></tr>
+<tr><td style="text-align: right">v1.1</td><td style="text-align: right">2022-05-06</td><td style="text-align: right">v1.1.4</td><td style="text-align: right">2022-11-06</td><td style="text-align: left">2023-03-02 (v1.3 released)</td></tr>
+<tr><td style="text-align: right">v1.0</td><td style="text-align: right">2022-01-31</td><td style="text-align: right">v1.0.2</td><td style="text-align: right">2022-07-31</td><td style="text-align: left">2022-11-30 (v1.2 released)</td></tr>
+<tr><td style="text-align: right">v0.25</td><td style="text-align: right">2021-03-13</td><td style="text-align: right">v0.25.2</td><td style="text-align: right">2021-09-13</td><td style="text-align: left">2022-03-13 (end of 1y support)</td></tr>
+</tbody></table>
+</div>
+<h2 id="api-support"><a class="header" href="#api-support">API support</a></h2>
+<p>The Firecracker API follows the semantic versioning standard. For a new
+release, we will increment the:</p>
+<ul>
+<li>MAJOR version when we make breaking changes in our API;</li>
+<li>MINOR version when we add or change functionality in a backwards compatible
+manner;</li>
+<li>PATCH version when we make backwards compatible bug fixes.</li>
+</ul>
+<p>Given a Firecracker version X.Y.Z user-generated client, it is guaranteed to
+work as expected with all Firecracker binary versions X.V.W, where V &gt;= Y.</p>
+<h3 id="deprecation-of-elements-in-the-api"><a class="header" href="#deprecation-of-elements-in-the-api">Deprecation of elements in the API</a></h3>
+<p>Firecracker uses <a href="https://semver.org/spec/v2.0.0.html">semantic versioning 2.0.0</a>
+in terms of deprecating and removing API elements. We will consider a deprecated
+API element to be an element which still has backing functionality and will be
+supported at least until the next MAJOR version, where they <em>will be removed</em>.
+The support period of deprecated API elements is tied to
+<a href="https://github.com/firecracker-microvm/firecracker/blob/main/docs/RELEASE_POLICY.md#release-support">the Firecracker release support</a>.</p>
+<h2 id="developer-preview-features"><a class="header" href="#developer-preview-features">Developer preview features</a></h2>
+<p>A feature is &quot;in&quot; developer preview if it’s marked as such in the
+<a href="https://github.com/firecracker-microvm/firecracker/projects/13">Firecracker roadmap</a>
+and/or in the <a href="https://github.com/firecracker-microvm/firecracker/releases">Firecracker release notes</a>.</p>
+<p>Features in developer preview should not be used in production as they
+are not supported. Firecracker team may not provide patch releases for critical
+bug fixes or security issues found in features marked as developer preview.</p>
+<p>Features in developer preview may be subject to changes at any time.
+Changes in existing user interface or user facing functionality of a feature
+marked as developer preview can be released without changing the major version.</p>
+<h2 id="release-planning"><a class="header" href="#release-planning">Release planning</a></h2>
+<p>Firecracker feature planning is outlined in the <a href="https://github.com/firecracker-microvm/firecracker/projects">Firecracker roadmap</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="api-change-runbook.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="design.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="api-change-runbook.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="design.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

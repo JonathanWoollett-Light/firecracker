@@ -1,0 +1,6 @@
+[book]
+authors = ["Jonathan Woollett-Light"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Firecracker"

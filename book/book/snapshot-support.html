@@ -1,0 +1,877 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Snapshot Support - Firecracker</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="CHARTER.html"><strong aria-hidden="true">2.</strong> Firecracker Charter</a></li><li class="chapter-item expanded "><a href="CODE_OF_CONDUCT.html"><strong aria-hidden="true">3.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="SECURITY.html"><strong aria-hidden="true">4.</strong> Security</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CONTRIBUTING.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="dev-machine-setup.html"><strong aria-hidden="true">7.</strong> Development Machine Setup</a></li><li class="chapter-item expanded "><a href="api-change-runbook.html"><strong aria-hidden="true">8.</strong> API Change Runbook</a></li><li class="chapter-item expanded "><a href="RELEASE_POLICY.html"><strong aria-hidden="true">9.</strong> Releases</a></li><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">10.</strong> Design</a></li><li class="chapter-item expanded "><a href="prod-host-setup.html"><strong aria-hidden="true">11.</strong> Production Host Setup</a></li><li class="chapter-item expanded "><a href="network-setup.html"><strong aria-hidden="true">12.</strong> Network Setup</a></li><li class="chapter-item expanded "><a href="kernel-policy.html"><strong aria-hidden="true">13.</strong> Kernel Support Policy</a></li><li class="chapter-item expanded "><a href="SPECIFICATION.html"><strong aria-hidden="true">14.</strong> Specification</a></li><li class="chapter-item expanded "><a href="network-performance.html"><strong aria-hidden="true">15.</strong> Network Performance</a></li><li class="chapter-item expanded "><a href="FAQ.html"><strong aria-hidden="true">16.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="rootfs-and-kernel-setup.html"><strong aria-hidden="true">17.</strong> Creating Custom rootfs and kernel Images</a></li><li class="chapter-item expanded "><a href="ballooning.html"><strong aria-hidden="true">18.</strong> Ballooning</a></li><li class="chapter-item expanded "><a href="devctr-image.html"><strong aria-hidden="true">19.</strong> Development Container</a></li><li class="chapter-item expanded "><a href="device-api.html"><strong aria-hidden="true">20.</strong> Device API</a></li><li class="chapter-item expanded "><a href="entropy.html"><strong aria-hidden="true">21.</strong> Entropy</a></li><li class="chapter-item expanded "><a href="formal-verification.html"><strong aria-hidden="true">22.</strong> Formal Verification</a></li><li class="chapter-item expanded "><a href="initrd.html"><strong aria-hidden="true">23.</strong> initrd</a></li><li class="chapter-item expanded "><a href="jailer.html"><strong aria-hidden="true">24.</strong> Jailer</a></li><li class="chapter-item expanded "><a href="logger.html"><strong aria-hidden="true">25.</strong> Logger</a></li><li class="chapter-item expanded "><a href="metrics.html"><strong aria-hidden="true">26.</strong> Metrics</a></li><li class="chapter-item expanded "><a href="seccomp.html"><strong aria-hidden="true">27.</strong> Seccomp</a></li><li class="chapter-item expanded "><a href="seccompiler.html"><strong aria-hidden="true">28.</strong> Seccompiler</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">29.</strong> Tracing</a></li><li class="chapter-item expanded "><a href="vsock.html"><strong aria-hidden="true">30.</strong> VSock</a></li><li class="chapter-item expanded "><a href="api-requests.html"><strong aria-hidden="true">31.</strong> API Requests</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="actions.html"><strong aria-hidden="true">31.1.</strong> Actons</a></li><li class="chapter-item expanded "><a href="block-caching.html"><strong aria-hidden="true">31.2.</strong> Block Caching</a></li><li class="chapter-item expanded "><a href="block-io-engine.html"><strong aria-hidden="true">31.3.</strong> Block IO Engine</a></li><li class="chapter-item expanded "><a href="block-vhost-user.html"><strong aria-hidden="true">31.4.</strong> Block VHost User</a></li><li class="chapter-item expanded "><a href="patch-block.html"><strong aria-hidden="true">31.5.</strong> Patch Block</a></li><li class="chapter-item expanded "><a href="patch-network-interface.html"><strong aria-hidden="true">31.6.</strong> Patch Network Interface</a></li></ol></li><li class="chapter-item expanded "><a href="state-serialize.html"><strong aria-hidden="true">32.</strong> State Serialization Benchmarks</a></li><li class="chapter-item expanded "><a href="cpu-templates.html"><strong aria-hidden="true">33.</strong> CPU Templates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="boot-protocol.html"><strong aria-hidden="true">33.1.</strong> Boot Protocol</a></li><li class="chapter-item expanded "><a href="cpu-template-helper.html"><strong aria-hidden="true">33.2.</strong> CPU Template Helper</a></li><li class="chapter-item expanded "><a href="cpuid-normalization.html"><strong aria-hidden="true">33.3.</strong> CPUID Normalization</a></li></ol></li><li class="chapter-item expanded "><a href="mmds.html"><strong aria-hidden="true">34.</strong> MMDS</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="mmds-design.html"><strong aria-hidden="true">34.1.</strong> MMDS Design</a></li><li class="chapter-item expanded "><a href="mmds-user-guide.html"><strong aria-hidden="true">34.2.</strong> MMDS User Guide</a></li></ol></li><li class="chapter-item expanded "><a href="snapshotting.html"><strong aria-hidden="true">35.</strong> Snapshotting</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="handling-page-faults-on-snapshot-resume.html"><strong aria-hidden="true">35.1.</strong> Handling Page Faults on Snapshot Resume</a></li><li class="chapter-item expanded "><a href="network-for-clones.html"><strong aria-hidden="true">35.2.</strong> Network For Clones</a></li><li class="chapter-item expanded "><a href="random-for-clones.html"><strong aria-hidden="true">35.3.</strong> Random For Clones</a></li><li class="chapter-item expanded "><a href="snapshot-editor.html"><strong aria-hidden="true">35.4.</strong> Snapshot Editor</a></li><li class="chapter-item expanded "><a href="snapshot-support.html" class="active"><strong aria-hidden="true">35.5.</strong> Snapshot Support</a></li><li class="chapter-item expanded "><a href="versioning.html"><strong aria-hidden="true">35.6.</strong> Versioning</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Firecracker</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="firecracker-snapshotting"><a class="header" href="#firecracker-snapshotting">Firecracker Snapshotting</a></h1>
+<h2 id="table-of-contents"><a class="header" href="#table-of-contents">Table of Contents</a></h2>
+<ul>
+<li><a href="#about-microvm-snapshotting">What is microVM snapshotting?</a></li>
+<li><a href="#snapshotting-in-firecracker">Snapshotting in Firecracker</a>
+<ul>
+<li><a href="#supported-platforms">Supported platforms</a></li>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#snapshot-files-management">Snapshot files management</a></li>
+<li><a href="#performance">Performance</a></li>
+<li><a href="#developer-preview-status">Developer preview status</a></li>
+<li><a href="#limitations">Limitations</a></li>
+</ul>
+</li>
+<li><a href="#firecracker-snapshotting-characteristics">Firecracker Snapshotting characteristics</a></li>
+<li><a href="#snapshot-versioning">Snapshot versioning</a></li>
+<li><a href="#snapshot-api">Snapshot API</a>
+<ul>
+<li><a href="#pausing-the-microvm">Pausing the microVM</a></li>
+<li><a href="#creating-snapshots">Creating snapshots</a>
+<ul>
+<li><a href="#creating-full-snapshots">Creating full snapshots</a></li>
+<li><a href="#creating-diff-snapshots">Creating diff snapshots</a></li>
+</ul>
+</li>
+<li><a href="#resuming-the-microvm">Resuming the microVM</a></li>
+<li><a href="#loading-snapshots">Loading snapshots</a></li>
+</ul>
+</li>
+<li><a href="#provisioning-host-disk-space-for-snapshots">Provisioning host disk space for snapshots</a></li>
+<li><a href="#ensure-continued-network-connectivity-for-clones">Ensure continued network connectivity for clones</a></li>
+<li><a href="#snapshot-security-and-uniqueness">Snapshot security and uniqueness</a>
+<ul>
+<li><a href="#usage-examples">Secure and insecure usage examples</a></li>
+<li><a href="#reusing-snapshotted-states-securely">Reusing snapshotted states securely</a></li>
+</ul>
+</li>
+<li><a href="#vsock-device-limitation">Vsock device limitation</a></li>
+</ul>
+<h2 id="about-microvm-snapshotting"><a class="header" href="#about-microvm-snapshotting">About microVM snapshotting</a></h2>
+<p>MicroVM snapshotting is a mechanism through which a running microVM and its
+resources can be serialized and saved to an external medium in the form of a
+<code>snapshot</code>. This snapshot can be later used to restore a microVM with its
+guest workload at that particular point in time.</p>
+<h2 id="snapshotting-in-firecracker"><a class="header" href="#snapshotting-in-firecracker">Snapshotting in Firecracker</a></h2>
+<h3 id="supported-platforms"><a class="header" href="#supported-platforms">Supported platforms</a></h3>
+<blockquote>
+<p>[!WARNING]
+The Firecracker snapshot feature is in <a href="../RELEASE_POLICY.html">developer preview</a>
+on all CPU micro-architectures listed in <a href="../../README.html#supported-platforms">README</a>.
+See <a href="#developer-preview-status">this section</a> for more info.</p>
+</blockquote>
+<h3 id="overview"><a class="header" href="#overview">Overview</a></h3>
+<p>A Firecracker microVM snapshot can be used for loading it later in a different
+Firecracker process, and the original guest workload is being simply resumed.</p>
+<p>The original guest which the snapshot is created from, should see no side
+effects from this process (other than the latency introduced by the snapshot
+creation process).</p>
+<p>Both network and vsock packet loss can be expected on guests that are resumed
+from snapshots in another Firecracker process.
+It is also not guaranteed that the state of the network connections survives
+the process.</p>
+<p>In order to make restoring possible, Firecracker snapshots save the full state
+of the following resources:</p>
+<ul>
+<li>the guest memory,</li>
+<li>the emulated HW state (both KVM and Firecracker emulated HW).</li>
+</ul>
+<p>The state of the components listed above is generated independently, which brings
+flexibility to our snapshotting support. This means that taking a snapshot results
+in multiple files that are composing the full microVM snapshot:</p>
+<ul>
+<li>the guest memory file,</li>
+<li>the microVM state file,</li>
+<li>zero or more disk files (depending on how many the guest had; these are
+<strong>managed by the users</strong>).</li>
+</ul>
+<p>The design allows sharing of memory pages and read only disks between multiple
+microVMs. When loading a snapshot, instead of loading at resume time the full
+contents from file to memory, Firecracker creates a
+<a href="http://man7.org/linux/man-pages/man2/mmap.2.html">MAP_PRIVATE mapping</a> of the
+memory file, resulting in runtime on-demand loading of memory pages. Any subsequent
+memory writes go to a copy-on-write anonymous memory mapping.
+This has the advantage of very fast snapshot loading times, but comes with the cost
+of having to keep the guest memory file around for the entire lifetime of the
+resumed microVM.</p>
+<h3 id="snapshot-files-management"><a class="header" href="#snapshot-files-management">Snapshot files management</a></h3>
+<p>The Firecracker snapshot design offers a very simple interface to interact with
+snapshots but provides no functionality to package or manage them on the host.</p>
+<p>The <a href="../design.html#threat-containment">threat containment model</a> states
+that the host, host/API communication and snapshot files are trusted by Firecracker.</p>
+<p>To ensure a secure integration with the snapshot functionality, users need to secure
+snapshot files by implementing authentication and encryption schemes while
+managing their lifecycle or moving them across the trust boundary, like for
+example when provisioning them from a repository to a host over the network.</p>
+<p>Firecracker is optimized for fast load/resume, and it's designed to do some
+very basic sanity checks only on the vm state file. It only verifies integrity
+using a 64-bit CRC value embedded in the vm state file, but this is only
+a partial measure to protect against accidental corruption, as the disk
+files and memory file need to be secured as well. It is important to note that
+CRC computation is validated before trying to load the snapshot. Should it
+encounter failure, an error will be shown to the user and the Firecracker
+process will be terminated.</p>
+<h3 id="performance"><a class="header" href="#performance">Performance</a></h3>
+<p>The Firecracker snapshot create/resume performance depends on the memory size,
+vCPU count and emulated devices count.
+The Firecracker CI runs snapshot tests on:</p>
+<ul>
+<li>AWS <strong>m5d.metal</strong> and <strong>m6i.metal</strong> instances for Intel</li>
+<li>AWS <strong>m6g.metal</strong> and <strong>c7g.metal</strong> for ARM</li>
+<li>AWS <strong>m6a.metal</strong> for AMD</li>
+</ul>
+<p>We are running nightly performance tests for all the enumerated platforms on
+all supported kernel versions.
+The baselines can be found in their <a href="../../tests/integration_tests/performance/configs/">respective config file</a>.</p>
+<h3 id="developer-preview-status"><a class="header" href="#developer-preview-status">Developer preview status</a></h3>
+<p>The snapshot functionality is still in developer preview due to the following:</p>
+<ul>
+<li>Poor entropy and replayable randomness when resuming multiple microvms from
+the same snapshot. We do not recommend to use snapshotting in production if
+there is no mechanism to guarantee proper secrecy and uniqueness between
+guests.
+Please see <a href="#snapshot-security-and-uniqueness">Snapshot security and uniqueness</a>.</li>
+</ul>
+<h3 id="limitations"><a class="header" href="#limitations">Limitations</a></h3>
+<ul>
+<li>Currently on aarch64 platforms only lower 128 bits of any register are
+saved due to the limitations of <code>get/set_one_reg</code> from <code>kvm-ioctls</code> crate
+that Firecracker uses to interact with KVM. This creates an issue with
+newer aarch64 CPUs with support for registers with width greater than
+128 bits, because these registers will be truncated before being stored
+in the snapshot. This can lead to uVM failure if restored from such snapshot.
+Because registers wider than 128 bits are usually used in SVE instructions,
+the best way to mitigate this issue is to ensure that the software run in
+uVM does not use SVE instructions during snapshot creation. An alternative
+way is to use <a href="../cpu_templates/cpu-templates.html">CPU templates</a> to disable
+SVE related features in uVM.</li>
+<li>High snapshot latency on 5.4+ host kernels due to cgroups V1. We
+strongly recommend to deploy snapshots on cgroups V2 enabled hosts for the
+implied kernel versions - <a href="https://github.com/firecracker-microvm/firecracker/issues/2129">related issue</a>.</li>
+<li>Guest network connectivity is not guaranteed to be preserved after resume.
+For recommendations related to guest network connectivity for clones please
+see <a href="network-for-clones.html">Network connectivity for clones</a>.</li>
+<li>Vsock device does not have full snapshotting support.
+Please see <a href="#vsock-device-limitation">Vsock device limitation</a>.</li>
+<li>Snapshotting on arm64 works for both GICv2 and GICv3 enabled guests.
+However, restoring between different GIC version is not possible.</li>
+<li>If a <a href="../cpu_templates/cpu-templates.html">CPU template</a> is not used on x86_64,
+overwrites of <code>MSR_IA32_TSX_CTRL</code> MSR value will not be preserved after
+restoring from a snapshot.</li>
+</ul>
+<h2 id="firecracker-snapshotting-characteristics"><a class="header" href="#firecracker-snapshotting-characteristics">Firecracker Snapshotting characteristics</a></h2>
+<ul>
+<li>Fresh Firecracker microVMs are booted using <code>anonymous</code> memory, while microVMs
+resumed from snapshot load memory on-demand from the snapshot and copy-on-write
+to anonymous memory.</li>
+<li>Resuming from a snapshot is optimized for speed, while taking a snapshot involves
+some extra CPU cycles for synchronously writing dirty memory pages to the memory
+snapshot file. Taking a snapshot of a fresh microVM, on which dirty pages tracking
+is not enabled, results in the full contents of guest memory being written to the
+snapshot.</li>
+<li>The <em>memory file</em> and <em>microVM state file</em> are generated by Firecracker on snapshot
+creation. The disk contents are <em>not</em> explicitly flushed to their backing files.</li>
+<li>The API calls exposing the snapshotting functionality have clear <strong>Prerequisites</strong>
+that describe the requirements on when/how they should be used.</li>
+<li>The Firecracker microVM's MMDS config is included in the snapshot. However, the
+data store is not persisted across snapshots.</li>
+<li>Configuration information for metrics and logs are not saved to the snapshot.
+These need to be reconfigured on the restored microVM.</li>
+</ul>
+<h2 id="snapshot-versioning"><a class="header" href="#snapshot-versioning">Snapshot versioning</a></h2>
+<p>The Firecracker snapshotting implementation offers support for snapshot versioning
+(<code>cross-version snapshots</code>) in the following contexts:</p>
+<ul>
+<li>
+<p>Saving snapshots at older versions</p>
+<p><strong>DEPRECATED</strong>: This feature is deprecated starting with version 1.5.0. It
+will be removed in a subsequent release. After dropping support, Firecracker
+will be able to create snapshots only for the version supported by the
+Firecracker binary that launched the microVM and not for older versions.</p>
+<p>This refers to being able to create a snapshot with any version in the
+<code>[N, N + o]</code> interval, while running Firecracker version <code>N+o</code>.</p>
+<p>The possibility to save snapshots at older versions might not be offered by
+all Firecracker releases. Depending on the features that it introduces, a new
+Firecracker release <code>v</code> might drop the possibility to save snapshots at any
+versions older than <code>v</code>.</p>
+<p>For example Firecracker v1.0 and v1.1 adds support for some additional virtio
+features (e.g. notification suppression). These features lead the guest
+drivers to behave in a very specific way and as a consequence the Firecracker
+devices have to respond accordingly. As a result, the snapshots that are
+created while these features are in use will not be backwards compatible with
+previous versions of Firecracker since the devices that come with these older
+versions do not behave in a way that’s compatible with the snapshotted guest
+drivers.</p>
+<p>The list of versions that break snapshot backwards compatibility: <code>1.0</code>, <code>1.1</code></p>
+</li>
+<li>
+<p>Loading snapshots from older versions (being able to load a snapshot created
+by any Firecracker version in the <code>[N, N + o]</code> interval, in a Firecracker
+version <code>N+o</code>).</p>
+</li>
+</ul>
+<p>The design supports an unlimited number of versions, the value of <code>o</code> (maximum number
+of older versions that we can restore from / save a snapshot to, from the current
+version) will be defined later.</p>
+<h2 id="snapshot-api"><a class="header" href="#snapshot-api">Snapshot API</a></h2>
+<p>Firecracker exposes the following APIs for manipulating snapshots: <code>Pause</code>, <code>Resume</code>
+and <code>CreateSnapshot</code> can be called only after booting the microVM, while <code>LoadSnapshot</code>
+is allowed only before boot.</p>
+<h3 id="pausing-the-microvm"><a class="header" href="#pausing-the-microvm">Pausing the microVM</a></h3>
+<p>To create a snapshot, first you have to pause the running microVM and its vCPUs with
+the following API command:</p>
+<pre><code class="language-bash">curl --unix-socket /tmp/firecracker.socket -i \
+    -X PATCH 'http://localhost/vm' \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d '{
+            &quot;state&quot;: &quot;Paused&quot;
+    }'
+</code></pre>
+<p><strong>Prerequisites</strong>: The microVM is booted.
+Successive calls of this request keep the microVM in the <code>Paused</code>
+state.
+<strong>Effects</strong>:</p>
+<ul>
+<li><em>on success</em>: microVM is guaranteed to be <code>Paused</code>.</li>
+<li><em>on failure</em>: no side-effects.</li>
+</ul>
+<h3 id="creating-snapshots"><a class="header" href="#creating-snapshots">Creating snapshots</a></h3>
+<p>Now that the microVM is paused, you can create a snapshot, which can be either
+a <code>full</code>one or a <code>diff</code> one. Full snapshots always create a complete,
+resume-able snapshot of the current microVM state and memory. Diff snapshots
+save the current microVM state and the memory dirtied since the last snapshot
+(full or diff). Diff snapshots are not resume-able, but can be merged into a
+full snapshot. In this context, we will refer to the base as the first memory
+file created by a <code>/snapshot/create</code> API call and the layer as a memory file
+created by a subsequent <code>/snapshot/create</code> API call. The order in which the
+snapshots were created matters and they should be merged in the same order
+in which they were created. To merge a <code>diff</code> snapshot memory file on
+top of a base, users should copy its content over the base. This can be done
+using the <code>rebase-snap</code> (deprecated) or <code>snapshot-editor</code> tools provided with the
+firecracker release:</p>
+<p><code>rebase-snap</code> (deprecated) example:</p>
+<pre><code class="language-bash">rebase-snap --base-file path/to/base --diff-file path/to/layer
+</code></pre>
+<p><code>snapshot-editor</code> example:</p>
+<pre><code class="language-bash">snapshot-editor edit-memory rebase \
+     --memory-path path/to/base \
+     --diff-path path/to/layer
+</code></pre>
+<p>After executing the command above, the base would be a resumable snapshot memory
+file describing the state of the memory at the moment of creation of the layer.
+More layers which were created later can be merged on top of this base.</p>
+<p>This process needs to be repeated for each layer until the one describing the
+desired memory state is merged on top of the base, which is constantly updated
+with information from previously merged layers. Please note that users should
+not merge state files which resulted from <code>/snapshot/create</code> API calls and
+they should use the state file created in the same call as the memory file
+which was merged last on top of the base.</p>
+<h4 id="creating-full-snapshots"><a class="header" href="#creating-full-snapshots">Creating full snapshots</a></h4>
+<p>For creating a full snapshot, you can use the following API command:</p>
+<pre><code class="language-bash">curl --unix-socket /tmp/firecracker.socket -i \
+    -X PUT 'http://localhost/snapshot/create' \
+    -H  'Accept: application/json' \
+    -H  'Content-Type: application/json' \
+    -d '{
+            &quot;snapshot_type&quot;: &quot;Full&quot;,
+            &quot;snapshot_path&quot;: &quot;./snapshot_file&quot;,
+            &quot;mem_file_path&quot;: &quot;./mem_file&quot;,
+            &quot;version&quot;: &quot;1.0.0&quot;
+    }'
+</code></pre>
+<p>Details about the required and optional fields can be found in the
+<a href="../../src/api_server/swagger/firecracker.yaml">swagger definition</a>.</p>
+<p><em>Note</em>: If the files indicated by <code>snapshot_path</code> and <code>mem_file_path</code> don't
+exist at the specified paths, then they will be created right before generating
+the snapshot. If they exist, the files will be truncated and overwritten.</p>
+<p><strong>Prerequisites</strong>: The microVM is <code>Paused</code>.</p>
+<p><strong>Effects</strong>:</p>
+<ul>
+<li>
+<p><em>on success</em>:</p>
+<ul>
+<li>The file indicated by <code>snapshot_path</code> (e.g. <code>/path/to/snapshot_file</code>)
+contains the devices' model state and emulation state. The one indicated
+by <code>mem_file_path</code>(e.g. <code>/path/to/mem_file</code>) contains a full copy of the
+guest memory.</li>
+<li>The generated snapshot files are immediately available to be used (current process
+releases ownership). At this point, the block devices backing files should be
+backed up externally by the user.
+Please note that block device contents are only guaranteed to be committed/flushed
+to the host FS, but not necessarily to the underlying persistent storage
+(could still live in host FS cache).</li>
+<li>If diff snapshots were enabled, the snapshot creation resets then the
+dirtied page bitmap and marks all pages clean (from a diff snapshot point
+of view).</li>
+<li>If a <code>version</code> is specified, the new snapshot is saved at that version,
+otherwise it will be saved at the latest snapshot version of the running
+Firecracker. The version is only used for the microVM state file as it
+contains internal state structures for device emulation, vCPUs and others
+that can change their format from a Firecracker version to another.
+Versioning is not required for the block and memory files.</li>
+</ul>
+</li>
+<li>
+<p><em>on failure</em>: no side-effects.</p>
+</li>
+</ul>
+<p><strong>Notes</strong>:</p>
+<ul>
+<li>The separate block device file components of the snapshot have to be handled
+by the user.</li>
+<li>If specified, <code>version</code> must match the firecracker version that introduced a
+snapshot version, which may differ from the running Firecracker version. For
+example, if you are running on <code>1.1.2</code> and want to target version <code>1.0.4</code>, you
+should specify <code>1.0.0</code>. Not specifying <code>version</code> uses the latest snapshot
+version available to that version.</li>
+</ul>
+<h4 id="creating-diff-snapshots"><a class="header" href="#creating-diff-snapshots">Creating diff snapshots</a></h4>
+<p>For creating a diff snapshot, you should use the same API command, but with
+<code>snapshot_type</code> field set to <code>Diff</code>.</p>
+<p><em>Note</em>: If not specified, <code>snapshot_type</code> is by default <code>Full</code>.</p>
+<pre><code class="language-bash">curl --unix-socket /tmp/firecracker.socket -i \
+    -X PUT 'http://localhost/snapshot/create' \
+    -H  'Accept: application/json' \
+    -H  'Content-Type: application/json' \
+    -d '{
+            &quot;snapshot_type&quot;: &quot;Diff&quot;,
+            &quot;snapshot_path&quot;: &quot;./snapshot_file&quot;,
+            &quot;mem_file_path&quot;: &quot;./mem_file&quot;,
+            &quot;version&quot;: &quot;1.0.0&quot;
+    }'
+</code></pre>
+<p><strong>Prerequisites</strong>: The microVM is <code>Paused</code>.</p>
+<p><em>Note</em>: On a fresh microVM, <code>track_dirty_pages</code> field should be set to <code>true</code>,
+when configuring the <code>/machine-config</code> resource, while on a snapshot loaded
+microVM, <code>enable_diff_snapshots</code> from <code>PUT /snapshot/load</code>request body,
+should be set.</p>
+<p><strong>Effects</strong>:</p>
+<ul>
+<li><em>on success</em>:
+<ul>
+<li>The file indicated by <code>snapshot_path</code> contains the devices' model state and
+emulation state, same as when creating a full snapshot. The one indicated by
+<code>mem_file_path</code> contains this time a <strong>diff copy</strong> of the guest memory; the
+diff consists of the memory pages which have been dirtied since the last
+snapshot creation or since the creation of the microVM, whichever of these
+events was the most recent.</li>
+<li>All the other effects mentioned in the <strong>Effects</strong> paragraph from
+<strong>Creating full snapshots</strong> section apply here.</li>
+</ul>
+</li>
+<li><em>on failure</em>: no side-effects.</li>
+</ul>
+<p><em>Note</em>: This is an example of an API command that enables dirty page tracking:</p>
+<pre><code class="language-bash">curl --unix-socket /tmp/firecracker.socket -i  \
+    -X PUT 'http://localhost/machine-config' \
+    -H 'Accept: application/json'            \
+    -H 'Content-Type: application/json'      \
+    -d '{
+            &quot;vcpu_count&quot;: 2,
+            &quot;mem_size_mib&quot;: 1024,
+            &quot;smt&quot;: false,
+            &quot;track_dirty_pages&quot;: true
+    }'
+</code></pre>
+<p>Enabling this support enables KVM dirty page tracking, so it comes at a cost
+(which consists of CPU cycles spent by KVM accounting for dirtied pages); it
+should only be used when needed.</p>
+<p>Creating a snapshot will <strong>not</strong> influence state, will <strong>not</strong> stop or end the microVM,
+it can be used as before, so the microVM can be resumed if you still want to
+use it.
+At this point, in case you plan to continue using the current microVM, you
+should make sure to also copy the disk backing files.</p>
+<h3 id="resuming-the-microvm"><a class="header" href="#resuming-the-microvm">Resuming the microVM</a></h3>
+<p>You can resume the microVM by sending the following API command:</p>
+<pre><code class="language-bash">curl --unix-socket /tmp/firecracker.socket -i \
+    -X PATCH 'http://localhost/vm' \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d '{
+            &quot;state&quot;: &quot;Resumed&quot;
+    }'
+</code></pre>
+<p><strong>Prerequisites</strong>: The microVM is <code>Paused</code>.
+Successive calls of this request are ignored (microVM remains
+in the running state).
+<strong>Effects</strong>:</p>
+<ul>
+<li><em>on success</em>: microVM is guaranteed to be <code>Resumed</code>.</li>
+<li><em>on failure</em>: no side-effects.</li>
+</ul>
+<h3 id="loading-snapshots"><a class="header" href="#loading-snapshots">Loading snapshots</a></h3>
+<p>If you want to load a snapshot, you can do that only <strong>before</strong> the microVM is configured
+(the only resources that can be configured prior are the Logger and the Metrics systems)
+by sending the following API command:</p>
+<pre><code class="language-bash">curl --unix-socket /tmp/firecracker.socket -i \
+    -X PUT 'http://localhost/snapshot/load' \
+    -H  'Accept: application/json' \
+    -H  'Content-Type: application/json' \
+    -d '{
+            &quot;snapshot_path&quot;: &quot;./snapshot_file&quot;,
+            &quot;mem_backend&quot;: {
+                &quot;backend_path&quot;: &quot;./mem_file&quot;,
+                &quot;backend_type&quot;: &quot;File&quot;
+            },
+            &quot;enable_diff_snapshots&quot;: true,
+            &quot;resume_vm&quot;: false
+    }'
+</code></pre>
+<p>The <code>backend_type</code> field represents the memory backend type used for loading the
+snapshot. Accepted values are:</p>
+<ul>
+<li><code>File</code> - rely on the kernel to handle page faults when loading the contents of
+the guest memory file into memory.</li>
+<li><code>Uffd</code> - use a dedicated user space process to handle page faults that occur
+for the guest memory range. Please refer to <a href="handling-page-faults-on-snapshot-resume.html">this</a>
+for more details on handling page faults in the user space.</li>
+</ul>
+<p>The meaning of <code>backend_path</code> depends on the <code>backend_type</code> chosen:</p>
+<ul>
+<li>if using <code>File</code>, then <code>backend_path</code> should contain the path to the snapshot's
+memory file to be loaded.</li>
+<li>when using <code>Uffd</code>, <code>backend_path</code> refers to the path of the unix domain socket
+used for communication between Firecracker and the user space process that handles
+page faults.</li>
+</ul>
+<p>When relying on the OS to handle page faults, the command below is also accepted.
+Note that <code>mem_file_path</code> field is currently under the deprecation policy.
+<code>mem_file_path</code> and <code>mem_backend</code> are mutually exclusive, therefore specifying them
+both at the same time will return an error.</p>
+<pre><code class="language-bash">curl --unix-socket /tmp/firecracker.socket -i \
+    -X PUT 'http://localhost/snapshot/load' \
+    -H  'Accept: application/json' \
+    -H  'Content-Type: application/json' \
+    -d '{
+            &quot;snapshot_path&quot;: &quot;./snapshot_file&quot;,
+            &quot;mem_file_path&quot;: &quot;./mem_file&quot;,
+            &quot;enable_diff_snapshots&quot;: true,
+            &quot;resume_vm&quot;: false
+    }'
+</code></pre>
+<p>Details about the required and optional fields can be found in the
+<a href="../../src/api_server/swagger/firecracker.yaml">swagger definition</a>.</p>
+<p><strong>Prerequisites</strong>: A full memory snapshot and a microVM state file <strong>must</strong> be
+provided. The disk backing files, network interfaces backing TAPs and/or vsock
+backing socket that were used for the original microVM's configuration
+should be set up and accessible to the new Firecracker process (in
+which the microVM is resumed). These host-resources need to be
+accessible at the same relative paths to the new Firecracker process
+as they were to the original one.</p>
+<p><strong>Effects:</strong></p>
+<ul>
+<li><em>on success</em>:
+<ul>
+<li>The complete microVM state is loaded from snapshot into the current Firecracker
+process.</li>
+<li>It then resets the dirtied page bitmap and marks all pages clean (from a
+diff snapshot point of view).</li>
+<li>The loaded microVM is now in the <code>Paused</code> state, so it needs to be resumed
+for it to run.</li>
+<li>The memory file (pointed by <code>backend_path</code> when using <code>File</code> backend type,
+or pointed by <code>mem_file_path</code>) <strong>must</strong> be considered immutable from Firecracker
+and host point of view. It backs the guest OS memory for read access through
+the page cache. External modification to this file corrupts the guest memory
+and leads to undefined behavior.</li>
+<li>The file indicated by <code>snapshot_path</code>, that is used to load from, is
+released and no longer used by this process.</li>
+<li>If <code>enable_diff_snapshots</code> is set, then diff snapshots can be taken
+afterwards.</li>
+<li>If <code>resume_vm</code> is set, the vm is automatically resumed if load is
+successful.</li>
+</ul>
+</li>
+<li><em>on failure</em>: A specific error is reported and then the current Firecracker process
+is ended (as it might be in an invalid state).</li>
+</ul>
+<p><em>Notes</em>:
+Please, keep in mind that only by setting to true <code>enable_diff_snapshots</code>, when
+loading a snapshot, or <code>track_dirty_pages</code>, when configuring the machine on a
+fresh microVM, you can then create a <code>diff</code> snapshot. Also, <code>track_dirty_pages</code>
+is not saved when creating a snapshot, so you need to explicitly set
+<code>enable_diff_snapshots</code> when sending <code>LoadSnapshot</code>command if you want to be
+able to do diff snapshots from a loaded microVM.
+Another thing that you should be aware of is the following: if a fresh microVM
+can create diff snapshots, then if you create a <strong>full</strong> snapshot, the memory
+file contains the whole guest memory, while if you create a <strong>diff</strong> one, that
+file is sparse and only contains the guest dirtied pages.
+With these in mind, some possible snapshotting scenarios are the following:</p>
+<ul>
+<li><code>Boot from a fresh microVM</code> -&gt; <code>Pause</code> -&gt; <code>Create snapshot</code> -&gt; <code>Resume</code> -&gt;
+<code>Pause</code> -&gt; <code>Create snapshot</code> -&gt; ... ;</li>
+<li><code>Boot from a fresh microVM</code> -&gt; <code>Pause</code> -&gt; <code>Create snapshot</code> -&gt; <code>Resume</code> -&gt;
+<code>Pause</code> -&gt; <code>Resume</code> -&gt; ... -&gt; <code>Pause</code> -&gt; <code>Create snapshot</code> -&gt; ... ;</li>
+<li><code>Load snapshot</code> -&gt; <code>Resume</code> -&gt; <code>Pause</code> -&gt; <code>Create snapshot</code> -&gt; <code>Resume</code> -&gt;
+<code>Pause</code> -&gt; <code>Create snapshot</code> -&gt; ... ;</li>
+<li><code>Load snapshot</code> -&gt; <code>Resume</code> -&gt; <code>Pause</code> -&gt; <code>Create snapshot</code> -&gt; <code>Resume</code> -&gt;
+<code>Pause</code> -&gt; <code>Resume</code> -&gt; ... -&gt; <code>Pause</code> -&gt; <code>Create snapshot</code> -&gt; ... ;
+where <code>Create snapshot</code> can refer to either a full or a diff snapshot for
+all the aforementioned flows.</li>
+</ul>
+<p>It is also worth knowing, a microVM that is restored from snapshot will be
+resumed with the guest OS wall-clock continuing from the moment of the
+snapshot creation. For this reason, the wall-clock should be updated to the
+current time, on the guest-side. More details on how you could do this can
+be found at a <a href="../../FAQ.html#my-guest-wall-clock-is-drifting-how-can-i-fix-it">related FAQ</a>.</p>
+<h2 id="provisioning-host-disk-space-for-snapshots"><a class="header" href="#provisioning-host-disk-space-for-snapshots">Provisioning host disk space for snapshots</a></h2>
+<p>Depending on VM memory size, snapshots can consume a lot of disk space. Firecracker
+integrators <strong>must</strong> ensure that the provisioned disk space is sufficient for normal
+operation of their service as well as during failure scenarios. If the service exposes
+the snapshot triggers to customers, integrators <strong>must</strong> enforce proper disk
+quotas to avoid any DoS threats that would cause the service to fail or
+function abnormally.</p>
+<h2 id="ensure-continued-network-connectivity-for-clones"><a class="header" href="#ensure-continued-network-connectivity-for-clones">Ensure continued network connectivity for clones</a></h2>
+<p>For recommendations related to continued network connectivity for multiple
+clones created from a single Firecracker microVM snapshot please see <a href="network-for-clones.html">this doc</a>.</p>
+<h2 id="snapshot-security-and-uniqueness"><a class="header" href="#snapshot-security-and-uniqueness">Snapshot security and uniqueness</a></h2>
+<p>When snapshots are used in a such a manner that a given guest's state is resumed
+from more than once, guest information assumed to be unique may in fact not be;
+this information can include identifiers, random numbers and random number
+seeds, the guest OS entropy pool, as well as cryptographic tokens. Without a
+strong mechanism that enables users to guarantee that unique things stay unique
+across snapshot restores, we consider resuming execution from the same state
+more than once insecure.</p>
+<p>For more information please see <a href="random-for-clones.html">this doc</a></p>
+<h3 id="usage-examples"><a class="header" href="#usage-examples">Usage examples</a></h3>
+<h4 id="example-1-secure-usage-currently-in-dev-preview"><a class="header" href="#example-1-secure-usage-currently-in-dev-preview">Example 1: secure usage (currently in dev preview)</a></h4>
+<pre><code class="language-console">Boot microVM A -&gt; ... -&gt; Create snapshot S -&gt; Terminate
+                                           -&gt; Load S in microVM B -&gt; Resume -&gt; ...
+</code></pre>
+<p>Here, microVM A terminates after creating the snapshot without ever resuming
+work, and a single microVM B resumes execution from snapshot S. In this case,
+unique identifiers, random numbers, and cryptographic tokens that are meant to
+be used once are indeed only used once. In this example, we consider microVM B
+secure.</p>
+<h4 id="example-2-potentially-insecure-usage"><a class="header" href="#example-2-potentially-insecure-usage">Example 2: potentially insecure usage</a></h4>
+<pre><code class="language-console">Boot microVM A -&gt; ... -&gt; Create snapshot S -&gt; Resume -&gt; ...
+                                           -&gt; Load S in microVM B -&gt; Resume -&gt; ...
+</code></pre>
+<p>Here, both microVM A and B do work starting from the state stored in snapshot S.
+Unique identifiers, random numbers, and cryptographic tokens that are meant to
+be used once may be used twice. It doesn't matter if microVM A is terminated
+before microVM B resumes execution from snapshot S or not. In this example, we
+consider both microVMs insecure as soon as microVM A resumes execution.</p>
+<h4 id="example-3-potentially-insecure-usage"><a class="header" href="#example-3-potentially-insecure-usage">Example 3: potentially insecure usage</a></h4>
+<pre><code class="language-console">Boot microVM A -&gt; ... -&gt; Create snapshot S -&gt; ...
+                                           -&gt; Load S in microVM B -&gt; Resume -&gt; ...
+                                           -&gt; Load S in microVM C -&gt; Resume -&gt; ...
+                                           [...]
+</code></pre>
+<p>Here, both microVM B and C do work starting from the state stored in snapshot S.
+Unique identifiers, random numbers, and cryptographic tokens that are meant to
+be used once may be used twice. It doesn't matter at which points in time
+microVMs B and C resume execution, or if microVM A terminates or not after the
+snapshot is created. In this example, we consider microVMs B and C insecure, and
+we also consider microVM A insecure if it resumes execution.</p>
+<h3 id="reusing-snapshotted-states-securely"><a class="header" href="#reusing-snapshotted-states-securely">Reusing snapshotted states securely</a></h3>
+<p>We are currently working to add a functionality that will notify guest operating
+systems of the snapshot event in order to enable secure reuse of snapshotted
+microVM states, guest operating systems, language runtimes, and cryptographic
+libraries. In some cases, user applications will need to handle the snapshot
+create/restore events in such a way that the uniqueness and randomness
+properties are preserved and guaranteed before resuming the workload.</p>
+<p>We've started a discussion on how the Linux operating system might securely
+handle being snapshotted <a href="https://lkml.org/lkml/2020/10/16/629">here</a>.</p>
+<h2 id="vsock-device-limitation"><a class="header" href="#vsock-device-limitation">Vsock device limitation</a></h2>
+<p>Vsock must be inactive during snapshot. Vsock device can break if snapshotted
+while having active connections. Firecracker snapshots do not capture any
+inflight network or vsock (through the linux unix domain socket backend)
+traffic that has left or not yet entered Firecracker.</p>
+<p>The above, coupled with the fact that Vsock control protocol is not resilient
+to vsock packet loss, leads to Vsock device breakage when doing a snapshot while
+there are active Vsock connections.</p>
+<p>As a solution to the above issue, active Vsock connections prior to
+snapshotting the VM are forcibly closed by sending a specific event called
+<code>VIRTIO_VSOCK_EVENT_TRANSPORT_RESET</code>. The event is sent on <code>SnapshotCreate</code>.
+On <code>SnapshotResume</code>, when the VM becomes active again,
+the vsock driver closes all existing connections.
+Listen sockets still remain active. Users wanting to build vsock applications that
+use the snapshot capability have to take this into consideration. More details
+about this event can be found in the official Virtio document
+<a href="https://docs.oasis-open.org/virtio/virtio/v1.1/virtio-v1.1.pdf">here</a>,
+section 5.10.6.6 Device Events.</p>
+<p>Firecracker handles sending the <code>reset</code> event to the vsock driver,
+thus the customers are no longer responsible for closing
+active connections.</p>
+<h2 id="snapshot-compatibility-across-kernel-versions"><a class="header" href="#snapshot-compatibility-across-kernel-versions">Snapshot compatibility across kernel versions</a></h2>
+<p>We have a mechanism in place to experiment with snapshot compatibility across
+supported host kernel versions by generating snapshot artifacts through
+<a href="../../tools/create_snapshot_artifact">this tool</a> and checking devices' functionality
+using <a href="../../tests/integration_tests/functional/test_snapshot_restore_cross_kernel.py">this test</a>.
+The microVM snapshotted is built from <a href="../../tools/create_snapshot_artifact/complex_vm_config.json">this configuration file</a>.
+The test restores the snapshot and ensures that all the devices set-up
+in the configuration file (network devices, disk, vsock, balloon and MMDS)
+are operational post-load.</p>
+<p>The tables below reflect the snapshot compatibility observed on Intel and AMD.
+On ARM, snapshot restore between kernel versions is not possible due to
+registers incompatibility.</p>
+<h3 id="intel"><a class="header" href="#intel">Intel</a></h3>
+<table>
+  <tr>
+    <th></th>
+    <th>Snapshot taken on host 4.14</th>
+    <th>Snapshot taken on host 5.10</th>
+  </tr>
+  <tr>
+    <th>Load snapshot on host 4.14</th>
+    <td style="background-color:mediumseagreen">successful</td>
+    <td style="background-color:darkred">unsuccessful due to unresponsive net devices</td>
+  </tr>
+  <tr>
+    <th>Load snapshot on host 5.10</th>
+    <td style="background-color:mediumseagreen">successful</td>
+    <td style="background-color:mediumseagreen">successful</td>
+  </tr>
+</table>
+<h3 id="amd"><a class="header" href="#amd">AMD</a></h3>
+<table>
+  <tr>
+    <th></th>
+    <th>Snapshot taken on host 4.14</th>
+    <th>Snapshot taken on host 5.10</th>
+  </tr>
+  <tr>
+    <th>Load snapshot on host 4.14</th>
+    <td style="background-color:mediumseagreen">successful</td>
+    <td style="background-color:mediumseagreen">unsuccessful due to mismatch in MSRs</td>
+  </tr>
+  <tr>
+    <th>Load snapshot on host 5.10</th>
+    <td style="background-color:mediumseagreen">successful</td>
+    <td style="background-color:mediumseagreen">successful</td>
+  </tr>
+</table>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="snapshot-editor.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="versioning.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="snapshot-editor.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="versioning.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

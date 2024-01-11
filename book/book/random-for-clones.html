@@ -1,0 +1,461 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Random For Clones - Firecracker</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="CHARTER.html"><strong aria-hidden="true">2.</strong> Firecracker Charter</a></li><li class="chapter-item expanded "><a href="CODE_OF_CONDUCT.html"><strong aria-hidden="true">3.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="SECURITY.html"><strong aria-hidden="true">4.</strong> Security</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CONTRIBUTING.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="dev-machine-setup.html"><strong aria-hidden="true">7.</strong> Development Machine Setup</a></li><li class="chapter-item expanded "><a href="api-change-runbook.html"><strong aria-hidden="true">8.</strong> API Change Runbook</a></li><li class="chapter-item expanded "><a href="RELEASE_POLICY.html"><strong aria-hidden="true">9.</strong> Releases</a></li><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">10.</strong> Design</a></li><li class="chapter-item expanded "><a href="prod-host-setup.html"><strong aria-hidden="true">11.</strong> Production Host Setup</a></li><li class="chapter-item expanded "><a href="network-setup.html"><strong aria-hidden="true">12.</strong> Network Setup</a></li><li class="chapter-item expanded "><a href="kernel-policy.html"><strong aria-hidden="true">13.</strong> Kernel Support Policy</a></li><li class="chapter-item expanded "><a href="SPECIFICATION.html"><strong aria-hidden="true">14.</strong> Specification</a></li><li class="chapter-item expanded "><a href="network-performance.html"><strong aria-hidden="true">15.</strong> Network Performance</a></li><li class="chapter-item expanded "><a href="FAQ.html"><strong aria-hidden="true">16.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="rootfs-and-kernel-setup.html"><strong aria-hidden="true">17.</strong> Creating Custom rootfs and kernel Images</a></li><li class="chapter-item expanded "><a href="ballooning.html"><strong aria-hidden="true">18.</strong> Ballooning</a></li><li class="chapter-item expanded "><a href="devctr-image.html"><strong aria-hidden="true">19.</strong> Development Container</a></li><li class="chapter-item expanded "><a href="device-api.html"><strong aria-hidden="true">20.</strong> Device API</a></li><li class="chapter-item expanded "><a href="entropy.html"><strong aria-hidden="true">21.</strong> Entropy</a></li><li class="chapter-item expanded "><a href="formal-verification.html"><strong aria-hidden="true">22.</strong> Formal Verification</a></li><li class="chapter-item expanded "><a href="initrd.html"><strong aria-hidden="true">23.</strong> initrd</a></li><li class="chapter-item expanded "><a href="jailer.html"><strong aria-hidden="true">24.</strong> Jailer</a></li><li class="chapter-item expanded "><a href="logger.html"><strong aria-hidden="true">25.</strong> Logger</a></li><li class="chapter-item expanded "><a href="metrics.html"><strong aria-hidden="true">26.</strong> Metrics</a></li><li class="chapter-item expanded "><a href="seccomp.html"><strong aria-hidden="true">27.</strong> Seccomp</a></li><li class="chapter-item expanded "><a href="seccompiler.html"><strong aria-hidden="true">28.</strong> Seccompiler</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">29.</strong> Tracing</a></li><li class="chapter-item expanded "><a href="vsock.html"><strong aria-hidden="true">30.</strong> VSock</a></li><li class="chapter-item expanded "><a href="api-requests.html"><strong aria-hidden="true">31.</strong> API Requests</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="actions.html"><strong aria-hidden="true">31.1.</strong> Actons</a></li><li class="chapter-item expanded "><a href="block-caching.html"><strong aria-hidden="true">31.2.</strong> Block Caching</a></li><li class="chapter-item expanded "><a href="block-io-engine.html"><strong aria-hidden="true">31.3.</strong> Block IO Engine</a></li><li class="chapter-item expanded "><a href="block-vhost-user.html"><strong aria-hidden="true">31.4.</strong> Block VHost User</a></li><li class="chapter-item expanded "><a href="patch-block.html"><strong aria-hidden="true">31.5.</strong> Patch Block</a></li><li class="chapter-item expanded "><a href="patch-network-interface.html"><strong aria-hidden="true">31.6.</strong> Patch Network Interface</a></li></ol></li><li class="chapter-item expanded "><a href="state-serialize.html"><strong aria-hidden="true">32.</strong> State Serialization Benchmarks</a></li><li class="chapter-item expanded "><a href="cpu-templates.html"><strong aria-hidden="true">33.</strong> CPU Templates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="boot-protocol.html"><strong aria-hidden="true">33.1.</strong> Boot Protocol</a></li><li class="chapter-item expanded "><a href="cpu-template-helper.html"><strong aria-hidden="true">33.2.</strong> CPU Template Helper</a></li><li class="chapter-item expanded "><a href="cpuid-normalization.html"><strong aria-hidden="true">33.3.</strong> CPUID Normalization</a></li></ol></li><li class="chapter-item expanded "><a href="mmds.html"><strong aria-hidden="true">34.</strong> MMDS</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="mmds-design.html"><strong aria-hidden="true">34.1.</strong> MMDS Design</a></li><li class="chapter-item expanded "><a href="mmds-user-guide.html"><strong aria-hidden="true">34.2.</strong> MMDS User Guide</a></li></ol></li><li class="chapter-item expanded "><a href="snapshotting.html"><strong aria-hidden="true">35.</strong> Snapshotting</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="handling-page-faults-on-snapshot-resume.html"><strong aria-hidden="true">35.1.</strong> Handling Page Faults on Snapshot Resume</a></li><li class="chapter-item expanded "><a href="network-for-clones.html"><strong aria-hidden="true">35.2.</strong> Network For Clones</a></li><li class="chapter-item expanded "><a href="random-for-clones.html" class="active"><strong aria-hidden="true">35.3.</strong> Random For Clones</a></li><li class="chapter-item expanded "><a href="snapshot-editor.html"><strong aria-hidden="true">35.4.</strong> Snapshot Editor</a></li><li class="chapter-item expanded "><a href="snapshot-support.html"><strong aria-hidden="true">35.5.</strong> Snapshot Support</a></li><li class="chapter-item expanded "><a href="versioning.html"><strong aria-hidden="true">35.6.</strong> Versioning</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Firecracker</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="entropy-for-clones"><a class="header" href="#entropy-for-clones">Entropy for Clones</a></h1>
+<p>This document provides a high level perspective on the implications
+of restoring multiple VM clones from a single snapshot.
+We start with an overview of the Linux random number generation (RNG)
+facilities, then go through the potential issues we’ve identified related
+to cloning state, and finally conclude with a series of recommendations.
+It’s worth stressing that we aim to prevent stale state being a problem
+only for the kernel interfaces. Some userspace applications or libraries
+keep their own equivalent of entropy pools and suffer from the same potential
+issues after being cloned. There is no generic solution under the current
+programming model, and all we can do is recommend against their use in
+pre-snapshot logic.</p>
+<h2 id="background"><a class="header" href="#background">Background</a></h2>
+<p>The Linux kernel exposes three main <code>RNG</code> interfaces to userspace: the
+<code>/dev/random</code> and <code>/dev/urandom</code> special devices, and the <code>getrandom</code> syscall,
+which are described in the <a href="http://man7.org/linux/man-pages/man7/random.7.html" title="Lala">random(7) man page</a>. Moreover, Firecracker
+supports the <a href="../entropy.html"><code>virtio-rng</code></a> device which can provide additional
+entropy to guest VMs. It draws its random bytes from the <a href="https://docs.rs/aws-lc-rs/latest/aws_lc_rs/index.html"><code>aws-lc-rs</code></a> crate
+which wraps the <a href="https://github.com/aws/aws-lc"><code>AWS-LC</code> cryptographic library</a>.</p>
+<p>Traditionally, <code>/dev/random</code> has been considered a source of “true”
+randomness, with the downside that reads block when the pool of entropy
+gets depleted. On the other hand, <code>/dev/urandom</code> doesn’t block, but
+provides lower quality results. It turns out the distinction in output
+quality is actually very hard to make. According to <a href="https://www.2uo.de/myths-about-urandom">this article</a>,
+for kernel versions prior to 4.8, both devices draw their output from the same
+pool, with the exception that <code>/dev/random</code> will block when the system
+estimates the entropy count has decreased below a certain threshold.
+The <code>/dev/urandom</code> output is considered secure for virtually all
+purposes, with the caveat that using it before the system gathers
+sufficient entropy for initialization may indeed produce low quality
+random numbers. The <code>getrandom</code> syscall helps with this situation; it
+uses the <code>/dev/urandom</code> source by default, but will block until it gets
+properly initialized (the behavior can be altered via configuration flags).</p>
+<p>Newer kernels (4.8+) have switched to an implementation where
+<code>/dev/random</code> output comes from a pool called the blocking pool, the
+output of <code>/dev/urandom</code> is given by a CSPRNG (cryptographically secure
+pseudorandom number generator), and there’s also an input pool which
+gathers entropy from various sources available on the system, and is
+used to feed into or seed the other two components. A very detailed
+description is available <a href="https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Studies/LinuxRNG/LinuxRNG_EN.pdf">here</a>.</p>
+<p>The details of this newer implementation are used to make the
+recommendations present in the document. There are in-kernel interfaces
+used to obtain random numbers as well, but they are similar to using
+<code>/dev/urandom</code> (or <code>getrandom</code> with the default source) from userspace.</p>
+<p>Whenever a VM clone is created based on a snapshot, execution resumes
+precisely from the previously saved state. Getting random bytes from
+either <code>/dev/random</code> or <code>/dev/urandom</code> does not lead to identical
+results for different clones created from the same snapshot because
+multiple parameters (such as timer data, or output from <code>CPU HWRNG</code>
+instructions which are present on Ivy Bridge or newer Intel processors
+and enabled in a Firecracker guest) are mixed with each result. Extra
+bits are mixed in both when reading random values, and in conjunction
+with entropy related events such as interrupts. Moreover, the guest kernel
+will eventually receive fresh entropy from <code>virtio-rng</code>, if attached. There are
+two questions here:</p>
+<ul>
+<li>Is the <code>CPU HWRNG</code> output always mixed in when
+the feature is present (as opposed to only when the <code>CPU HWRNG</code> is trusted)?</li>
+<li>Is the added noise strong enough to consider the final RNG output
+sufficiently divergent from all other clones?</li>
+</ul>
+<p>Both these questions are particularly relevant immediately after resuming
+a VM from a snapshot. After the VM gets to run for a &quot;sufficient&quot; amount of time
+it should be able to gather some more entropy by itself and its state should
+be sufficiently divergent that of any other clones.</p>
+<p>It seems the <code>CPU HWRNG</code> is always added to mix when present. More
+specifically, <a href="https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Studies/LinuxRNG/LinuxRNG_EN.pdf">page 32 point 1 (at the top of the page)</a>
+mentions using the <code>CPU HWRNG</code> when present for the entropy pool output
+function. Page 34 states <em>in case a CPU random number generator is known
+to the Linux-RNG, data from that hardware RNG is mixed into the entropy
+pool in a second step</em>. With respect to the initialization of the random
+pools and DRNG behind /dev/urandom. The discussion regarding DRNG state
+on page 35 mentions <em>the key part, the counter, and the nonce are XORed
+with the output of the CPU random number generator if one is present. If
+it is not present, one high-resolution time stamp obtained with the
+kernel function random_get_entropy word is XORed with the key part</em>.
+The <code>CPU HWRNG</code> is also used for the DRNG state transition function (as
+stated on page 36 point 1), and during the reseed operation (page 37
+point 2). The document explicitly mentions when the <code>CPU HWRNG</code> has to be
+trusted (for example, the bullet points at the end  of Section 3.3.2.3).</p>
+<p>It’s not yet clear whether the noise that gets added for each clone post
+restore is sufficient to consider their RNG states distinct for security
+purposes. The conservative approach is to presume the stale state has a
+significant influence on RNG output, so we should reinitialize both
+sources based on fresh data after each restore. It would seem that
+simply writing data to <code>/dev/urandom</code> is enough to muddle the entropy
+pools, but the bits only get mixed with the input pool. It’s not certain
+at this point whether such writes have any immediate impact on the
+blocking pool, and it’s unlikely they cause the <code>CSPRNG</code> to be
+automatically reseeded.</p>
+<p>The standard methods of interacting with the kernel RNG sources are
+documented in the <a href="http://man7.org/linux/man-pages/man4/random.4.html">random(4) man page</a>.
+It states that any writes to either <code>/dev/random</code> or <code>/dev/urandom</code> are
+mixed with the input entropy pool, but do not increase the current
+entropy estimation. There is also an <code>ioctl</code> interface which, given the
+appropriate privileges, can be used to add data to the input entropy
+pool while also increasing the count, or completely empty all pools.</p>
+<p>Init systems (such as <code>systemd</code> used by AL2 and other distros) might
+save a random seed file after boot. For <code>systemd</code>, the path is
+<code>/var/lib/systemd/random-seed</code>. Just to be on the safe side, any such
+file should be deleted before taking a snapshot, to prevent its reuse
+for any purposes by the guest. There’s also the
+<code>/proc/sys/kernel/random/boot_id</code> special file, which gets initialized
+with a random string at boot time, and is read-only afterwards. All
+clones restored from the same snapshot will implicitly read the same
+value from this file. If that’s not desirable, it’s possible to alter
+the read result via bind mounting another file on top of
+<code>/proc/sys/kernel/random/boot_id</code>.</p>
+<h2 id="recommendations"><a class="header" href="#recommendations">Recommendations</a></h2>
+<ul>
+<li>Delete <code>/var/lib/systemd/random-seed</code>, or any equivalent files.</li>
+<li>If changing the value present in <code>/proc/sys/kernel/random/boot_id</code> is
+important, bind mount another file on top of it.</li>
+<li>If microVMs run on machines with IvyBridge or newer Intel processors
+(which provide RDRAND; in addition, RDSEED is offered starting with
+Broadwell). Hardware supported reseeding is done on a cadence defined
+by the Linux Kernel and should be sufficient for most cases.</li>
+<li>Use <code>virtio-rng</code>. When present, the guest kernel uses the device as an
+additional source of entropy.</li>
+<li>To be as safe as possible, the direct approach is to do the following (before
+customer code is resumed in the clone):
+<ol>
+<li>Open one of the special devices files (either <code>/dev/random</code> or
+<code>/dev/urandom</code>). Take note that <code>RNDCLEARPOOL</code> no longer
+<a href="https://elixir.bootlin.com/linux/v4.14.295/source/drivers/char/random.c#L1351">has any effect</a> on the entropy pool.</li>
+<li>Issue an <code>RNDADDENTROPY</code> ioctl call (requires <code>CAP_SYS_ADMIN</code>)
+to mix the provided bytes into the input
+entropy pool and increase the entropy count.
+This should also cause the <code>/dev/urandom</code> <code>CSPRNG</code>
+to be reseeded. The bytes can be generated locally in the guest,
+or obtained from the host.</li>
+<li>Issue a <code>RNDRESEEDCRNG</code> ioctl call
+(<a href="https://elixir.bootlin.com/linux/v4.14.295/source/drivers/char/random.c#L1355">4.14</a>, <a href="https://elixir.bootlin.com/linux/v5.10.147/source/drivers/char/random.c#L1360">5.10</a>, (requires <code>CAP_SYS_ADMIN</code>)) that specifically
+causes the <code>CSPRNG</code> to be reseeded from the input pool.</li>
+</ol>
+</li>
+</ul>
+<p><strong>Annex 1 contains the source code of a C program which implements the
+previous three steps.</strong> As soon as the guest kernel version switches to
+4.19 (or higher), we can rely on the <code>CONFIG_RANDOM_TRUST_CPU</code> kernel
+option (or the random.trust_cpu=on cmdline parameter) to have the
+entropy pool automatically refilled using the <code>CPU HWRNG</code>, so step 3
+would no longer be necessary. Another way around step 3 is to attach a
+<code>virtio-rng</code> device. However, we cannot control when the guest kernel will
+request for random bytes from the device.</p>
+<h2 id="annex-1-source-code-that-clears-and-reinitializes-the-entropy-pool"><a class="header" href="#annex-1-source-code-that-clears-and-reinitializes-the-entropy-pool">Annex 1: Source code that clears and reinitializes the entropy pool</a></h2>
+<pre><code class="language-cpp">#include &lt;errno.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;linux/random.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;sys/ioctl.h&gt;
+
+void exit_usage() {
+    printf(&quot;Usage: ./rerand [&lt;hexadecimal_string&gt;]\n&quot;
+           &quot;The length of the string must be a multiple of 8.\n&quot;);
+    exit(EXIT_FAILURE);
+}
+
+void exit_perror(const char *msg) {
+    perror(msg);
+    exit(EXIT_FAILURE);
+}
+
+int main(int argc, char ** argv) {
+    if (argc &gt; 2) {
+        exit_usage();
+    }
+
+    size_t len = 0;
+    struct rand_pool_info *info = NULL;
+
+    if (argc == 2) {
+        len = strlen(argv[1]);
+        // We want len to be a multiple of 8 such that we have an easier time
+        // parsing argv[1] into an array of u32s.
+        if (len % 8) {
+            exit_usage();
+        }
+
+        info = malloc(sizeof(struct rand_pool_info) + len / 8);
+        if (info == NULL) {
+            exit_perror(&quot;Could not alloc rand_pool_info struct&quot;);
+        }
+        // This is measured in bits IIRC.
+        info-&gt;entropy_count = len * 4;
+        info-&gt;buf_size = len / 8;
+    }
+
+    int fd = open(&quot;/dev/urandom&quot;, O_RDWR);
+    if (fd &lt; 0) {
+        exit_perror(&quot;Unable to open /dev/urandom&quot;);
+    }
+
+    if (ioctl(fd, RNDCLEARPOOL) &lt; 0) {
+        exit_perror(&quot;Error issuing RNDCLEARPOOL operation&quot;);
+    }
+
+    if (argc == 1) {
+        exit(EXIT_SUCCESS);
+    }
+
+    // Add the entropy bytes supplied by the user.
+    char num_buf[9] = {};
+    size_t pos = 0;
+
+    while (pos &lt; len) {
+        memcpy(num_buf, &amp;argv[1] + pos, 8);
+        info-&gt;buf[pos / 8] = strtoul(num_buf, NULL, 16);
+        pos += 8;
+    }
+
+    if (ioctl(fd, RNDADDENTROPY, info) &lt; 0) {
+        exit_perror(&quot;Error issuing RNDADDENTROPY operation&quot;);
+    }
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="network-for-clones.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="snapshot-editor.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="network-for-clones.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="snapshot-editor.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

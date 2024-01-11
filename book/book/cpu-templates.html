@@ -1,0 +1,474 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>CPU Templates - Firecracker</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="CHARTER.html"><strong aria-hidden="true">2.</strong> Firecracker Charter</a></li><li class="chapter-item expanded "><a href="CODE_OF_CONDUCT.html"><strong aria-hidden="true">3.</strong> Code of Conduct</a></li><li class="chapter-item expanded "><a href="SECURITY.html"><strong aria-hidden="true">4.</strong> Security</a></li><li class="chapter-item expanded "><a href="getting-started.html"><strong aria-hidden="true">5.</strong> Getting Started</a></li><li class="chapter-item expanded "><a href="CONTRIBUTING.html"><strong aria-hidden="true">6.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="dev-machine-setup.html"><strong aria-hidden="true">7.</strong> Development Machine Setup</a></li><li class="chapter-item expanded "><a href="api-change-runbook.html"><strong aria-hidden="true">8.</strong> API Change Runbook</a></li><li class="chapter-item expanded "><a href="RELEASE_POLICY.html"><strong aria-hidden="true">9.</strong> Releases</a></li><li class="chapter-item expanded "><a href="design.html"><strong aria-hidden="true">10.</strong> Design</a></li><li class="chapter-item expanded "><a href="prod-host-setup.html"><strong aria-hidden="true">11.</strong> Production Host Setup</a></li><li class="chapter-item expanded "><a href="network-setup.html"><strong aria-hidden="true">12.</strong> Network Setup</a></li><li class="chapter-item expanded "><a href="kernel-policy.html"><strong aria-hidden="true">13.</strong> Kernel Support Policy</a></li><li class="chapter-item expanded "><a href="SPECIFICATION.html"><strong aria-hidden="true">14.</strong> Specification</a></li><li class="chapter-item expanded "><a href="network-performance.html"><strong aria-hidden="true">15.</strong> Network Performance</a></li><li class="chapter-item expanded "><a href="FAQ.html"><strong aria-hidden="true">16.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="rootfs-and-kernel-setup.html"><strong aria-hidden="true">17.</strong> Creating Custom rootfs and kernel Images</a></li><li class="chapter-item expanded "><a href="ballooning.html"><strong aria-hidden="true">18.</strong> Ballooning</a></li><li class="chapter-item expanded "><a href="devctr-image.html"><strong aria-hidden="true">19.</strong> Development Container</a></li><li class="chapter-item expanded "><a href="device-api.html"><strong aria-hidden="true">20.</strong> Device API</a></li><li class="chapter-item expanded "><a href="entropy.html"><strong aria-hidden="true">21.</strong> Entropy</a></li><li class="chapter-item expanded "><a href="formal-verification.html"><strong aria-hidden="true">22.</strong> Formal Verification</a></li><li class="chapter-item expanded "><a href="initrd.html"><strong aria-hidden="true">23.</strong> initrd</a></li><li class="chapter-item expanded "><a href="jailer.html"><strong aria-hidden="true">24.</strong> Jailer</a></li><li class="chapter-item expanded "><a href="logger.html"><strong aria-hidden="true">25.</strong> Logger</a></li><li class="chapter-item expanded "><a href="metrics.html"><strong aria-hidden="true">26.</strong> Metrics</a></li><li class="chapter-item expanded "><a href="seccomp.html"><strong aria-hidden="true">27.</strong> Seccomp</a></li><li class="chapter-item expanded "><a href="seccompiler.html"><strong aria-hidden="true">28.</strong> Seccompiler</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">29.</strong> Tracing</a></li><li class="chapter-item expanded "><a href="vsock.html"><strong aria-hidden="true">30.</strong> VSock</a></li><li class="chapter-item expanded "><a href="api-requests.html"><strong aria-hidden="true">31.</strong> API Requests</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="actions.html"><strong aria-hidden="true">31.1.</strong> Actons</a></li><li class="chapter-item expanded "><a href="block-caching.html"><strong aria-hidden="true">31.2.</strong> Block Caching</a></li><li class="chapter-item expanded "><a href="block-io-engine.html"><strong aria-hidden="true">31.3.</strong> Block IO Engine</a></li><li class="chapter-item expanded "><a href="block-vhost-user.html"><strong aria-hidden="true">31.4.</strong> Block VHost User</a></li><li class="chapter-item expanded "><a href="patch-block.html"><strong aria-hidden="true">31.5.</strong> Patch Block</a></li><li class="chapter-item expanded "><a href="patch-network-interface.html"><strong aria-hidden="true">31.6.</strong> Patch Network Interface</a></li></ol></li><li class="chapter-item expanded "><a href="state-serialize.html"><strong aria-hidden="true">32.</strong> State Serialization Benchmarks</a></li><li class="chapter-item expanded "><a href="cpu-templates.html" class="active"><strong aria-hidden="true">33.</strong> CPU Templates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="boot-protocol.html"><strong aria-hidden="true">33.1.</strong> Boot Protocol</a></li><li class="chapter-item expanded "><a href="cpu-template-helper.html"><strong aria-hidden="true">33.2.</strong> CPU Template Helper</a></li><li class="chapter-item expanded "><a href="cpuid-normalization.html"><strong aria-hidden="true">33.3.</strong> CPUID Normalization</a></li></ol></li><li class="chapter-item expanded "><a href="mmds.html"><strong aria-hidden="true">34.</strong> MMDS</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="mmds-design.html"><strong aria-hidden="true">34.1.</strong> MMDS Design</a></li><li class="chapter-item expanded "><a href="mmds-user-guide.html"><strong aria-hidden="true">34.2.</strong> MMDS User Guide</a></li></ol></li><li class="chapter-item expanded "><a href="snapshotting.html"><strong aria-hidden="true">35.</strong> Snapshotting</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="handling-page-faults-on-snapshot-resume.html"><strong aria-hidden="true">35.1.</strong> Handling Page Faults on Snapshot Resume</a></li><li class="chapter-item expanded "><a href="network-for-clones.html"><strong aria-hidden="true">35.2.</strong> Network For Clones</a></li><li class="chapter-item expanded "><a href="random-for-clones.html"><strong aria-hidden="true">35.3.</strong> Random For Clones</a></li><li class="chapter-item expanded "><a href="snapshot-editor.html"><strong aria-hidden="true">35.4.</strong> Snapshot Editor</a></li><li class="chapter-item expanded "><a href="snapshot-support.html"><strong aria-hidden="true">35.5.</strong> Snapshot Support</a></li><li class="chapter-item expanded "><a href="versioning.html"><strong aria-hidden="true">35.6.</strong> Versioning</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Firecracker</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="cpu-templates"><a class="header" href="#cpu-templates">CPU templates</a></h1>
+<p>Firecracker allows users to customise how the vCPUs are represented
+to the guest software by changing the following configuration:</p>
+<ul>
+<li>CPUID (x86_64 only)</li>
+<li>MSRs (Model Specific Registers, x86_64 only)</li>
+<li>ARM registers (aarch64 only)</li>
+<li>vCPU features (aarch64 only)</li>
+<li>KVM capabilities (both x86_64 and aarch64)</li>
+</ul>
+<p>A combination of the changes to the above entities is called a CPU template.</p>
+<p>The functionality can be used when a user wants to mask a feature from
+the guest. A real world use case for this is representing a heterogeneous
+fleet (a fleet consisting of multiple CPU models) as a homogeneous fleet,
+so the guests will experience a consistent feature set supported by the host.</p>
+<blockquote>
+<p><strong>Note</strong>
+Representing one CPU vendor as another CPU vendor is not supported.</p>
+</blockquote>
+<blockquote>
+<p><strong>Note</strong>
+CPU templates shall not be used as a security protection against malicious
+guests. Disabling a feature in a CPU template does not generally make it
+completely unavailable to the guest. For example, disabling a feature related
+to an instruction set will indicate to the guest that the feature
+is not supported, but the guest may still be able to execute corresponding
+instructions if it does not obey the feature bit.</p>
+</blockquote>
+<p>Firecracker supports two types of CPU templates:</p>
+<ul>
+<li>Static CPU templates - a set of built-in CPU templates for users
+to choose from</li>
+<li>Custom CPU templates - users can create their own CPU templates in json
+format and pass them to Firecracker</li>
+</ul>
+<blockquote>
+<p><strong>Note</strong>
+Static CPU templates are deprecated starting from v1.5.0 and will be removed in
+accordance with our deprecation policy. Even after the removal, custom CPU
+templates are available as an improved iteration of static CPU templates. For
+more information about the transition from static CPU templates to custom CPU
+templates, please refer to <a href="https://github.com/firecracker-microvm/firecracker/discussions/4135">this GitHub discussion</a>.</p>
+</blockquote>
+<blockquote>
+<p><strong>Note</strong>
+CPU templates for ARM (both static and custom) require the following patch
+to be available in the host kernel: <a href="https://lore.kernel.org/kvm/20230212215830.2975485-1-jingzhangos@google.com/#t">Support writable CPU ID registers from userspace</a>.
+Otherwise KVM will fail to write to the ARM registers.</p>
+</blockquote>
+<h2 id="static-cpu-templates"><a class="header" href="#static-cpu-templates">Static CPU templates</a></h2>
+<p>At the moment the following set of static CPU templates are supported:</p>
+<div class="table-wrapper"><table><thead><tr><th>CPU template</th><th>CPU vendor</th><th>CPU model</th></tr></thead><tbody>
+<tr><td>C3</td><td>Intel</td><td>any</td></tr>
+<tr><td>T2</td><td>Intel</td><td>any</td></tr>
+<tr><td>T2A</td><td>AMD</td><td>Milan</td></tr>
+<tr><td>T2CL</td><td>Intel</td><td>Cascade Lake or newer</td></tr>
+<tr><td>T2S</td><td>Intel</td><td>any</td></tr>
+<tr><td>V1N1</td><td>ARM</td><td>Neoverse V1</td></tr>
+</tbody></table>
+</div>
+<p>T2 and C3 templates are mapped as close as possible to AWS T2 and C3 instances
+in terms of CPU features. Note that on a microVM that is lauched with the C3
+template and running on processors that do not enumerate FBSDP_NO, PSDP_NO and
+SBDR_SSDP_NO on IA32_ARCH_CAPABILITIES MSR, the kernel does not apply the
+mitigation against MMIO stale data vulnerability.</p>
+<p>The T2S template is designed to allow migrating <a href="../snapshotting/versioning.html">snapshots</a>
+between hosts with Intel Skylake and Intel Cascade Lake securely by further
+restricting CPU features for the guest, however this comes with a performance
+penalty. Users are encouraged to carry out a performance assessment if they wish
+to use the T2S template. Note that Firecracker expects the host to always be
+running the latest version of the microcode.</p>
+<p>The T2CL template is mapped to be close to Intel Cascade Lake.
+It is not safe to use it on Intel CPUs older than Cascade Lake (such as Skylake).</p>
+<p>The only AMD template is T2A. It is considered safe to be used with AMD Milan.</p>
+<p>Intel T2CL and AMD T2A templates together aim to provide instruction set feature
+parity between CPUs running them, so they can form a heterogeneous fleet
+exposing the same instruction sets to the application.</p>
+<p>The V1N1 template is designed to represent ARM Neoverse V1 as ARM Neoverse N1.</p>
+<h3 id="configuring-static-cpu-templates"><a class="header" href="#configuring-static-cpu-templates">Configuring static CPU templates</a></h3>
+<p>Configuration of a static CPU template is performed via the <code>/machine-config</code>
+API endpoint:</p>
+<pre><code class="language-bash">curl --unix-socket /tmp/firecracker.socket -i  \
+  -X PUT 'http://localhost/machine-config' \
+  -H 'Accept: application/json'            \
+  -H 'Content-Type: application/json'      \
+  -d '{
+           &quot;vcpu_count&quot;: 2,
+           &quot;mem_size_mib&quot;: 1024,
+           &quot;cpu_template&quot;: &quot;T2CL&quot;
+  }'
+</code></pre>
+<h2 id="custom-cpu-templates"><a class="header" href="#custom-cpu-templates">Custom CPU templates</a></h2>
+<p>Users can create their own CPU templates by creating a json file containing
+modifiers for CPUID, MSRs or ARM registers.</p>
+<blockquote>
+<p><strong>Note</strong>
+Creating custom CPU templates requires expert knowledge of
+CPU architectures. Custom CPU templates must be tested thoroughly before use
+in production. An inappropriate configuration may lead to guest crashes or
+making guests vulnerable to security attacks. For example, if a CPU template
+signals a hardware vulnerability mitigation to the guest while the mitigation
+is in fact not supported by the hardware, the guest may decide to disable
+corresponding software mitigations which will make the guest vulnerable.</p>
+</blockquote>
+<blockquote>
+<p><strong>Note</strong>
+Having MSRs or ARM registers in the custom CPU template does
+not affect access permissions that guests will have to those registers.
+The access control is handled by KVM and is not influenced by CPU templates.</p>
+</blockquote>
+<blockquote>
+<p><strong>Note</strong>
+When setting guest configuration, KVM may reject setting some bits quietly.
+This is user's responsibility to make sure that their custom CPU template
+is applied as expected even if Firecracker does not report an error.</p>
+</blockquote>
+<p>In order to assist with creation and usage of CPU templates, there exists
+a CPU template helper tool. More details can be found
+<a href="cpu-template-helper.html">here</a>.</p>
+<h3 id="configuring-custom-cpu-templates"><a class="header" href="#configuring-custom-cpu-templates">Configuring custom CPU templates</a></h3>
+<p>Configuration of a custom CPU template is performed via the <code>/cpu-config</code>
+API endpoint.</p>
+<p>An example of configuring a custom CPU template on x86_64:</p>
+<pre><code class="language-bash">curl --unix-socket /tmp/firecracker.socket -i  \
+  -X PUT 'http://localhost/cpu-config' \
+  -H 'Accept: application/json'            \
+  -H 'Content-Type: application/json'      \
+  -d '{
+        &quot;kvm_capabilities&quot;: [&quot;!56&quot;],
+        &quot;cpuid_modifiers&quot;: [
+          {
+            &quot;leaf&quot;: &quot;0x1&quot;,
+            &quot;subleaf&quot;: &quot;0x0&quot;,
+            &quot;flags&quot;: 0,
+            &quot;modifiers&quot;: [
+              {
+                &quot;register&quot;: &quot;eax&quot;,
+                &quot;bitmap&quot;: &quot;0bxxxx000000000011xx00011011110010&quot;
+              }
+            ]
+          }
+        ],
+        &quot;msr_modifiers&quot;: [
+          {
+            &quot;addr&quot;: &quot;0x10a&quot;,
+            &quot;bitmap&quot;: &quot;0b0000000000000000000000000000000000000000000000000000000000000000&quot;
+          }
+        ]
+      }'
+</code></pre>
+<p>This CPU template will do the following:</p>
+<ul>
+<li>removes check for KVM capability: KVM_CAP_XCRS.
+This allows Firecracker to run on old cpus. See <a href="https://github.com/firecracker-microvm/firecracker/discussions/3470">this</a>
+discussion.</li>
+<li>in leaf <code>0x1</code>, subleaf <code>0x0</code>, register <code>eax</code>:
+<ul>
+<li>clear bits <code>0b00001111111111000011100100001101</code></li>
+<li>set bits <code>0b00000000000000110000011011110010</code></li>
+<li>leave bits <code>0b11110000000000001100000000000000</code> intact.</li>
+</ul>
+</li>
+<li>in MSR <code>0x10</code>, it will clear all bits.</li>
+</ul>
+<p>An example of configuring a custom CPU template on ARM:</p>
+<pre><code class="language-bash">curl --unix-socket /tmp/firecracker.socket -i  \
+  -X PUT 'http://localhost/cpu-config' \
+  -H 'Accept: application/json'            \
+  -H 'Content-Type: application/json'      \
+  -d '{
+        &quot;kvm_capabilities&quot;: [&quot;171&quot;, &quot;172&quot;],
+        &quot;vcpu_features&quot;: [{ &quot;index&quot;: 0, &quot;bitmap&quot;: &quot;0b1100000&quot; }]
+        &quot;reg_modifiers&quot;: [
+          {
+            &quot;addr&quot;: &quot;0x603000000013c020&quot;,
+            &quot;bitmap&quot;: &quot;0bxxxxxxxxxxxx0000xxxxxxxxxxxx0000xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;
+          }
+        ]
+      }'
+</code></pre>
+<p>This CPU template will do the following:</p>
+<ul>
+<li>add checks for KVM capabilities: KVM_CAP_ARM_PTRAUTH_ADDRESS and KVM_CAP_ARM_PTRAUTH_GENERIC.
+These checks are to ensure that the host have capabilities needed for
+the vCPU features.</li>
+<li>enable additional vCPU features: KVM_ARM_VCPU_PTRAUTH_ADDRESS and KVM_ARM_VCPU_PTRAUTH_GENERIC</li>
+<li>modify ARM register <code>0x603000000013c020</code>:
+<ul>
+<li>clear bits <code>0b0000000000001111000000000000111100000000000000000000000000000000</code></li>
+<li>leave bits <code>0b1111111111110000111111111111000011111111111111111111111111111111</code>
+intact.</li>
+</ul>
+</li>
+</ul>
+<p>Information about KVM capabilities can be found in the
+<a href="https://elixir.bootlin.com/linux/latest/source/include/uapi/linux/kvm.h">kernel source</a>.
+Information about vCPU features on aarch64 can be found in the
+<a href="https://elixir.bootlin.com/linux/latest/source/arch/arm64/include/uapi/asm/kvm.h">kernel source</a>.
+Information on how the ARM register addresses are constructed can be found
+in the <a href="https://docs.kernel.org/virt/kvm/api.html#kvm-set-one-reg">KVM API documentation</a>.</p>
+<h3 id="custom-cpu-templates-language-schema"><a class="header" href="#custom-cpu-templates-language-schema">Custom CPU templates language schema</a></h3>
+<p>The full description of the custom CPU templates language can be found
+<a href="schema.json">here</a>.</p>
+<blockquote>
+<p><strong>Note</strong>
+You can also use <code>_</code> to visually separate parts of a bitmap.
+So instead of writing: <code>0b0000xxxx</code>, it can be <code>0b0000_xxxx</code>.</p>
+</blockquote>
+<h4 id="expansion-of-contracted-bitmaps"><a class="header" href="#expansion-of-contracted-bitmaps">Expansion of contracted bitmaps</a></h4>
+<p>If a contracted version of a bitmap is given, for example, <code>0b101</code> where
+a 32-bit bitmap is expected, missing characters are implied to be <code>x</code>
+(<code>0bxxxxxxxxxxxxxxxxxxxxxxxxxxxxx101</code>).</p>
+<h4 id="cpuid-normalization-and-boot-protocol-register-settings"><a class="header" href="#cpuid-normalization-and-boot-protocol-register-settings">CPUID normalization and boot protocol register settings</a></h4>
+<p>Some of the configuration set by a custom CPU template may be overwritten
+by Firecracker. More details can be found <a href="cpuid-normalization.html">here</a> and
+<a href="boot-protocol.html">here</a>.</p>
+<h4 id="information-about-architecture-specific-settings"><a class="header" href="#information-about-architecture-specific-settings">Information about architecture-specific settings</a></h4>
+<p>For detailed information when working with custom CPU templates, please
+refer to hardware specifications from CPU vendors, for example:</p>
+<ul>
+<li><a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html">Intel Software Developer Manual</a></li>
+<li><a href="https://www.amd.com/en/support/tech-docs?keyword=programmer%27s+manual">AMD Architecture Programmer's Manual</a></li>
+<li><a href="https://developer.arm.com/documentation/ddi0487/latest">ARM Architecture Refernce Manual</a></li>
+</ul>
+<h2 id="a-note-about-configuration-of-both-static-and-custom-cpu-templates"><a class="header" href="#a-note-about-configuration-of-both-static-and-custom-cpu-templates">A note about configuration of both static and custom CPU templates</a></h2>
+<p>If a user configured both a static CPU template (via <code>/machine-config</code>) and
+a custom CPU template (via <code>/cpu-config</code>) in the same Firecracker process,
+only the configuration that was performed the <em>last</em> is applied. This means
+that if a static CPU template was configured first and a custom CPU template
+was configured later, only the custom CPU template configuration will be
+applied when starting a microVM.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="state-serialize.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="boot-protocol.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="state-serialize.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="boot-protocol.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
