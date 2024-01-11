@@ -1,7 +1,7 @@
 <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="docs/images/fc_logo_full_transparent-bg_white-fg.png">
-   <source media="(prefers-color-scheme: light)" srcset="docs/images/fc_logo_full_transparent-bg.png">
-   <img alt="Firecracker Logo Title" width="750" src="docs/images/fc_logo_full_transparent-bg.png">
+   <source media="(prefers-color-scheme: dark)" srcset="images/fc_logo_full_transparent-bg_white-fg.png">
+   <source media="(prefers-color-scheme: light)" srcset="images/fc_logo_full_transparent-bg.png">
+   <img alt="Firecracker Logo Title" width="750" src="images/fc_logo_full_transparent-bg.png">
 </picture>
 
 Our mission is to enable secure, multi-tenant, minimal-overhead execution of
@@ -57,12 +57,12 @@ toolchain="$(uname -m)-unknown-linux-musl"
 The Firecracker binary will be placed at
 `build/cargo_target/${toolchain}/debug/firecracker`. For more information on
 building, testing, and running Firecracker, go to the
-[quickstart guide](docs/getting-started.md).
+[quickstart guide](getting-started.md).
 
 The overall security of Firecracker microVMs, including the ability to meet the
 criteria for safe multi-tenant computing, depends on a well configured Linux
 host operating system. A configuration that we believe meets this bar is
-included in [the production host setup document](docs/prod-host-setup.md).
+included in [the production host setup document](prod-host-setup.md).
 
 ## Contributing
 
@@ -71,7 +71,7 @@ Day 1 on the journey guided by our [mission](CHARTER.md). There's a lot more to
 build and we welcome all contributions.
 
 To contribute to Firecracker, check out the development setup section in the
-[getting started guide](docs/getting-started.md) and then the Firecracker
+[getting started guide](getting-started.md) and then the Firecracker
 [contribution guidelines](CONTRIBUTING.md).
 
 ## Releases
@@ -81,26 +81,26 @@ New Firecracker versions are released via the GitHub repository
 typically every two or three months. A history of changes is recorded in our
 [changelog](CHANGELOG.md).
 
-The Firecracker release policy is detailed [here](docs/RELEASE_POLICY.md).
+The Firecracker release policy is detailed [here](RELEASE_POLICY.md).
 
 ## Design
 
 Firecracker's overall architecture is described in
-[the design document](docs/design.md).
+[the design document](design.md).
 
 ## Features & Capabilities
 
 Firecracker consists of a single micro Virtual Machine Manager process that
 exposes an API endpoint to the host once started. The API is
 [specified in OpenAPI format](src/api_server/swagger/firecracker.yaml). Read more
-about it in the [API docs](docs/api_requests).
+about it in the [API docs](api_requests).
 
 The **API endpoint** can be used to:
 
 - Configure the microvm by:
   - Setting the number of vCPUs (the default is 1).
   - Setting the memory size (the default is 128 MiB).
-  - Configuring a [CPU template](docs/cpu_templates/cpu-templates.md).
+  - Configuring a [CPU template](cpu_templates/cpu-templates.md).
 - Add one or more network interfaces to the microVM.
 - Add one or more read-write or read-only disks to the microVM, each represented
   by a file-backed block device.
@@ -112,8 +112,8 @@ The **API endpoint** can be used to:
 - Configure the logging and metric system.
 - `[BETA]` Configure the data tree of the guest-facing metadata service. The
   service is only available to the guest if this resource is configured.
-- Add a [vsock socket](docs/vsock.md) to the microVM.
-- Add a [entropy device](docs/entropy.md) to the microVM.
+- Add a [vsock socket](vsock.md) to the microVM.
+- Add a [entropy device](entropy.md) to the microVM.
 - Start the microVM using a given kernel image, root file system, and boot
   arguments.
 - [x86_64 only] Stop the microVM.
@@ -122,7 +122,7 @@ The **API endpoint** can be used to:
 
 - Demand fault paging and CPU oversubscription enabled by default.
 - Advanced, thread-specific seccomp filters for enhanced security.
-- [Jailer](docs/jailer.md) process for starting Firecracker in production
+- [Jailer](jailer.md) process for starting Firecracker in production
   scenarios; applies a cgroup/namespace isolation barrier and then
   drops privileges.
 

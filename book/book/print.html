@@ -175,9 +175,9 @@
                 <div id="content" class="content">
                     <main>
                         <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="./images/fc_logo_full_transparent-bg_white-fg.png">
-   <source media="(prefers-color-scheme: light)" srcset="./images/fc_logo_full_transparent-bg.png">
-   <img alt="Firecracker Logo Title" width="750" src="./images/fc_logo_full_transparent-bg.png">
+   <source media="(prefers-color-scheme: dark)" srcset="images/fc_logo_full_transparent-bg_white-fg.png">
+   <source media="(prefers-color-scheme: light)" srcset="images/fc_logo_full_transparent-bg.png">
+   <img alt="Firecracker Logo Title" width="750" src="images/fc_logo_full_transparent-bg.png">
 </picture>
 <p>Our mission is to enable secure, multi-tenant, minimal-overhead execution of
 container and function workloads.</p>
@@ -219,39 +219,39 @@ toolchain=&quot;$(uname -m)-unknown-linux-musl&quot;
 <p>The Firecracker binary will be placed at
 <code>build/cargo_target/${toolchain}/debug/firecracker</code>. For more information on
 building, testing, and running Firecracker, go to the
-<a href="./getting-started.html">quickstart guide</a>.</p>
+<a href="getting-started.html">quickstart guide</a>.</p>
 <p>The overall security of Firecracker microVMs, including the ability to meet the
 criteria for safe multi-tenant computing, depends on a well configured Linux
 host operating system. A configuration that we believe meets this bar is
-included in <a href="./prod-host-setup.html">the production host setup document</a>.</p>
+included in <a href="prod-host-setup.html">the production host setup document</a>.</p>
 <h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
 <p>Firecracker is already running production workloads within AWS, but it's still
 Day 1 on the journey guided by our <a href="CHARTER.html">mission</a>. There's a lot more to
 build and we welcome all contributions.</p>
 <p>To contribute to Firecracker, check out the development setup section in the
-<a href="./getting-started.html">getting started guide</a> and then the Firecracker
+<a href="getting-started.html">getting started guide</a> and then the Firecracker
 <a href="CONTRIBUTING.html">contribution guidelines</a>.</p>
 <h2 id="releases"><a class="header" href="#releases">Releases</a></h2>
 <p>New Firecracker versions are released via the GitHub repository
 <a href="https://github.com/firecracker-microvm/firecracker/releases">releases</a> page,
 typically every two or three months. A history of changes is recorded in our
 <a href="CHANGELOG.html">changelog</a>.</p>
-<p>The Firecracker release policy is detailed <a href="./RELEASE_POLICY.html">here</a>.</p>
+<p>The Firecracker release policy is detailed <a href="RELEASE_POLICY.html">here</a>.</p>
 <h2 id="design"><a class="header" href="#design">Design</a></h2>
 <p>Firecracker's overall architecture is described in
-<a href="./design.html">the design document</a>.</p>
+<a href="design.html">the design document</a>.</p>
 <h2 id="features--capabilities"><a class="header" href="#features--capabilities">Features &amp; Capabilities</a></h2>
 <p>Firecracker consists of a single micro Virtual Machine Manager process that
 exposes an API endpoint to the host once started. The API is
 <a href="src/api_server/swagger/firecracker.yaml">specified in OpenAPI format</a>. Read more
-about it in the <a href="./api_requests">API docs</a>.</p>
+about it in the <a href="api_requests">API docs</a>.</p>
 <p>The <strong>API endpoint</strong> can be used to:</p>
 <ul>
 <li>Configure the microvm by:
 <ul>
 <li>Setting the number of vCPUs (the default is 1).</li>
 <li>Setting the memory size (the default is 128 MiB).</li>
-<li>Configuring a <a href="./cpu_templates/cpu-templates.html">CPU template</a>.</li>
+<li>Configuring a <a href="cpu_templates/cpu-templates.html">CPU template</a>.</li>
 </ul>
 </li>
 <li>Add one or more network interfaces to the microVM.</li>
@@ -265,8 +265,8 @@ operations per second, or both.</li>
 <li>Configure the logging and metric system.</li>
 <li><code>[BETA]</code> Configure the data tree of the guest-facing metadata service. The
 service is only available to the guest if this resource is configured.</li>
-<li>Add a <a href="./vsock.html">vsock socket</a> to the microVM.</li>
-<li>Add a <a href="./entropy.html">entropy device</a> to the microVM.</li>
+<li>Add a <a href="vsock.html">vsock socket</a> to the microVM.</li>
+<li>Add a <a href="entropy.html">entropy device</a> to the microVM.</li>
 <li>Start the microVM using a given kernel image, root file system, and boot
 arguments.</li>
 <li>[x86_64 only] Stop the microVM.</li>
@@ -275,7 +275,7 @@ arguments.</li>
 <ul>
 <li>Demand fault paging and CPU oversubscription enabled by default.</li>
 <li>Advanced, thread-specific seccomp filters for enhanced security.</li>
-<li><a href="./jailer.html">Jailer</a> process for starting Firecracker in production
+<li><a href="jailer.html">Jailer</a> process for starting Firecracker in production
 scenarios; applies a cgroup/namespace isolation barrier and then
 drops privileges.</li>
 </ul>
